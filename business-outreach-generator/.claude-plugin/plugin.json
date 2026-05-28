@@ -1,0 +1,5 @@
+{
+  "name": "business-outreach-generator",
+  "description": "Generate targeted security outreach emails or LinkedIn messages for small businesses. Uses conditional logic to select the outreach channel, localise content, and inject geo-specific breach examples.",
+  "version": "1.0.0"
+}

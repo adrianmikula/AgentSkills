@@ -1,0 +1,26 @@
+{
+  "name": "adrianmikula-agentskills",
+  "owner": {
+    "name": "Adrian Mikula"
+  },
+  "plugins": [
+    {
+      "name": "ai-era-vulnerability-scanner",
+      "source": "./ai-era-vulnerability-scanner",
+      "description": "Scan a code repository or public-facing website for AI-era security vulnerabilities: supply chain risks, CI/CD misconfigs, zero-trust gaps, secrets sprawl, crypto-agility, LLM/MCP guardrail absence, and observable production weaknesses. Not a CVE scanner.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "business-outreach-generator",
+      "source": "./business-outreach-generator",
+      "description": "Generate targeted security outreach emails or LinkedIn messages for small businesses. Uses conditional logic to select the outreach channel, localise content, and inject geo-specific breach examples.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "cognitive-sustainability",
+      "source": "./cognitive-sustainability",
+      "description": "Apply cognitive sustainability rules to preserve human decision authority and conceptual understanding during AI-assisted development. Use for architecture, security, schema, or high-autonomy coding sessions.",
+      "version": "1.0.0"
+    }
+  ]
+}
