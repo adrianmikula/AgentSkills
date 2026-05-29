@@ -1,11 +1,11 @@
 # Business Outreach Generator
 
-A Claude Skill for generating targeted security outreach messages to small businesses. Supports multiple outreach offerings and two output channels: **Email** and **LinkedIn**.
+A Claude Skill for generating targeted security outreach messages to small businesses. Supports multiple outreach offerings and three output channels: **Email**, **LinkedIn**, and **Phone** (dot-point research brief).
 
 ## How It Works
 
 1. **Collect targeting parameters** — The Skill asks for offering type, output format, target country, city/region, industry sector, and business size.
-2. **Select offering and channel** — Conditional logic loads the correct resource template (AI-Era Security Audit Report or Jakarta Migration Risk Assessment) and selects the Email or LinkedIn variant.
+2. **Select offering and channel** — Conditional logic loads the correct resource template and selects the Email, LinkedIn, or Phone variant.
 3. **Research** — For AI-Era, the Skill finds 2–3 recent breaches; for Jakarta Migration, it researches senior technical staff on the company website.
 4. **Generate the message** — The template is populated with localised spelling, geo-specific examples, and tone matched to the business size.
 
@@ -13,14 +13,14 @@ A Claude Skill for generating targeted security outreach messages to small busin
 
 Load the Skill and provide the targeting parameters when prompted:
 
-- **Offering:** AI-Era Security Audit Report or Jakarta Migration Risk Assessment
-- **Output format:** Email or LinkedIn
+- **Offering:** AI-Era Security Audit Report, Jakarta Migration Risk Assessment, or AI Codebase Entropy Audit
+- **Output format:** Email, LinkedIn, or Phone
 - **Target country:** e.g., Australia, United States, United Kingdom
 - **Target city/region:** e.g., Adelaide, Manchester, Austin
 - **Industry sector:** e.g., hospitality, retail, manufacturing, professional services, tech
 - **Business size:** Micro (1–9), Small (10–99), or Medium (100–199)
 
-**For Jakarta Migration only**, also provide the company website URL for senior staff research.
+**For Jakarta Migration Risk Assessment, AI Codebase Entropy Audit, and AI-Era Security Audit Report when using Phone output**, also provide the company website URL for senior staff and tech stack research.
 
 The Skill will then generate a complete, ready-to-send message with recent local breach examples and a clear, no-pressure call to action.
 
@@ -28,15 +28,16 @@ The Skill will then generate a complete, ready-to-send message with recent local
 
 | Offering | Description |
 |----------|-------------|
-| AI-Era Security Audit Report | A free, no-obligation security audit report for small businesses. Emphasises the new AI-era threat landscape where automated attacks make even the smallest business a viable target. |
+| AI-Era Security Audit Report | A free, no-obligation security audit report for small businesses. Emphasises the new AI-era threat landscape where automated attacks make even the smallest business a viable target. Also offers a paid repository-level analysis for tech/enterprise Java teams. |
 | Jakarta Migration Risk Assessment | A paid, multi-day consultation for tech companies (1-99 staff) to assess Java EE to Jakarta EE migration risks. Includes automated tooling, deep bytecode dependency analysis, and supply-chain security evaluation. Deliverable: detailed PDF reports with refactoring guides. |
+| AI Codebase Entropy Audit | A paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing). Includes an optional AI SDLC Observability Dashboard follow-on. |
 
 ## Extending the Skill
 
 To add a new outreach offering:
 
 1. Create a new markdown file in `resources/` (e.g., `resources/compliance-gap-analysis-offer.md`).
-2. Follow the same structure as `resources/ai-era-security-audit-offer.md`: include an Email Template section and a LinkedIn Message Template section.
+2. Follow the same structure as `resources/ai-era-security-audit-offer.md`: include an Email Template section, a LinkedIn Message Template section, and a Phone Research Brief section.
 3. Register the new offering in `Skill.md` under **Available Offerings** and add its routing condition under **Conditional Routing → Step 1**.
 4. Update the **Current Offerings** table in this README.
 

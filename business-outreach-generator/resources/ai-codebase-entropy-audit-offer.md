@@ -126,53 +126,52 @@ Worth a conversation?
 
 ---
 
-## Phone Call Template
+## Phone Research Brief
+
+When `Output format == "Phone"`, do not generate a scripted conversation. Instead, produce a concise dot-point research brief the caller can reference during a real call.
+
+### Research Steps (Before Generating the Brief)
+
+1. **Visit the company website** and capture:
+   - Products, services, and value proposition
+   - Technology stack signals: Java, JVM, Spring, enterprise applications, large-scale systems, AI-assisted development mentions (Copilot, etc.)
+   - Team signals: multiple engineering teams, 10+ developers, clear engineering leadership
+   - Content signals: technical blog posts about architecture, modernisation, technical debt, or AI-assisted development
+   - Modernisation signals: legacy modernisation, platform evolution, or technical debt initiatives
+
+2. **If the website lacks detail**, search LinkedIn for the company and review:
+   - Engineering team size and structure
+   - Employee roles suggesting Java/JVM, architecture, or AI-assisted development
+   - Company size and headcount
+   - Any posts or articles mentioning delivery velocity, architecture, or AI tooling
+
+3. **Cross-reference with the collected parameters** (`{{COUNTRY}}`, `{{CITY}}`, `{{INDUSTRY}}`, `{{BUSINESS_SIZE}}`) and localise spelling.
+
+### Brief Format
 
 ```
-[Ring — they pick up]
+**Phone Research Brief — {{COMPANY_NAME}}**
 
-Hi {{CONTACT_NAME}}, this is [Your Name] from [Your Company]. [pause] I hope I'm not catching you at a bad time — do you have a quick minute?
-
-[pause for response. If yes, continue. If no, ask for a better time to call back.]
-
-Great. I came across {{COMPANY_NAME}} while researching {{INDUSTRY}} companies in {{CITY}} navigating AI-accelerated software delivery. If you're the right person to speak with about engineering architecture, I'd value a brief conversation.
-
-Most organisations already have infrastructure observability and CI/CD. What we rarely see is visibility into the structural side effects of rapid, AI-assisted development — the gradual drift from intended boundaries, the accumulation of structural disorder, and the erosion of design consistency that compounds quietly.
-
-We run a focused **AI Codebase Entropy Audit** — a 2-to-5-day assessment that surfaces these early signals across large Java and JVM-based systems. You get an executive-ready report with an architectural integrity overview, entropy map, drift analysis, and prioritised recommendations. Currently at founding pilot pricing: AUD $1,500 to $3,000.
-
-If the audit reveals ongoing structural concerns, many teams follow on with our **AI SDLC Observability Dashboard** for continuous, real-time tracking — so you catch drift as it forms, not after it compounds.
-
-Worth a fifteen-minute discovery call?
-
-[pause for response]
-
-Thanks {{CONTACT_NAME}}, speak soon.
+- **Company:** {{COMPANY_NAME}}, {{BUSINESS_SIZE}}, {{CITY}}, {{COUNTRY}}
+- **Industry Focus:** {{INDUSTRY}} [add any specifics found, e.g. "mining sector with long-lived operational systems"]
+- **Products or Services:** [2–3 sentence summary of what the company sells or delivers, and who their customers are]
+- **Tech Stack:** [relevant aspects: Java/JVM, Spring, enterprise applications, AI-assisted development signals, team size, any legacy/modernisation initiatives]
+- **Suggested Offering Focus:**
+  - AI Codebase Entropy Audit — paid 2-to-5-day assessment (AUD $1,500–$3,000 pilot pricing)
+  - Key talking points: architectural drift, codebase entropy, AI-assisted development risk, engineering sustainability signals, optional follow-on AI SDLC Observability Dashboard for continuous tracking
+- **Leading Questions:**
+  1. [Tailored question 1, e.g. "Do your teams have visibility into how your architecture is evolving under AI-accelerated delivery?"]
+  2. [Tailored question 2, e.g. "Most organisations track velocity and uptime. How are you tracking the structural side effects — gradual drift, accumulating entropy, erosion of design consistency?"]
 ```
 
-### Objection Responses
+### Tone Guidance for the Call
 
-| Objection | Response |
-|-----------|----------|
-| "We already have monitoring / dashboards" | "That's great — this complements what you have. Existing tools track runtime behaviour, errors, and performance. The entropy audit tracks the structure of the code itself: how boundaries drift, how entropy accumulates, and how AI-assisted changes affect design consistency. It's a snapshot most organisations don't realise they need until they see it." |
-| "We handle code quality internally" | "Understood. Many strong teams do. The audit is designed to complement internal efforts by providing an external, systematic view of structural trends that manual code reviews and static analysis snapshots can't capture — longitudinal patterns across your entire system." |
-| "We're not using AI-assisted development yet" | "Fair enough. Even without AI tools, large Java and JVM systems naturally accumulate drift and entropy over time. The audit establishes a baseline now. If you adopt AI-assisted tools later, you'll have a clear before-and-after picture of structural impact." |
-| "Send me an email" | "Absolutely — what's the best address? I'll include a one-page overview and a sample report structure from a similar {{BUSINESS_SIZE}} {{INDUSTRY}} environment." |
-| "Not interested / no budget" | "No problem at all. I'll send a brief overview — if circumstances change, you'll have the details. What's the best email for you?" |
-| "Can you just do the audit without the call?" | "We prefer a short discovery call first to confirm the audit is appropriate for your system size and complexity. It takes ten to fifteen minutes and ensures you get maximum value from the assessment. When would suit you?" |
-
-### Pre-Call Checklist
-
-- [ ] Verify the contact's full name, role, and correct pronunciation
-- [ ] Review {{COMPANY_NAME}}'s website for Java, JVM, Spring, AI, or enterprise stack mentions
-- [ ] Confirm the company size and engineering team scale align with the target (typically 20+ staff, multiple dev teams)
-- [ ] Have a one-page overview or sample report structure ready to reference
-- [ ] Ensure you're calling during business hours in {{COUNTRY}}
-- [ ] Prepare to leave a brief voicemail if they don't answer (see below)
-
-### Voicemail Script (if no answer)
-
-> Hi {{CONTACT_NAME}}, this is [Your Name] from [Your Company]. I'm calling about an AI Codebase Entropy Audit we run for {{BUSINESS_SIZE}} {{INDUSTRY}} companies in {{CITY}} with large Java and JVM-based systems. It's a 2-to-5-day assessment that surfaces early architectural drift, codebase entropy, and AI-assisted development risk before they compound into structural cost. I'd value a brief discovery call when you have fifteen minutes. I'll follow up via email, or feel free to call me back on [Phone Number]. Thanks.
+- Respect technical competence — assume the recipient understands software architecture, technical debt, observability, and CI/CD
+- Be specific about capabilities — mention concrete techniques (architectural drift tracking, entropy scoring, structural analysis)
+- No fear-mongering — present risks factually; focus on the gap in visibility, not catastrophe
+- Clear value proposition — the audit provides a snapshot of structural integrity; the observability dashboard provides continuous tracking
+- Low-pressure CTA — discovery call first, paid engagement only if mutually confirmed as appropriate
+- Upsell naturally — mention the observability dashboard as a logical follow-on, not a hard sell
 
 ---
 

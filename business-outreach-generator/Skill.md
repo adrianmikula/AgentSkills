@@ -24,7 +24,7 @@ Do not generate any outreach until the following five parameters have been colle
 | 5 | **Industry sector** | Free text (e.g., hospitality, retail, professional services, manufacturing, tech) — used for relevant examples |
 | 6 | **Business size** | `Micro` (1–9 staff), `Small` (10–99 staff), `Medium` (100–199 staff) — affects tone, example selection, and phrasing. If the human is unsure, estimate using the methods below. |
 
-**For Jakarta Migration Risk Assessment and AI Codebase Entropy Audit**, also collect:
+**For Jakarta Migration Risk Assessment, AI Codebase Entropy Audit, and AI-Era Security Audit Report when Output format is "Phone"**, also collect:
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
@@ -130,7 +130,7 @@ Follow the instructions in the loaded resource file to:
 ## Tone and Style Rules
 
 - **Tone:** Friendly, direct, slightly urgent but never fear-mongering. The sender is a knowledgeable peer offering help, not a vendor pushing a sale.
-- **Length:** Email should be 200–350 words. LinkedIn message should be 100–180 words (shorter, punchier). Phone call script should be 80–150 words, designed to be spoken in 30–60 seconds with natural pauses.
+- **Length:** Email should be 200–350 words. LinkedIn message should be 100–180 words (shorter, punchier).
 - **Jargon:** Avoid unnecessary technical terms. If a term is needed (e.g., "ransomware", "vulnerability"), briefly define it in plain language or use context to make the meaning clear.
 - **CTA:** One clear, low-friction action. No multiple links, no calendars, no "book a call" pressure.
 - **No-sales guarantee:** Explicitly mention the audit is free, no-obligation, and comes with no follow-up spam.
@@ -145,7 +145,7 @@ When presenting the final message to the human:
 |---------|-------------|
 | **Email** | Show the full email with Subject line, body, and placeholder sign-off block. Offer to adjust any section. |
 | **LinkedIn** | Show the message as a single block of text optimised for LinkedIn’s character limits and conversational style. Offer to adjust tone or length. |
-| **Phone** | Show the call script with pauses, tone cues, and objection responses. Include a brief pre-call checklist. Offer to adjust pacing or handling of objections. |
+| **Phone** | Show a dot-point research brief covering: company overview, industry focus, products/services, tech stack, suggested offering focus, and 1–2 leading questions. No scripted conversation snippets. |
 
 ---
 

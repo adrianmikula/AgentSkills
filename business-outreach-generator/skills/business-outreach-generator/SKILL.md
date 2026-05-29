@@ -1,11 +1,11 @@
 ---
 name: Business Outreach Generator
-description: Generate targeted security outreach emails or LinkedIn messages for small businesses. Uses conditional logic to select the outreach channel, localise content, and inject geo-specific breach examples.
+description: Generate targeted security outreach emails, LinkedIn messages, or phone research briefs for small businesses. Uses conditional logic to select the outreach channel, localise content, and inject geo-specific breach examples.
 ---
 
 ## Overview
 
-This Skill generates personalised, friendly-but-urgent security outreach messages for small businesses. It supports multiple outreach offerings and two output channels (Email or LinkedIn). All content is localised to the target country and populated with recent, region-specific breach examples.
+This Skill generates personalised, friendly-but-urgent security outreach messages for small businesses. It supports multiple outreach offerings and three output channels (Email, LinkedIn, or Phone). All content is localised to the target country and populated with recent, region-specific breach examples.
 
 Before generating any outreach, the Skill collects targeting parameters from the human. It then loads the appropriate offering resource and populates the template with localised examples, spelling, and tone matched to the business size.
 
@@ -18,17 +18,17 @@ Do not generate any outreach until the following five parameters have been colle
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 1 | **Offering** | `AI-Era Security Audit Report` or `Jakarta Migration Risk Assessment` — determines which resource template to load |
-| 2 | **Output format** | `Email` or `LinkedIn` |
+| 2 | **Output format** | `Email`, `LinkedIn`, or `Phone` |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Free text (e.g., hospitality, retail, professional services, manufacturing, tech) — used for relevant examples |
 | 6 | **Business size** | `Micro` (1–9 staff), `Small` (10–99 staff), `Medium` (100–199 staff) — affects tone, example selection, and phrasing |
 
-**For Jakarta Migration Risk Assessment only**, also collect:
+**For Jakarta Migration Risk Assessment, AI Codebase Entropy Audit, and AI-Era Security Audit Report when Output format is "Phone"**, also collect:
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
-| 7 | **Company website** | Domain or URL — used to research senior technical staff and assess Java EE suitability |
+| 7 | **Company website** | Domain or URL — used to research senior technical staff and assess technology stack suitability |
 | 8 | **Contact research** | After receiving the website, research senior technical staff (CTO, Dev Director, Tech Lead, Architect, Founder) on the company website. If insufficient info, search LinkedIn. |
 
 Record all answers. If the human is unsure about any field, suggest common values for their country but do not assume defaults.
@@ -39,8 +39,9 @@ Record all answers. If the human is unsure about any field, suggest common value
 
 | Offering Name | Resource File | Status | Description |
 |---------------|-------------|--------|-------------|
-| AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free, no-obligation security audit report for small businesses |
+| AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free public-facing website audit for small businesses; paid repository-level security analysis for tech/enterprise Java development teams |
 | Jakarta Migration Risk Assessment | `resources/jakarta-migration-risk-assessment-offer.md` | Active | Paid consultation for Java EE to Jakarta EE migration risk assessment for tech companies (1-99 staff) |
+| AI Codebase Entropy Audit | `resources/ai-codebase-entropy-audit-offer.md` | Active | Paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems |
 
 **To add a new offering:** Create a new resource file in `resources/`, then add a row to this table and add the routing condition in the Conditional Routing section below.
 
@@ -56,8 +57,9 @@ Based on the collected `Offering` parameter:
 
 - If `Offering == "AI-Era Security Audit Report"`, load `resources/ai-era-security-audit-offer.md`
 - If `Offering == "Jakarta Migration Risk Assessment"`, load `resources/jakarta-migration-risk-assessment-offer.md`
+- If `Offering == "AI Codebase Entropy Audit"`, load `resources/ai-codebase-entropy-audit-offer.md`
 
-Follow the research instructions in the loaded resource file. Note that Jakarta Migration outreach does NOT require breach research; instead, it requires identifying senior technical staff on the company website (with LinkedIn as fallback).
+Follow the research instructions in the loaded resource file. Note that Jakarta Migration and AI Codebase Entropy Audit outreach do NOT require breach research; instead, they require identifying senior technical staff on the company website (with LinkedIn as fallback). AI-Era Security Audit Report in Phone format also requires company website research for tech stack assessment, but still needs breach research for Email and LinkedIn formats.
 
 ### Step 2 — Select Output Template
 
@@ -65,6 +67,7 @@ Within the loaded resource, apply the output-format-specific template:
 
 - If `Output format == "Email"`, use the **Email Template** section.
 - If `Output format == "LinkedIn"`, use the **LinkedIn Message Template** section.
+- If `Output format == "Phone"`, use the **Phone Research Brief** section.
 
 ### Step 3 — Populate Placeholders
 
@@ -94,7 +97,7 @@ Follow the instructions in the loaded resource file to:
 ## Tone and Style Rules
 
 - **Tone:** Friendly, direct, slightly urgent but never fear-mongering. The sender is a knowledgeable peer offering help, not a vendor pushing a sale.
-- **Length:** Email should be 200–350 words. LinkedIn message should be 100–180 words (shorter, punchier).
+- **Length:** Email should be 200–350 words. LinkedIn message should be 100–180 words (shorter, punchier). Phone output is a dot-point research brief, not a scripted message.
 - **Jargon:** Avoid unnecessary technical terms. If a term is needed (e.g., "ransomware", "vulnerability"), briefly define it in plain language or use context to make the meaning clear.
 - **CTA:** One clear, low-friction action. No multiple links, no calendars, no "book a call" pressure.
 - **No-sales guarantee:** Explicitly mention the audit is free, no-obligation, and comes with no follow-up spam.
@@ -109,6 +112,7 @@ When presenting the final message to the human:
 |---------|-------------|
 | **Email** | Show the full email with Subject line, body, and placeholder sign-off block. Offer to adjust any section. |
 | **LinkedIn** | Show the message as a single block of text optimised for LinkedIn’s character limits and conversational style. Offer to adjust tone or length. |
+| **Phone** | Show a dot-point research brief covering: company overview, industry focus, products/services, tech stack, suggested offering focus, and 1–2 leading questions. No scripted conversation snippets. |
 
 ---
 

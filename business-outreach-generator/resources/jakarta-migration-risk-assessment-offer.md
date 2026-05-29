@@ -123,56 +123,49 @@ Worth a conversation?
 
 ---
 
-## Phone Call Template
+## Phone Research Brief
 
-### OPENING
+When `Output format == "Phone"`, do not generate a scripted conversation. Instead, produce a concise dot-point research brief the caller can reference during a real call.
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Introduce yourself | "Hi {{CONTACT_NAME}}, this is [Your Name] from CodeMedic Consulting. Do you have five minutes for a quick call?" |
-| They say yes | "I came across {{COMPANY_NAME}} while researching {{INDUSTRY}} companies in {{CITY}} navigating the Java EE to Jakarta EE transition. If you're the right person to speak with about your technical architecture, I'd value a brief conversation." |
-| They say no / busy | "No problem at all. When would be a better time to call back?" |
+### Research Steps (Before Generating the Brief)
 
-### INTRODUCTIONS
+1. **Visit the company website** and capture:
+   - Products, services, and value proposition
+   - Technology stack signals: Java, Java EE, J2EE, Spring, Jakarta EE, enterprise applications, build tools (Maven, Gradle), application servers
+   - Staffing signals: technical leadership roles, engineering team size, any Java-specific job postings
+   - Content signals: technical blog posts about Java frameworks, dependency management, or legacy system modernisation
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Ask about their role | "What's your current focus at {{COMPANY_NAME}} — are you managing the Java stack and migration planning, or is that handled by someone else?" |
-| They describe their role | Listen, note any Java EE, Jakarta EE, Spring, or legacy system mentions. |
-| Establish what CodeMedic does | "At CodeMedic, we help engineering teams navigate complex Java EE to Jakarta EE migrations by identifying hidden blockers — transitive dependency conflicts, deprecated API usage, and bytecode-level compatibility issues that surface-only analysis misses." |
-| Establish relevance | "That aligns with what we're seeing across {{CITY}} {{INDUSTRY}} companies — especially teams maintaining legacy Java EE applications that need a clear migration path." |
+2. **If the website lacks detail**, search LinkedIn for the company and review:
+   - Current employees with Java, Spring, or enterprise Java titles
+   - Company size and headcount
+   - Any posts or articles mentioning Java EE, Jakarta EE, or migration projects
 
-### CURIOSITY
+3. **Cross-reference with the collected parameters** (`{{COUNTRY}}`, `{{CITY}}`, `{{INDUSTRY}}`, `{{BUSINESS_SIZE}}`) and localise spelling.
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Pivot to the gap | "Most teams have a migration plan on paper. What's your current visibility into the hidden compatibility blockers — the transitive dependency conflicts and deprecated API usage that only surface during the build?" |
-| They express concern / mention blockers | "Exactly — that's where migrations stall. The javax to jakarta namespace change creates ripple effects through dependencies, frameworks, and build tools that aren't obvious until you're deep in the refactor." |
-| They say migration is going smoothly | "That's great to hear. Our assessment is designed to validate progress and catch the blockers that surface scans miss — often in transitive dependencies or bytecode-level compatibility. Worth confirming there's nothing lurking?" |
+### Brief Format
 
-### LEADS
+```
+**Phone Research Brief — {{COMPANY_NAME}}**
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Introduce the assessment | "We run a focused Jakarta Migration Risk Assessment for {{BUSINESS_SIZE}} {{INDUSTRY}} companies. It combines automated bytecode scanning, transitive dependency analysis, and hands-on migration experience to produce a detailed risk report and refactoring guide." |
-| They ask about deliverables | "You get a risk assessment and refactoring guide — typically 3-to-5 reports — that your team can use to estimate effort, plan phases, and avoid common migration pitfalls." |
-| They ask about pricing | "This is a paid engagement, but we start with a no-obligation discovery call to confirm the assessment is appropriate for your situation." |
-| Ask for the meeting | "Worth a fifteen-minute discovery call to understand your current setup and confirm the assessment would be valuable?" |
-| They agree | "Great. What works better — Tuesday or Thursday morning?" |
-| They want email instead | "Absolutely — what's the best address? I'll include a sample risk assessment outline and a recent case study from a similar {{BUSINESS_SIZE}} {{INDUSTRY}} environment." |
+- **Company:** {{COMPANY_NAME}}, {{BUSINESS_SIZE}}, {{CITY}}, {{COUNTRY}}
+- **Industry Focus:** {{INDUSTRY}} [add any specifics found, e.g. "B2B SaaS serving healthcare clinics"]
+- **Products or Services:** [2–3 sentence summary of what the company sells or delivers, and who their customers are]
+- **Tech Stack:** [relevant aspects: Java EE / Jakarta EE status, Spring usage, build tools, application servers, enterprise applications, any legacy system signals]
+- **Suggested Offering Focus:**
+  - Jakarta Migration Risk Assessment — paid engagement combining automated bytecode scanning, transitive dependency analysis, and hands-on migration experience
+  - Key talking points: hidden compatibility blockers, deprecated API usage, ripple effects through dependencies and build tools, supply-chain security gaps while still on javax stack
+- **Leading Questions:**
+  1. [Tailored question 1, e.g. "Are you currently managing any applications still on Java EE (javax namespace) that are candidates for Jakarta EE migration?"]
+  2. [Tailored question 2, e.g. "What's your current visibility into the hidden compatibility blockers — the transitive dependency conflicts that only surface during the build?"]
+```
 
-### Pre-Call Checklist
+### Tone Guidance for the Call
 
-- [ ] Verify the contact's full name, role, and correct pronunciation
-- [ ] Review {{COMPANY_NAME}}'s website for Java, Spring, or enterprise stack mentions
-- [ ] Confirm the company size aligns with the target range (1-99 staff)
-- [ ] Have a sample assessment outline or case study ready to reference
-- [ ] Ensure you're calling during business hours in {{COUNTRY}}
-- [ ] Prepare to leave a brief voicemail if they don't answer (see below)
-
-### Voicemail Script (if no answer)
-
-> Hi {{CONTACT_NAME}}, this is [Your Name] from [Your Company]. I'm calling about a Jakarta EE migration risk assessment we run for {{BUSINESS_SIZE}} {{INDUSTRY}} companies in {{CITY}}. It combines automated bytecode scanning with hands-on migration experience to catch dependency and compatibility issues early. I'd value a brief discovery call when you have fifteen minutes. I'll follow up via email, or feel free to call me back on [Phone Number]. Thanks.
+- Respect technical competence — assume the recipient understands Java EE, Jakarta EE, dependency management, and migration complexity
+- Be specific about capabilities — mention concrete techniques (bytecode scanning, transitive dependency analysis)
+- No fear-mongering — present risks factually, not dramatically
+- Clear value proposition — the assessment saves them manual effort and catches issues they'd likely miss
+- Low-pressure CTA — discovery call first, paid engagement only if mutually confirmed as appropriate
 
 ---
 

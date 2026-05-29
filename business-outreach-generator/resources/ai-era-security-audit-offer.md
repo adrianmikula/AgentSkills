@@ -162,68 +162,48 @@ Worth a conversation?
 
 ---
 
-## Phone Call Template
+## Phone Research Brief
 
-### OPENING
+When `Output format == "Phone"`, do not generate a scripted conversation. Instead, produce a concise dot-point research brief the caller can reference during a real call.
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Introduce yourself | "Hi [First Name], this is [Your Name] from CodeMedic Consulting. Do you have five minutes for a quick call?" |
-| They say yes | "I hope I'm not catching you at a bad time. I'm calling because there's been a real shift in how cyber attacks happen, and it's hitting {{BUSINESS_SIZE}} {{INDUSTRY}} businesses in {{CITY}} hard." |
-| They say no / busy | "No problem at all. When would be a better time to call back?" |
+### Research Steps (Before Generating the Brief)
 
-### INTRODUCTIONS
+1. **Visit the company website** and capture:
+   - Products, services, and value proposition
+   - Technology stack signals: CMS (WordPress, Shopify, etc.), frameworks, hosting providers, analytics tools, payment platforms
+   - Security signals: SSL certificate, privacy policy, cookie notice, terms of service, any security or compliance mentions
+   - Staffing signals: team size from About/Team pages, IT or engineering roles listed
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Ask about their role | "Are you the person who looks after the website and online security at [Company Name], or should I be speaking with someone else?" |
-| They describe their role | Listen, note any IT responsibility, MSP, or website management mentions. |
-| Establish what CodeMedic does (free tier) | "At CodeMedic, we help small businesses understand their real security exposure in the AI era. We run fast, automated audits that show exactly where a site stands against the threats that matter today — the ones that traditional scans often miss." |
-| Establish what CodeMedic does (paid tier) | "At CodeMedic, we help development teams identify AI-era security risks at the repository level — code vulnerabilities, dependency exposure, secrets leakage, and CI/CD pipeline weaknesses that traditional application security scans often miss." |
-| Establish relevance | "That aligns with what we're seeing across {{CITY}} — {{BUSINESS_SIZE}} {{INDUSTRY}} businesses are being hit by automated attacks that didn't exist a year ago." |
+2. **If the website lacks detail**, search LinkedIn for the company and review:
+   - Company size and headcount
+   - Employee roles that suggest technical infrastructure (Web Developer, IT Manager, DevOps, etc.)
+   - Any posts or articles mentioning technology choices or security concerns
 
-### CURIOSITY
+3. **Cross-reference with the collected parameters** (`{{COUNTRY}}`, `{{CITY}}`, `{{INDUSTRY}}`, `{{BUSINESS_SIZE}}`) and localise spelling.
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Pivot to the gap | "Most {{BUSINESS_SIZE}} businesses we speak with have some form of security in place. When did you last check how your site holds up against AI-powered attack tools — the kind that can scan and exploit vulnerabilities in minutes?" |
-| They express concern | "Exactly — that's why we're calling. Free AI tools have made it possible for anyone, regardless of technical background, to launch sophisticated attacks. What once required expertise can now be fully automated." |
-| They say they feel secure | "That's good to hear. The challenge is that AI-era threats evolve faster than traditional defences. A quick audit can confirm you're covered — or highlight a gap you didn't know existed. It takes two minutes and is completely free." |
+### Brief Format
 
-### LEADS
+```
+**Phone Research Brief — {{COMPANY_NAME}}**
 
-| Conversation Direction | Your Next Question / Line |
-|---|---|
-| Introduce the audit (free tier) | "We're offering a completely free, no-obligation AI-era security audit report. It takes us minutes to run, and we'll show you exactly where your site stands against the threats that matter today — no sales pressure, no follow-up spam." |
-| Introduce the audit (paid tier — tech/enterprise/Java) | "We run a paid AI-era security audit focused on repository-level analysis for development teams. It surfaces code-level vulnerabilities, dependency risks, and AI-era threats in your development workflows and CI/CD pipelines. Pricing depends on repository size and complexity — worth a brief discovery call to scope it?" |
-| They ask what it covers (free tier) | "The audit scans for known AI-era vulnerabilities, outdated plugins, weak credentials, and exposure patterns that automated attack tools actively exploit. You get a clear report with actionable fixes." |
-| They ask what it covers (paid tier) | "The analysis covers code-level vulnerabilities, transitive dependency risks, secrets exposure in repositories, CI/CD pipeline weaknesses, and AI-generated code patterns that introduce security gaps. You get a detailed report with prioritised remediation steps." |
-| They ask about cost (free tier) | "It's completely free. No obligation, no hidden fees, no follow-up spam. We're building awareness right now, and the audit speaks for itself." |
-| They ask about cost (paid tier) | "Pricing is customised based on repository size, number of services, and depth of analysis required. We start with a no-obligation discovery call to scope the engagement and provide a fixed quote." |
-| Ask for the website (free tier) | "Worth sending me your website URL so I can run it and email the report over?" |
-| Ask for the repo/engagement (paid tier) | "Worth a brief discovery call to understand your repository structure and confirm the audit is a fit?" |
-| They agree (free tier) | "Great. What's the website address? And what's the best email to send the report to?" |
-| They agree (paid tier) | "Great. What works better — Tuesday or Thursday morning? I'll come prepared with a scoping checklist." |
-| They want email instead (free tier) | "Absolutely — what's the best address? I'll include a link to a recent {{COUNTRY}} example so you can see what I mean." |
-| They want email instead (paid tier) | "Absolutely — what's the best address? I'll send a one-page overview and a sample report structure from a similar tech environment." |
+- **Company:** [name], {{BUSINESS_SIZE}}, {{CITY}}, {{COUNTRY}}
+- **Industry Focus:** {{INDUSTRY}} [add any specifics found, e.g. "B2B SaaS serving healthcare clinics"]
+- **Products or Services:** [2–3 sentence summary of what the company sells or delivers, and who their customers are]
+- **Tech Stack:** [relevant aspects: platform/CMS, frameworks, hosting, security signals, any dev/IT staffing clues]
+- **Suggested Offering Focus:**
+  - [Free tier: public-facing website audit — highlight website vulnerabilities, outdated plugins, weak credentials, automated attack exposure]
+  - [Paid tier: repository-level security analysis — only if the company shows clear Java/development team signals; mention code-level vulnerabilities, dependency risks, CI/CD pipeline gaps]
+- **Leading Questions:**
+  1. [Tailored question 1, e.g. "When did you last check how your site holds up against AI-powered attack tools?"]
+  2. [Tailored question 2, e.g. "Do you have anyone managing security updates, or is that handled by your web developer?"]
+```
 
-### Pre-Call Checklist
+### Tone Guidance for the Call
 
-- [ ] Confirm pricing tier: free (public website / small business) or paid (tech/enterprise/Java dev repo analysis)
-- [ ] Verify the target company name and correct pronunciation
-- [ ] Confirm the contact's first name and role
-- [ ] Have 2–3 local breach examples ready (from research)
-- [ ] Ensure you're calling during business hours in {{COUNTRY}}
-- [ ] Have a notepad ready to capture email addresses or objections
-- [ ] Prepare to leave a brief voicemail if they don't answer (see below)
-
-### Voicemail Script (if no answer)
-
-**Free tier:**
-> Hi [First Name], this is [Your Name] from CodeMedic Consulting. I'm calling about a free AI-era security audit we're offering {{BUSINESS_SIZE}} {{INDUSTRY}} businesses in {{CITY}}. Takes two minutes of your time, no obligation. I'll send you an email with the details, or feel free to call me back on [Phone Number]. Thanks.
-
-**Paid tier (tech/enterprise/Java dev):**
-> Hi {{CONTACT_NAME}}, this is [Your Name] from CodeMedic Consulting. I'm calling about a repository-level security audit we run for {{BUSINESS_SIZE}} {{INDUSTRY}} development teams in {{CITY}}. It surfaces AI-era security risks in code, dependencies, and CI/CD pipelines that traditional scans often miss. I'd value a brief discovery call to scope it. I'll follow up via email, or call me back on [Phone Number]. Thanks.
+- Friendly, direct, slightly urgent but never fear-mongering
+- One clear, low-friction action (free audit report or brief discovery call)
+- Explicitly mention the audit is free, no-obligation, and comes with no follow-up spam (free tier)
+- For paid tier, mention pricing is customised and start with a no-obligation discovery call
 
 ---
 
