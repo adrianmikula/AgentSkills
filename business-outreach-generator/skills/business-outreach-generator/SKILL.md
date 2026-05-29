@@ -17,11 +17,19 @@ Do not generate any outreach until the following five parameters have been colle
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
-| 1 | **Output format** | `Email` or `LinkedIn` |
-| 2 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and breach example search |
-| 3 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific breach examples |
-| 4 | **Industry sector** | Free text (e.g., hospitality, retail, professional services, manufacturing) — used for relevant victim examples |
-| 5 | **Business size** | `Micro` (1–4 staff), `Small` (5–19 staff), `Medium` (20–199 staff) — affects tone, example selection, and phrasing |
+| 1 | **Offering** | `AI-Era Security Audit Report` or `Jakarta Migration Risk Assessment` — determines which resource template to load |
+| 2 | **Output format** | `Email` or `LinkedIn` |
+| 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
+| 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
+| 5 | **Industry sector** | Free text (e.g., hospitality, retail, professional services, manufacturing, tech) — used for relevant examples |
+| 6 | **Business size** | `Micro` (1–9 staff), `Small` (10–99 staff), `Medium` (100–199 staff) — affects tone, example selection, and phrasing |
+
+**For Jakarta Migration Risk Assessment only**, also collect:
+
+| # | Parameter | Options / Format |
+|---|-----------|------------------|
+| 7 | **Company website** | Domain or URL — used to research senior technical staff and assess Java EE suitability |
+| 8 | **Contact research** | After receiving the website, research senior technical staff (CTO, Dev Director, Tech Lead, Architect, Founder) on the company website. If insufficient info, search LinkedIn. |
 
 Record all answers. If the human is unsure about any field, suggest common values for their country but do not assume defaults.
 
@@ -32,6 +40,7 @@ Record all answers. If the human is unsure about any field, suggest common value
 | Offering Name | Resource File | Status | Description |
 |---------------|-------------|--------|-------------|
 | AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free, no-obligation security audit report for small businesses |
+| Jakarta Migration Risk Assessment | `resources/jakarta-migration-risk-assessment-offer.md` | Active | Paid consultation for Java EE to Jakarta EE migration risk assessment for tech companies (1-99 staff) |
 
 **To add a new offering:** Create a new resource file in `resources/`, then add a row to this table and add the routing condition in the Conditional Routing section below.
 
@@ -43,9 +52,12 @@ After collecting the five onboarding parameters, select the template and resourc
 
 ### Step 1 — Select Offering Resource
 
-Currently only one offering exists. Load `resources/ai-era-security-audit-offer.md`.
+Based on the collected `Offering` parameter:
 
-*(Future offerings: add an `Offering` parameter to onboarding, then route here. If `Offering == "AI-Era Security Audit Report"`, load `resources/ai-era-security-audit-offer.md`; else if `Offering == "New Offering Name"`, load `resources/new-offering-file.md`.)*
+- If `Offering == "AI-Era Security Audit Report"`, load `resources/ai-era-security-audit-offer.md`
+- If `Offering == "Jakarta Migration Risk Assessment"`, load `resources/jakarta-migration-risk-assessment-offer.md`
+
+Follow the research instructions in the loaded resource file. Note that Jakarta Migration outreach does NOT require breach research; instead, it requires identifying senior technical staff on the company website (with LinkedIn as fallback).
 
 ### Step 2 — Select Output Template
 
@@ -64,6 +76,9 @@ Replace all placeholder tokens in the selected template with the collected param
 | `{{CITY}}` | Target city/region |
 | `{{INDUSTRY}}` | Industry sector |
 | `{{BUSINESS_SIZE}}` | Business size |
+| `{{COMPANY_NAME}}` | Company name (Jakarta offering only) |
+| `{{CONTACT_NAME}}` | Name of identified senior technical contact (Jakarta offering only) |
+| `{{CONTACT_ROLE}}` | Job title of the contact (Jakarta offering only, for internal reference) |
 
 ### Step 4 — Localise and Research
 
