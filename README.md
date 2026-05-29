@@ -7,7 +7,7 @@ A collection of Claude plugins and skills for AI-assisted security, outreach, an
 | Plugin | Description |
 |--------|-------------|
 | **AI-Era Vulnerability Scanner** | Scan repositories and public-facing websites for AI-era security vulnerabilities. |
-| **Business Outreach Generator** | Generate targeted security outreach emails or LinkedIn messages for small businesses. |
+| **Business Outreach Generator** | Generate targeted security outreach emails, LinkedIn messages, or phone scripts for small businesses and engineering teams. |
 | **Cognitive Sustainability** | Preserve human decision authority and conceptual understanding during AI-assisted development. |
 
 ## Installation
