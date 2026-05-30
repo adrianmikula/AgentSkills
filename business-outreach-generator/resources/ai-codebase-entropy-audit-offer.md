@@ -29,6 +29,7 @@ Before populating either template, perform the following research steps:
    - Full name (for personalization)
    - Job title (for role-specific messaging)
    - Any publicly mentioned technology focus (Java, JVM, AI, enterprise systems, etc.)
+   - Direct phone number if listed (Contact page, team directory, corporate directory, or press releases)
 
 ### Step 2 — LinkedIn Fallback (if website lacks staff info)
 
@@ -153,6 +154,10 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
 **Phone Research Brief — {{COMPANY_NAME}}**
 
 - **Company:** {{COMPANY_NAME}}, {{BUSINESS_SIZE}}, {{CITY}}, {{COUNTRY}}
+- **Contact Details:**
+  - **Name:** {{CONTACT_NAME}} [or "Not found — dial main line and ask"]
+  - **Role:** {{CONTACT_ROLE}} [e.g. CTO, VP Engineering, Head of Engineering, Architect, Founder]
+  - **Phone:** {{CONTACT_PHONE}} [direct line, mobile, or main company line with extension/transfer instructions]
 - **Industry Focus:** {{INDUSTRY}} [add any specifics found, e.g. "mining sector with long-lived operational systems"]
 - **Products or Services:** [2–3 sentence summary of what the company sells or delivers, and who their customers are]
 - **Tech Stack:** [relevant aspects: Java/JVM, Spring, enterprise applications, AI-assisted development signals, team size, any legacy/modernisation initiatives]
@@ -185,7 +190,8 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
 | `{{BUSINESS_SIZE}}` | Business size (Micro: 1-9, Small: 10-99, Medium: 100-199) |
 | `{{COMPANY_NAME}}` | Company website domain (extracted during research) |
 | `{{CONTACT_NAME}}` | Name of identified senior technical contact |
-| `{{CONTACT_ROLE}}` | Job title of the contact (for internal reference, not used in templates) |
+| `{{CONTACT_ROLE}}` | Job title of the contact (Phone output, for internal reference) |
+| `{{CONTACT_PHONE}}` | Direct phone number of the contact, or main company line with instructions (Phone output) |
 
 All tokens must be replaced before presenting the final message to the human.
 

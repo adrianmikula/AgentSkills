@@ -1,0 +1,5 @@
+{
+  "name": "dev-level-up",
+  "description": "Scan high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting Java, React, and Python. Filters to the last month, evaluates findings for impact, estimates adoption effort, and applies the 80/20 rule to recommend the highest-ROI level-ups for your available time.",
+  "version": "1.1.0"
+}

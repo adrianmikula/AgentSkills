@@ -173,6 +173,7 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
    - Technology stack signals: CMS (WordPress, Shopify, etc.), frameworks, hosting providers, analytics tools, payment platforms
    - Security signals: SSL certificate, privacy policy, cookie notice, terms of service, any security or compliance mentions
    - Staffing signals: team size from About/Team pages, IT or engineering roles listed
+   - Contact signals: phone numbers on Contact page, team directory, or corporate directory for senior technical staff
 
 2. **If the website lacks detail**, search LinkedIn for the company and review:
    - Company size and headcount
@@ -187,10 +188,14 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
 **Phone Research Brief — {{COMPANY_NAME}}**
 
 - **Company:** [name], {{BUSINESS_SIZE}}, {{CITY}}, {{COUNTRY}}
+- **Contact Details:**
+  - **Name:** {{CONTACT_NAME}} [or "Not found — dial main line and ask"]
+  - **Role:** {{CONTACT_ROLE}} [e.g. CTO, Dev Director, Tech Lead, Founder]
+  - **Phone:** {{CONTACT_PHONE}} [direct line, mobile, or main company line with extension/transfer instructions]
 - **Industry Focus:** {{INDUSTRY}} [add any specifics found, e.g. "B2B SaaS serving healthcare clinics"]
 - **Products or Services:** [2–3 sentence summary of what the company sells or delivers, and who their customers are]
 - **Tech Stack:** [relevant aspects: platform/CMS, frameworks, hosting, security signals, any dev/IT staffing clues]
-- **Suggested Offering Focus:**
+- **Suggested Offering Focus:
   - [Free tier: public-facing website audit — highlight website vulnerabilities, outdated plugins, weak credentials, automated attack exposure]
   - [Paid tier: repository-level security analysis — only if the company shows clear Java/development team signals; mention code-level vulnerabilities, dependency risks, CI/CD pipeline gaps]
 - **Leading Questions:**
@@ -215,5 +220,8 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
 | `{{CITY}}` | Target city/region |
 | `{{INDUSTRY}}` | Industry sector |
 | `{{BUSINESS_SIZE}}` | Business size |
+| `{{CONTACT_NAME}}` | Name of identified senior technical contact (Phone output) |
+| `{{CONTACT_ROLE}}` | Job title of the contact (Phone output) |
+| `{{CONTACT_PHONE}}` | Direct phone number of the contact, or main company line with instructions (Phone output) |
 
 All tokens must be replaced before presenting the final message to the human.

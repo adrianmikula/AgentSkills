@@ -21,6 +21,12 @@
       "source": "./cognitive-sustainability",
       "description": "Apply cognitive sustainability rules to preserve human decision authority and conceptual understanding during AI-assisted development. Use for architecture, security, schema, or high-autonomy coding sessions.",
       "version": "1.0.0"
+    },
+    {
+      "name": "dev-level-up",
+      "source": "./dev-level-up",
+      "description": "Scan high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting Java, React, and Python. Filters to the last month and evaluates findings for impact on AI-powered coding speed, accuracy, capacity, tools, and agility.",
+      "version": "1.0.0"
     }
   ]
 }

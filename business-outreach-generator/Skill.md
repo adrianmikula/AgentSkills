@@ -17,19 +17,22 @@ Do not generate any outreach until the following five parameters have been colle
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
-| 1 | **Offering** | `AI-Era Security Audit Report`, `Jakarta Migration Risk Assessment`, or `AI Codebase Entropy Audit` — determines which resource template to load |
+| 1 | **Offering** | `Auto-Recommend Best Fit (default)`, `AI-Era Security Audit Report`, `Jakarta Migration Risk Assessment`, or `AI Codebase Entropy Audit` — determines which resource template to load. If the human is unsure, default to **Auto-Recommend**. |
 | 2 | **Output format** | `Email`, `LinkedIn`, or `Phone` |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Free text (e.g., hospitality, retail, professional services, manufacturing, tech) — used for relevant examples |
 | 6 | **Business size** | `Micro` (1–9 staff), `Small` (10–99 staff), `Medium` (100–199 staff) — affects tone, example selection, and phrasing. If the human is unsure, estimate using the methods below. |
 
-**For Jakarta Migration Risk Assessment, AI Codebase Entropy Audit, and AI-Era Security Audit Report when Output format is "Phone"**, also collect:
+**If Offering is "Auto-Recommend Best Fit"**, collect the company website up front (see Auto-Recommendation Engine below) before selecting an offering.
+
+**For ALL offerings when Output format is "Phone"**, also collect:
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 7 | **Company website** | Domain or URL — used to research senior technical staff and assess technology stack suitability |
 | 8 | **Contact research** | After receiving the website, research senior technical staff (CTO, Dev Director, Tech Lead, Architect, Founder) on the company website. If insufficient info, search LinkedIn. |
+| 9 | **Contact phone** | Direct phone number for the identified senior technical contact. Check the website Contact page, team directory, or corporate directory. If unavailable online, ask the human if they have it, or note it as "Not found — dial main line and ask for contact by name." |
 
 ### Business Size Estimation (when the human is unsure)
 
@@ -66,6 +69,61 @@ When performing LinkedIn lookups or any external web research during contact res
 
 Record all answers. If the human is unsure about any field, suggest common values for their country but do not assume defaults.
 
+### Auto-Recommendation Engine (when Offering == "Auto-Recommend Best Fit")
+
+If the human selects **Auto-Recommend Best Fit**, change the onboarding order slightly:
+
+1. **Collect company name, website URL, country, city, and industry first** — these are needed for research.
+2. **Research the company website** (and LinkedIn if needed) following the same rate-limiting rules above.
+3. **Analyse the findings against the decision rules below** and present a concise recommendation with rationale.
+4. **Ask the human to confirm the recommended offering** or override it with a different choice.
+5. **Then collect Output format** and any remaining parameters.
+
+#### Decision Rules
+
+For each offering, evaluate the signals found during research and assign a fit score.
+
+**AI-Era Security Audit Report**
+- **Strongly recommend** if the company has a public website, handles customer data, provides digital/online services, or operates in any industry with a web presence.
+- **Recommend** if the company is a digital agency, consultancy, e-commerce business, or professional services firm — their own site and client sites are attack surfaces.
+- **Discourage** only if there is truly no public website and no digital footprint whatsoever (rare).
+- **Rationale:** Automated AI-era attacks target every web-facing business regardless of size.
+
+**Jakarta Migration Risk Assessment**
+- **Strongly recommend** if the company is tech-focused, explicitly mentions Java / Jakarta EE / Spring / Enterprise / backend development, and has 10–99 staff.
+- **Recommend** if the company is a software development firm with a visible engineering team and no clear stack, but a Java heritage is plausible.
+- **Discourage** if any of these signals are present:
+  - No evidence of Java in tech stack, case studies, or job postings
+  - Primarily frontend, mobile, or low-code/no-code shop
+  - Non-tech industry with no software development team
+  - Team size is clearly <10 or >200 (outside the sweet spot)
+- **Rationale:** This is a highly specialised offering; pitching it to a non-Java shop wastes both sides' time.
+
+**AI Codebase Entropy Audit**
+- **Strongly recommend** if the company is tech-focused, mentions large-scale Java systems, enterprise architecture, microservices, or legacy modernisation, and has 50+ developers.
+- **Recommend** if the company builds complex custom software and has 20+ technical staff, even if the exact stack isn't visible.
+- **Discourage** if any of these signals are present:
+  - No evidence of large or complex codebases
+  - Primarily uses low-code/no-code platforms, CMS-only builds, or simple brochure sites
+  - Team size is clearly <20 (unlikely to have the codebase complexity this audit targets)
+  - No backend development or API engineering mentioned
+- **Rationale:** This is a deep, paid engineering audit. It requires substantial codebase complexity and a technical team large enough to act on the findings.
+
+#### Presenting the Recommendation
+
+Present the result in this exact format:
+
+```
+**Recommended Offering:** [Offering Name]
+**Confidence:** [High / Medium / Low]
+**Rationale:** [1–2 sentences explaining the key signals]
+**Discouraged:** [List any offerings that are a poor fit and why, or "None"]
+```
+
+Then ask: *"Does this look right, or would you prefer a different offering?"*
+
+If the human overrides, proceed with their manual choice. If they confirm, proceed with the recommended offering.
+
 ---
 
 ## Available Offerings
@@ -88,6 +146,7 @@ After collecting the five onboarding parameters, select the template and resourc
 
 Based on the collected `Offering` parameter:
 
+- If `Offering == "Auto-Recommend Best Fit"`, follow the Auto-Recommendation Engine instructions above first. Once the human confirms the final offering, load the corresponding resource below.
 - If `Offering == "AI-Era Security Audit Report"`, load `resources/ai-era-security-audit-offer.md`
 - If `Offering == "Jakarta Migration Risk Assessment"`, load `resources/jakarta-migration-risk-assessment-offer.md`
 - If `Offering == "AI Codebase Entropy Audit"`, load `resources/ai-codebase-entropy-audit-offer.md`
@@ -113,8 +172,9 @@ Replace all placeholder tokens in the selected template with the collected param
 | `{{INDUSTRY}}` | Industry sector |
 | `{{BUSINESS_SIZE}}` | Business size |
 | `{{COMPANY_NAME}}` | Company name (Jakarta and Entropy Audit offerings) |
-| `{{CONTACT_NAME}}` | Name of identified senior technical contact (Jakarta and Entropy Audit offerings) |
-| `{{CONTACT_ROLE}}` | Job title of the contact (Jakarta and Entropy Audit offerings, for internal reference) |
+| `{{CONTACT_NAME}}` | Name of identified senior technical contact (Phone output format) |
+| `{{CONTACT_ROLE}}` | Job title of the contact (Phone output format, for internal reference) |
+| `{{CONTACT_PHONE}}` | Direct phone number of the contact, or main company line with instructions to reach them (Phone output format) |
 
 ### Step 4 — Localise and Research
 

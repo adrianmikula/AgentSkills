@@ -1,9 +1,9 @@
 # Claude skill build artifacts
-cognitive-sustainability/cognitive-sustainability-skill/
-cognitive-sustainability/cognitive-sustainability-skill.zip
+*.zip
 
-ai-era-vulnerability-scanner/ai-era-vulnerability-scanner-skill/
-ai-era-vulnerability-scanner/ai-era-vulnerability-scanner-skill.zip
+# Extracted skill folders (built from ZIP)
+**/ai-era-vulnerability-scanner-skill/
+**/cognitive-sustainability-skill/
 
 
 #Ignore windsurf AI rules
