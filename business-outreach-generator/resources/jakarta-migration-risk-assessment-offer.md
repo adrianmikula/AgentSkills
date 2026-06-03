@@ -198,3 +198,153 @@ All tokens must be replaced before presenting the final message to the human.
 - **No fear-mongering** — Present risks factually, not dramatically
 - **Clear value proposition** — The assessment saves them manual effort and catches issues they'd likely miss
 - **Low-pressure CTA** — Discovery call first, paid engagement only if mutually confirmed as appropriate
+
+---
+
+## Developer Social Scanning — Offering-Specific Signals
+
+When Developer Social Scanning Mode is triggered for this offering, load `resources/developer-social-scanning.md` for the shared scanning framework (platform strategy, geo-filtering, scoring, output format, and handoff). The definitions below are the offering-specific inputs that the shared resource requires.
+
+---
+
+### Platform Query Variants
+
+Supply these query variants to the shared resource's Step 2 platform searches.
+
+> **Execution order note:** For the Jakarta Migration offering, job boards and direct company research return far more actionable geo-specific leads than Stack Overflow, Reddit, or GitHub, which yield mostly global noise. **Run Priority 1 (job boards) and Priority 2 (company lists) first.** Only proceed to SO/Reddit/GitHub if Priority 1–2 return fewer than 5 leads. Recruiter-posted job listings are acceptable leads — contact the recruiter directly, identify the client company, and proceed from there.
+
+#### Priority 1 — Job Boards (run first; highest geo-specificity)
+
+Run these searches **before** social platforms. Job postings signal active Java modernisation intent and reveal both the company and the stack.
+
+**SEEK (Australia):**
+- `site:seek.com.au "Java" "Spring" "{{CITY}}" OR "{{COUNTRY}}" enterprise OR legacy OR modernis`
+- `site:seek.com.au "Java EE" OR "JBoss" OR "Spring Boot" "{{CITY}}" developer`
+- `site:seek.com.au "Java" "Spring Boot" "legacy" OR "modernisation" OR "migration" "{{CITY}}"`
+- Read each returned job ad in full — capture company name (or recruiter contact if anonymous), stack details, and modernisation language
+
+> **Redirect note:** SEEK may redirect `www.seek.com.au` to `au.seek.com` — if a URL fails with a redirect error, retry with the `au.seek.com` subdomain directly.
+
+**LinkedIn Jobs:**
+- `site:linkedin.com/jobs "Java" "Spring" "{{CITY}}" "legacy" OR "modernis" OR "enterprise"`
+- `site:linkedin.com/jobs "Java EE" OR "Spring Boot 2" OR "JBoss" "{{CITY}}"`
+- `site:linkedin.com/jobs "Java" "{{CITY}}" "javax" OR "Jakarta EE" OR "Spring Framework"`
+
+**Seek / Indeed / other local job boards:**
+- `"Java" "Spring" "{{CITY}}" "legacy" OR "modernisation" site:indeed.com.au`
+- `"Java" "Spring Boot" "{{CITY}}" "enterprise" developer site:glassdoor.com.au`
+
+**From job ad results, score each company using these signals:**
+- Explicitly mentions "modernisation", "migration", "legacy platform" → Tier 1 (+3)
+- Mentions Spring Boot version (any), JPA, JBoss, WebLogic, WebSphere → Tier 2 (+2)
+- Mentions Java + enterprise context without stack detail → Tier 3 (+1)
+- If posted via a recruiter agency with the company anonymous: record the recruiter's contact details — they are a valid path to the lead
+
+#### Priority 2 — Direct Company Research (run second)
+
+Search for known Perth/`{{CITY}}`-based Java ISVs and enterprise software companies directly. This surfaces established companies whose public repos or Docker images contain `javax.*` evidence even if they're not actively posting about migration pain.
+
+**Company list searches:**
+- `"{{CITY}}" OR "{{CITY_STATE}}" enterprise software company Java Spring employees 2024 2025`
+- `top software companies "{{CITY}}" Java enterprise OR B2B OR SaaS 2025`
+- `"{{CITY}}" Java software ISV "Spring" OR "JBoss" OR "enterprise applications"`
+
+**For each identified company, check their public GitHub org for javax signals:**
+- Visit `github.com/[company-name]` — look for `javax.*` in README, Dockerfiles, `pom.xml`, or `build.gradle` snippets
+- Search: `site:github.com "[company-name]" "javax" OR "java ee"` to surface any public code or issues
+
+**Company size check:**
+- Check LinkedIn company page, Crunchbase, RocketReach, or ZoomInfo for employee count
+- Target: 10–99 employees; note but don't discard Micro (1–9) if technical depth is strong
+- Flag and deprioritise companies with >200 employees
+
+#### Priority 3 — Stack Overflow (run if Priority 1–2 return < 5 leads)
+
+Stack Overflow geo-filtering is weak — most users don't disclose location. Expect low geo-signal yield; use to find individual developers whose profiles can be traced to `{{CITY}}`-area companies.
+
+- `site:stackoverflow.com "javax" "jakarta" migration [current year]` — check answerer/asker profile locations
+- `site:stackoverflow.com "Spring Boot 3" "javax" migration "still on" OR "haven't migrated"` — look for company context in the question body
+- `site:stackoverflow.com "javax.persistence" OR "javax.servlet" migration "Spring Boot 3" [current year]`
+- `site:stackoverflow.com "legacy Java EE" OR "Java EE 8" OR "JBoss" OR "WebLogic" "migration" "team" OR "company"` — look for company-context mentions
+
+#### Priority 4 — GitHub (run if Priority 1–2 return < 5 leads)
+
+GitHub is most useful for finding `javax.*` usage in public company repos, not for finding geo-tagged pain posts.
+
+- For each company identified in Priority 2, inspect their public GitHub org directly (more effective than generic searches)
+- `site:github.com "javax to jakarta" issues OR discussions [current year]` — check issue author location/employer in their profile
+- `site:github.com "[company name from Priority 1-2]" "javax" OR "java ee"` — targeted per-company check
+
+#### Priority 5 — LinkedIn Posts and Reddit (run if Priority 1–2 return < 5 leads)
+
+- `site:linkedin.com "Jakarta EE" "migration" "{{CITY}}" [current year]`
+- `site:linkedin.com "Java EE to Jakarta EE" OR "javax to jakarta" "{{CITY}}"`
+- `site:linkedin.com "legacy Java EE" "refactor" OR "modernise" "{{CITY}}"`
+- `site:reddit.com/r/java "javax to jakarta" "company" OR "team" "still on" OR "stuck" [current year]`
+- `site:reddit.com/r/java "Java EE 8" OR "Spring Boot 2" "haven't migrated" OR "still running" [current year]`
+
+> **Note:** LinkedIn `site:` searches frequently return no content due to login walls. If a LinkedIn URL fails to load, skip it — do not retry. Use job board and company research paths instead.
+
+#### Priority 6 — Hacker News and Dev.to (lowest yield; run last if shortlist still < 5)
+
+- `site:news.ycombinator.com "Jakarta EE" OR "javax to jakarta" migration`
+- `site:dev.to "javax to jakarta" OR "Jakarta EE migration" [current year]`
+- `site:medium.com "Java EE to Jakarta EE" "small team" OR "our company" migration blockers`
+- `site:dzone.com "Jakarta EE" "migration" "small team" OR "legacy"`
+
+---
+
+### Signal Taxonomy
+
+#### Tier 1 — High-Confidence Signals (score +3 each)
+
+| Signal | Example |
+|--------|---------|
+| Explicit javax → jakarta migration blocker | "We can't upgrade because our third-party library still uses `javax.persistence`" |
+| Mentions specific Java EE artefacts that are hard to migrate | `javax.ejb`, `javax.faces`, `javax.ws.rs`, `javax.mail`, JBoss EAP, WebLogic, WebSphere |
+| States the company is actively planning or stuck mid-migration | "We started the migration last quarter but hit dependency hell" |
+| Mentions transitive dependency conflicts as the specific problem | "Half our dependencies chain back to a javax version" |
+| Posts a question with no accepted answer | Unanswered SO question about javax → jakarta conflict |
+| LinkedIn post from a senior technical contact describing migration struggles | CTO post: "We're evaluating Jakarta EE 10 migration timelines" |
+
+#### Tier 2 — Medium-Confidence Signals (score +2 each)
+
+| Signal | Example |
+|--------|---------|
+| Running Java 8 or Java 11 with no mention of 17+ | Implies older ecosystem, likely pre-Jakarta |
+| Mentions Spring Boot < 3.x or Spring Framework < 6 | These versions use javax; upgrade requires jakarta migration |
+| Uses JBoss, WildFly, WebLogic, or WebSphere (non-Liberty) application servers | Legacy app server environments strongly correlated with Java EE |
+| References Java EE 7 or Java EE 8 codebase | Directly in scope for the offering |
+| Uses Maven/Gradle with `javax.*` group IDs visible in pom.xml or build.gradle snippets | Direct code signal |
+| Company GitHub repo has unresolved javax → jakarta migration issues open for 3+ months | Indicates stuck or deprioritised effort |
+
+#### Tier 3 — Weak/Contextual Signals (score +1 each)
+
+| Signal | Example |
+|--------|---------|
+| General Java enterprise developer context (no explicit javax mention) | Spring developer at a 20-person software firm |
+| Company description suggests Java-first development | "Enterprise Java solutions" on LinkedIn profile |
+| Job posting for Java EE or Spring developer | Indicates Java codebase exists but stack unclear |
+| Active in Java/enterprise forums generally | Frequent contributor to r/java, Stack Overflow Java tag |
+
+#### Disqualifying Signals (exclude the lead entirely)
+
+- Explicitly states migration is complete: "We finished migrating to Jakarta EE last month"
+- Uses cloud-native/serverless stack exclusively (Quarkus native, Micronaut, Lambda, Node.js) with no enterprise Java mention
+- Clearly a student or individual contributor with no company context
+- Company size signals suggest >200 employees (outside the sweet spot; note and skip)
+- Post is more than 18 months old with no recent follow-up activity
+
+---
+
+### Scan-Sourced Opening Line Examples
+
+Use one of these as the personalised opening line in the generated outreach message (Step 7 of the shared scanning resource):
+
+- *"I came across your Stack Overflow question about javax.persistence compatibility issues…"*
+- *"I noticed your GitHub issue on the javax → jakarta migration blocker in [repo]…"*
+- *"I saw your LinkedIn post about your team's Jakarta EE upgrade timeline…"*
+- *"I spotted your Reddit thread about transitive dependency conflicts during your Jakarta EE migration…"*
+- *"I saw your SEEK listing for a Senior Java Developer — the mention of Spring Boot modernisation caught my attention…"* (job-posting lead)
+- *"I noticed your GitHub repo still uses javax.net.ssl environment configuration — I wanted to ask about your Jakarta migration roadmap…"* (public repo signal)
+- *"I came across [company] through a recruiter listing for a Java engineer, and your Spring + JPA stack caught my attention…"* (recruiter-sourced lead)

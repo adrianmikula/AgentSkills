@@ -212,6 +212,143 @@ When `Output format == "Phone"`, do not generate a scripted conversation. Instea
 
 ---
 
+## Developer Social Scanning — Offering-Specific Signals
+
+When Developer Social Scanning Mode is triggered for this offering, load `resources/developer-social-scanning.md` for the shared scanning framework (platform strategy, geo-filtering, scoring, output format, and handoff). The definitions below are the offering-specific inputs that the shared resource requires.
+
+> **Scan target for this offering:** Small businesses with a public-facing website — especially those running WordPress, Joomla, or other CMS platforms with plugin ecosystems. The free-tier audit is the lead-in; the goal is to find businesses whose publicly detectable tech stack signals high vulnerability exposure.
+
+---
+
+### Platform Query Variants
+
+Supply these query variants to the shared resource's Step 2 platform searches.
+
+> **Execution order note:** For the AI-Era Security Audit (free tier), BuiltWith and direct website tech stack databases are by far the highest-yield source — they return geo-filterable lists of named businesses running vulnerable CMS stacks without any wasted queries. **Run Priority 1 (BuiltWith) first, then Priority 2 (job boards / business directories) for contact discovery.** Social platforms (Priority 3+) are low yield for this offering and should only be used if Priority 1–2 return fewer than 5 qualified leads.
+
+#### Priority 1 — BuiltWith Tech Stack Database (run first; highest yield for this offering)
+
+BuiltWith detects CMS platforms, plugins, and frontend technologies from public HTTP responses. It is reliably fresh (1–6 month crawl cycle) for Australian and UK SMBs and returns geo-filterable company lists.
+
+**WordPress site discovery by city/region:**
+- Read: `https://builtwith.com/cms/wordpress` — filter by country (`{{COUNTRY}}`) for a list of WordPress-using organisations
+- Read: `https://builtwith.com/list-of-sites-using-wordpress/{{COUNTRY_SLUG}}` — e.g. `australia`, `united-kingdom`, `united-states`
+- Search: `site:builtwith.com "{{CITY}}" wordpress` — surfaces BuiltWith profile pages for local WordPress businesses
+
+**Vulnerable or outdated plugin discovery:**
+- Read: `https://builtwith.com/wordpress-plugins/contact-form-7` — lists sites using Contact Form 7 (historically high CVE count)
+- Read: `https://builtwith.com/wordpress-plugins/woocommerce` — e-commerce sites, high-value targets
+- Read: `https://builtwith.com/wordpress-plugins/elementor` — page builder, frequent security advisories
+- Read: `https://builtwith.com/wordpress-plugins/yoast-seo` — very widespread, past RCE vulnerabilities
+- Search: `site:builtwith.com "{{CITY}}" "woocommerce" OR "contact form 7" OR "elementor"` — surfaces local businesses with specific plugin exposure
+
+**Other CMS platforms:**
+- Read: `https://builtwith.com/cms/joomla` — Joomla installs, higher average age = more likely unpatched
+- Search: `site:builtwith.com "{{CITY}}" "joomla" OR "drupal"` — older CMS installs in target city
+
+**From BuiltWith results, capture for each lead:**
+- Business name and website URL
+- Detected CMS and plugin list
+- City/country (verify against target geo)
+- Note any plugins with known recent CVEs (cross-reference against current year advisories if needed)
+
+> **BuiltWith access note:** Some deep filter pages require a BuiltWith account. If a page returns a login wall, fall back to the `site:builtwith.com` search variant, which surfaces publicly cached profile pages without login.
+
+#### Priority 2 — Business Directories and Local Listings (run second; contact discovery)
+
+Once BuiltWith surfaces company names and URLs, use these sources to find contact names for outreach. Also use these as independent lead discovery if BuiltWith returns thin results for a small city.
+
+**Contact discovery for BuiltWith leads:**
+- Visit the company website directly — check About/Team page for owner or manager name
+- Search: `"{{COMPANY_NAME}}" site:linkedin.com` — find the business owner or manager on LinkedIn
+- Search: `"{{COMPANY_NAME}}" "{{CITY}}" contact OR owner OR director` — surface contact details
+
+**Independent lead discovery:**
+- `"{{CITY}}" "{{INDUSTRY}}" small business website 2024 2025` — surfaces local business directories with named entries
+- `site:yellowpages.com.au "{{CITY}}" "{{INDUSTRY}}"` — Australian local business listings with website links
+- `site:truelocal.com.au "{{CITY}}" "{{INDUSTRY}}"` — alternative Australian business directory
+- For each listed business, visit their website and check CMS via browser source (`wp-content` in page source = WordPress)
+
+**From directory results, score each lead:**
+- Has a public WordPress/Joomla/Drupal site with no obvious security badge or "last updated" signal → Tier 2 (+2)
+- Operates in a high-value industry (hospitality, retail, healthcare, professional services, e-commerce) → Tier 2 (+2)
+- No evident IT staff or "web developer" on team page → Tier 1 (+3, signals no one managing security updates)
+- Website has outdated copyright year (2021 or earlier) in footer → Tier 1 (+3, strong signal of neglected maintenance)
+
+#### Priority 3 — Breach News and CVE Sources (run if Priority 1–2 return < 5 leads)
+
+These help surface businesses that have already been hit (warm leads for follow-up) or industries currently under active attack (sector-level targeting).
+
+- Search: `site:bleepingcomputer.com "{{COUNTRY}}" "{{CITY}}" wordpress OR "small business" 2025 OR 2026`
+- Search: `site:cyberdaily.au "{{CITY}}" OR "{{STATE}}" breach OR ransomware 2025 2026` — Australian-specific cyber news
+- Search: `site:cyber.gov.au advisory "wordpress" OR "plugin" 2025` — ASD/ACSC advisories naming vulnerable software
+- Search: `"{{CITY}}" "{{INDUSTRY}}" ransomware OR "data breach" OR "cyber attack" 2025 2026` — local breach news
+
+> **Use of breach results:** Primarily for populating the `[EXAMPLE 1/2/3]` placeholders in the outreach template, not for lead discovery. If a named local business appears in breach news, do not cold-outreach them about the breach they just experienced — this is tone-deaf. Use the examples to illustrate sector risk to *other* businesses.
+
+#### Priority 4 — Social Platforms (run only if Priority 1–3 return < 5 leads)
+
+Social platforms have very low yield for this offering — small business owners don't post about their CMS vulnerabilities. Use only as a last resort.
+
+- `site:reddit.com/r/Australia "wordpress" "hacked" OR "breach" "small business" [current year]`
+- `site:reddit.com/r/brisbane OR r/perth OR r/sydney "website" "hacked" OR "ransomware" [current year]`
+- `site:facebook.com "{{CITY}}" "{{INDUSTRY}}" wordpress site` — local business Facebook pages (rarely useful but occasionally surfaces business owner names)
+
+> **Note:** LinkedIn `site:` searches are not useful for this offering — small business owners rarely post about their website security posture publicly.
+
+---
+
+### Signal Taxonomy
+
+#### Tier 1 — High-Confidence Signals (score +3 each)
+
+| Signal | Example |
+|--------|---------|
+| No IT staff or web developer evident on team/about page | 5-person restaurant team page — all front-of-house, no tech role |
+| Outdated copyright year in website footer (2021 or earlier) | `© 2019 Joe's Plumbing` in page footer |
+| WordPress with known high-CVE plugins detected (Contact Form 7, WooCommerce old version, Elementor) | BuiltWith profile shows Contact Form 7 + WooCommerce |
+| Business is in a high-value data sector: healthcare, legal, accounting, childcare | GP clinic using WordPress with patient booking form |
+| No HTTPS or mixed-content warnings on public site | `http://` URL, browser shows "Not Secure" |
+
+#### Tier 2 — Medium-Confidence Signals (score +2 each)
+
+| Signal | Example |
+|--------|---------|
+| WordPress detected (any version) | BuiltWith: CMS = WordPress |
+| Joomla or Drupal detected | BuiltWith: CMS = Joomla 3.x |
+| Business operates in hospitality, retail, or professional services | Café, hair salon, accountancy firm |
+| Website has online booking, contact form, or payment integration | "Book Now" button connecting to a booking plugin |
+| Business has 1–20 staff (Micro or Small) | LinkedIn: 1–10 employees |
+
+#### Tier 3 — Weak/Contextual Signals (score +1 each)
+
+| Signal | Example |
+|--------|---------|
+| Has a public website at all with any CMS | Any detectable CMS on BuiltWith |
+| Located in target city/region | Google Maps listing shows `{{CITY}}` address |
+| Active social media presence but no apparent IT resources | Active Facebook/Instagram page, basic website |
+
+#### Disqualifying Signals (exclude the lead entirely)
+
+- Business has a dedicated IT/security team or clearly employs a web developer full-time
+- Business is a tech company, software agency, or digital marketing firm (they already know this)
+- Website is hosted on a fully managed platform with no plugin ecosystem (Squarespace, Wix, Shopify SaaS) — no plugin attack surface
+- Business size is clearly >200 employees — outside the free-tier offering's target
+- Website is clearly actively maintained: current copyright year, recent blog posts, modern design with security headers visible
+
+---
+
+### Scan-Sourced Opening Line Examples
+
+Use one of these as the personalised opening line in the generated outreach message (Step 7 of the shared scanning resource):
+
+- *"I came across your website while researching {{INDUSTRY}} businesses in {{CITY}} — I noticed it's running WordPress with [plugin name], which has had some active security advisories recently…"*
+- *"I spotted your business in a local directory and had a quick look at your site — it's running [CMS], which is one of the most commonly targeted platforms in automated attacks right now…"*
+- *"I was looking at {{INDUSTRY}} businesses in {{CITY}} and noticed your site's copyright footer hasn't been updated in a while — often a sign the underlying platform and plugins are due for a check-up…"*
+- *"Your contact form is powered by [plugin] — that plugin has had three CVEs in the past 18 months, and AI tools now make exploiting unpatched versions trivially easy…"*
+
+---
+
 ## Placeholder Reference
 
 | Token | Source Parameter |

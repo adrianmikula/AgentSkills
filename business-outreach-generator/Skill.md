@@ -26,6 +26,10 @@ Do not generate any outreach until the following five parameters have been colle
 
 **If Offering is "Auto-Recommend Best Fit"**, collect the company website up front (see Auto-Recommendation Engine below) before selecting an offering.
 
+**If Offering is "Jakarta Migration Risk Assessment" and the human does not provide a specific company name or website**, do not ask for one — trigger the **Developer Social Scanning Mode** instead (see below). Output format, country, city, and industry are still collected first to scope the scan.
+
+**If Offering is "AI-Era Security Audit Report" and the human does not provide a specific company name or website**, do not ask for one — trigger the **Website Security Social Scanning Mode** instead (see below). Output format, country, city, and industry are still collected first to scope the scan.
+
 **For ALL offerings when Output format is "Phone"**, also collect:
 
 | # | Parameter | Options / Format |
@@ -126,9 +130,32 @@ If the human overrides, proceed with their manual choice. If they confirm, proce
 
 ---
 
+## Website Security Social Scanning Mode
+
+When `Offering == "AI-Era Security Audit Report"` **and no specific company name or website has been provided**, and the human has not been routed to City Risk Landscape Mode, trigger Website Security Social Scanning Mode using the two resources below in combination:
+
+- `resources/developer-social-scanning.md` — shared scanning framework (platform strategy, geo-filtering, scoring, output format, handoff)
+- `resources/ai-era-security-audit-offer.md` — **Developer Social Scanning — Offering-Specific Signals** section (query variants, signal taxonomy, disqualifiers, opening line examples)
+
+That mode will:
+1. Confirm the target country, city/region, and industry sector (if not already collected)
+2. Scan BuiltWith for WordPress, Joomla, and Drupal sites in the target city, filtering for vulnerable plugin combinations and neglected-maintenance signals
+3. Cross-reference with local business directories to surface contact names and business details
+4. Score and rank each discovered lead by signal strength against the AI-Era Security Audit free-tier criteria
+5. Present a prioritised shortlist of candidate businesses with the source evidence, matched signals, and a suggested outreach angle
+6. Offer to generate a targeted outreach message (Email, LinkedIn, or Phone brief) for any selected candidate, pre-populating all known parameters from the scan findings
+
+Once the human selects a candidate from the shortlist, return to this skill with `Offering`, `City`, `Country`, `Industry`, `Business Size`, `Company Name`, and `Contact Name` pre-populated where discoverable, and continue from **Step 2 — Select Output Template**.
+
+> **References:** `resources/developer-social-scanning.md` — shared framework | `resources/ai-era-security-audit-offer.md` — offering-specific signals
+
+---
+
 ## City Risk Landscape Mode
 
-When `Offering == "AI-Era Security Audit Report"` (or auto-recommended to it) **and no specific company name or website has been provided**, do not ask for a company name. Instead, trigger the **City Risk Landscape** skill automatically.
+When `Offering == "AI-Era Security Audit Report"` (or auto-recommended to it) **and no specific company name or website has been provided**, **and the human is asking for a city-level risk overview, risk chart, or industry landscape** (rather than a direct lead shortlist), trigger the **City Risk Landscape** skill automatically.
+
+> **Mode disambiguation:** If the human's intent is to get a shortlist of specific businesses to contact, use **Website Security Social Scanning Mode** above. If the human's intent is to understand which industries in a city are highest-risk (e.g. "what does the risk landscape look like in Perth?"), use **City Risk Landscape Mode**. When intent is ambiguous, ask: *"Would you like a list of specific businesses to contact, or a city-level risk overview chart first?"*
 
 That skill will:
 1. Confirm the target city and country
@@ -143,11 +170,31 @@ Once the human has selected a target industry from the landscape map, return to 
 
 ---
 
+## Developer Social Scanning Mode
+
+When `Offering == "Jakarta Migration Risk Assessment"` **and no specific company name or website has been provided**, do not ask for a company name. Instead, trigger Developer Social Scanning Mode using the two resources below in combination:
+
+- `resources/developer-social-scanning.md` — shared scanning framework (platform strategy, geo-filtering, scoring, output format, handoff)
+- `resources/jakarta-migration-risk-assessment-offer.md` — **Developer Social Scanning — Offering-Specific Signals** section (query variants, signal taxonomy, disqualifiers, opening line examples)
+
+That mode will:
+1. Confirm the target country, city/region, and industry sector (if not already collected)
+2. Scan developer social, Q&A, and forum platforms (Stack Overflow, GitHub, Reddit, LinkedIn, Hacker News, Dev.to, and similar) for public posts or comments that signal active Jakarta EE migration pain, legacy Java EE maintenance burden, or related technical blockers
+3. Score and rank each discovered lead by signal strength against the Jakarta Migration Risk Assessment offering criteria
+4. Present a prioritised shortlist of candidate companies or individuals with the source post/comment, the matched signals, and a suggested outreach angle
+5. Offer to generate a targeted outreach message (Email, LinkedIn, or Phone brief) for any selected candidate, pre-populating all known parameters from the scan findings
+
+Once the human selects a candidate from the shortlist, return to this skill with `Offering`, `City`, `Country`, `Industry`, `Business Size`, `Company Name`, and `Contact Name` pre-populated where discoverable, and continue from **Step 2 — Select Output Template**.
+
+> **References:** `resources/developer-social-scanning.md` — shared framework | `resources/jakarta-migration-risk-assessment-offer.md` — offering-specific signals
+
+---
+
 ## Available Offerings
 
 | Offering Name | Resource File | Status | Description |
 |---------------|-------------|--------|-------------|
-| AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free public-facing website audit for small businesses; paid repository-level security analysis for tech/enterprise Java development teams |
+| AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free public-facing website audit for small businesses; paid repository-level security analysis for tech/enterprise Java development teams. Supports Website Security Social Scanning Mode (BuiltWith-first) when no company is provided. |
 | Jakarta Migration Risk Assessment | `resources/jakarta-migration-risk-assessment-offer.md` | Active | Paid consultation for Java EE to Jakarta EE migration risk assessment for tech companies (1-99 staff) |
 | AI Codebase Entropy Audit | `resources/ai-codebase-entropy-audit-offer.md` | Active | Paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing) |
 
@@ -164,8 +211,10 @@ After collecting the five onboarding parameters, select the template and resourc
 Based on the collected `Offering` parameter:
 
 - If `Offering == "Auto-Recommend Best Fit"`, follow the Auto-Recommendation Engine instructions above first. Once the human confirms the final offering, load the corresponding resource below.
-- If `Offering == "AI-Era Security Audit Report"`, load `resources/ai-era-security-audit-offer.md`
-- If `Offering == "Jakarta Migration Risk Assessment"`, load `resources/jakarta-migration-risk-assessment-offer.md`
+- If `Offering == "AI-Era Security Audit Report"` **and no company name or website has been provided**, trigger the **Website Security Social Scanning Mode** (see section above) using `resources/developer-social-scanning.md` and the offering-specific signals in `resources/ai-era-security-audit-offer.md`. Do not proceed to Step 2 until the human has selected a candidate from the scan results and confirmed they want to generate outreach for that candidate.
+- If `Offering == "AI-Era Security Audit Report"` **and a company name or website has been provided**, load `resources/ai-era-security-audit-offer.md` and proceed normally.
+- If `Offering == "Jakarta Migration Risk Assessment"` **and no company name or website has been provided**, trigger the **Developer Social Scanning Mode** (see section above) using `resources/developer-social-scanning.md` and the offering-specific signals in `resources/jakarta-migration-risk-assessment-offer.md`. Do not proceed to Step 2 until the human has selected a candidate from the scan results and confirmed they want to generate outreach for that candidate.
+- If `Offering == "Jakarta Migration Risk Assessment"` **and a company name or website has been provided**, load `resources/jakarta-migration-risk-assessment-offer.md` and proceed normally.
 - If `Offering == "AI Codebase Entropy Audit"`, load `resources/ai-codebase-entropy-audit-offer.md`
 
 Follow the research instructions in the loaded resource file. Note that Jakarta Migration and AI Codebase Entropy Audit outreach do NOT require breach research; instead, they require identifying senior technical staff on the company website (with LinkedIn as fallback).
