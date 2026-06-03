@@ -7,6 +7,7 @@ SKILL_DIRS=(
   "business-outreach-generator"
   "cognitive-sustainability"
   "dev-level-up"
+  "city-risk-landscape"
 )
 
 echo "=== Validating plugin manifests ==="

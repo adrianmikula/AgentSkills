@@ -126,6 +126,23 @@ If the human overrides, proceed with their manual choice. If they confirm, proce
 
 ---
 
+## City Risk Landscape Mode
+
+When `Offering == "AI-Era Security Audit Report"` (or auto-recommended to it) **and no specific company name or website has been provided**, do not ask for a company name. Instead, trigger the **City Risk Landscape** skill automatically.
+
+That skill will:
+1. Confirm the target city and country
+2. Research active CVEs and local breach examples for the current month
+3. Score Perth (or target-city) SMB industry subcategories by AI attack likelihood and customer data sensitivity
+4. Render an interactive bubble chart of the risk landscape
+5. Offer to hand back here to generate phone briefs for specific businesses in the top-priority categories
+
+Once the human has selected a target industry from the landscape map, return to this skill with `Offering`, `City`, `Country`, and `Industry` pre-populated and continue from **Step 2 — Select Output Template**.
+
+> **Reference:** `city-risk-landscape` skill — `Skill.md`
+
+---
+
 ## Available Offerings
 
 | Offering Name | Resource File | Status | Description |
