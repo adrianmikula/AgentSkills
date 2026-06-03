@@ -1,11 +1,26 @@
 ---
 name: City Risk Landscape
-description: Generate an interactive AI-era cyber risk landscape map for a target city. Scores industry subcategories by AI attack likelihood and customer data sensitivity using live CVE research, then renders an interactive bubble chart to identify which businesses to prioritise for security outreach.
+description: Generate interactive AI-era cyber risk charts for a target city. Landscape mode scores industry subcategories by attack likelihood and data sensitivity (bubble chart). Timeline mode plots WordPress/WooCommerce exploit trends over 24 months with switchable Y-axes for exploit volume, time-to-exploit vs time-to-patch (with Wordfence 30-day delay reference line), and cost-to-exploit.
 ---
 
 ## Overview
 
-This Skill generates an AI-era cyber risk landscape map for a target city. It is used to identify *which* businesses to contact — not to generate outreach for a specific company. After rendering an interactive bubble chart of industry subcategories scored by attack likelihood and data sensitivity, it offers to hand off to the **Business Outreach Generator** skill to produce targeted outreach for selected industries.
+This Skill generates AI-era cyber risk charts for a target city. It operates in two modes: **Landscape** (bubble chart of industry subcategories scored by attack likelihood and data sensitivity) and **Timeline** (time-series chart of WordPress/WooCommerce exploit trends over the past 24 months). Both modes are used to identify *which* businesses to contact and *why the urgency is real* — not to generate outreach for a specific company. After rendering the chart, it offers to hand off to the **Business Outreach Generator** skill.
+
+---
+
+## Chart Mode Selection
+
+This Skill supports two visualisation modes. Ask the human which they want before generating:
+
+| Mode | Chart Type | Best For |
+|------|-----------|----------|
+| **Landscape** (default) | Bubble chart — industry subcategories plotted by attack likelihood vs data sensitivity | Identifying *which industries* to prioritise for outreach |
+| **Timeline** | Line/bar chart — WordPress/WooCommerce exploit trends over the past 24 months | Understanding *how fast* the threat is accelerating and making the urgency case |
+
+If no preference is stated, default to **Landscape** mode.
+
+If the human wants both, generate Landscape first, then Timeline.
 
 ---
 
@@ -59,6 +74,28 @@ Record which industry verticals are most frequently targeted in the target count
 Search: `data breach [target city OR target country] small business [current year]`
 
 Record 2–3 local or near-local examples to use as social proof in follow-up outreach.
+
+### D. Historical Exploit Volume (Timeline mode only)
+
+Only perform this research when generating a **Timeline** chart.
+
+Search: `WordPress WooCommerce plugin CVE exploit monthly statistics [year-1] [year] site:nvd.nist.gov OR site:wordfence.com OR site:wpscan.com`
+
+For each of the past 24 calendar months, collect or estimate:
+- Number of new CVEs published affecting WordPress/WooCommerce plugins
+- Number confirmed actively exploited in the wild that month, broken down by incident outcome category:
+  - **Ransomware** — encryption/extortion of site or hosting environment
+  - **Data leak** — exfiltration of customer PII, credentials, or payment data (includes skimmers/Magecart)
+  - **Outage** — defacement, DDoS, or service disruption with no data theft
+  - **Money theft** — direct financial fraud, payment redirection, or account takeover for financial gain
+  - If a known incident spans multiple categories, count it in its *primary* outcome category
+  - If category breakdown is unavailable for a month, distribute confirmed exploits proportionally using the closest available period's ratio and note the estimate
+- Average CVSS score for that month's exploited CVEs
+- Average days from CVE publication to first confirmed exploit (time-to-exploit)
+- Average days from CVE publication to patch release (time-to-patch)
+- Estimated cost-to-exploit for a non-technical attacker (use the cost estimation framework from the AI-Era Vulnerability Scanner's `resources/ai-era-cost-estimation.md` if loaded, otherwise use ordinal: Trivial <$50, Low $50–$500, Medium $500–$5k, High $5k–$50k)
+
+If monthly granularity is unavailable for older months, interpolate from quarterly reports and note the interpolation.
 
 ---
 
@@ -115,7 +152,13 @@ Relative estimate of transaction value + customer record volume per typical site
 
 ---
 
-## Step 4 — Generate the Risk Landscape Chart
+## Step 4 — Generate the Chart
+
+Generate the chart(s) selected in the Mode Selection step.
+
+---
+
+### Mode A — Landscape Chart (Bubble)
 
 Produce an interactive bubble chart visualisation using the scored data.
 
@@ -129,6 +172,30 @@ Produce an interactive bubble chart visualisation using the scored data.
 - Legend: Colour tier key + bubble size key
 
 **Visual style:** Flat design, Claude.ai CSS variables, Chart.js bubble chart.
+
+---
+
+### Mode B — Timeline Chart (Line/Bar)
+
+Produce an interactive time-series chart covering the past 24 calendar months.
+
+**X-axis:** Calendar month (past 24 months, oldest left)
+
+**Y-axis selector:** Render a toggle/tab control so the human can switch between three Y-axis views without reloading:
+
+| Y-axis | Series | Chart type |
+|--------|--------|------------|
+| **Y1 — Exploit volume** | Stacked bar — confirmed-in-wild exploits per month broken into four categories: **Ransomware** (red), **Data leak** (amber), **Outage** (blue), **Money theft** (green). Total new CVEs per month shown as a separate line overlay (secondary Y-axis, right). | Stacked bar + line overlay |
+| **Y2 — Time-to-exploit vs time-to-patch** | Average days from publish to first exploit (line) + average days from publish to patch (line) + **Wordfence 30-day free-tier patch delay** (horizontal dotted reference line at y = 30) | Multi-line |
+| **Y3 — Cost-to-exploit** | Average estimated cost-to-exploit per month (line), plotted on a log scale if range exceeds 2 orders of magnitude | Line |
+
+**Tooltips:** On hover over any data point — show month, metric value, notable CVEs that month, and a 1-sentence narrative (e.g. "March 2025: CVE-2025-XXXX drove a spike in skimmer deployments against WooCommerce checkout pages").
+
+**Annotations:** Mark any month where a Mythos-class or frontier AI model was publicly released or benchmarked, with a vertical dashed line labelled with the model name — to visually correlate AI capability jumps with exploit volume changes.
+
+**Legend:** Series labels + reference line explanation ("Wordfence free-tier delay: patches available to paid users 30 days before free users").
+
+**Visual style:** Flat design, Claude.ai CSS variables, Chart.js line/bar chart. Y-axis toggle implemented as button group above the chart.
 
 ---
 

@@ -1,10 +1,6 @@
 # Claude skill build artifacts
 *.zip
-
-# Extracted skill folders (built from ZIP)
-**/ai-era-vulnerability-scanner-skill/
-**/cognitive-sustainability-skill/
-
+dist/
 
 #Ignore windsurf AI rules
 .windsurfrules

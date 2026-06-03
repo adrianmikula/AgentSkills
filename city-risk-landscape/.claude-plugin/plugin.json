@@ -1,0 +1,5 @@
+{
+  "name": "city-risk-landscape",
+  "description": "Generate interactive AI-era cyber risk charts for a target city. Landscape mode scores industry subcategories by attack likelihood and data sensitivity (bubble chart). Timeline mode plots WordPress/WooCommerce exploit trends over 24 months with switchable Y-axes for exploit volume, time-to-exploit vs time-to-patch, and cost-to-exploit.",
+  "version": "1.0.0"
+}

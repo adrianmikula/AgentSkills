@@ -42,3 +42,6 @@ done
 
 echo ""
 echo "=== All builds complete ==="
+echo ""
+echo "=== Output ZIPs ==="
+ls -lh "${SCRIPT_DIR}/dist/"*"-skill.zip" 2>/dev/null || echo "  (none found)"

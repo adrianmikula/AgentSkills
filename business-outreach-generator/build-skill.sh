@@ -3,12 +3,14 @@ set -euo pipefail
 
 SKILL_NAME="business-outreach-generator-skill"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 STAGING_DIR="${SCRIPT_DIR}/${SKILL_NAME}"
-OUTPUT_ZIP="${SCRIPT_DIR}/${SKILL_NAME}.zip"
+OUTPUT_ZIP="${ROOT_DIR}/dist/${SKILL_NAME}.zip"
 
 echo "Building Claude skill: ${SKILL_NAME}"
 
 # Clean previous staging dir and ZIP
+mkdir -p "${ROOT_DIR}/dist"
 rm -rf "${STAGING_DIR}"
 rm -f "${OUTPUT_ZIP}"
 
