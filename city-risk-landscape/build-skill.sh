@@ -16,9 +16,15 @@ rm -f "${OUTPUT_ZIP}"
 
 # Create staging structure
 mkdir -p "${STAGING_DIR}"
+mkdir -p "${STAGING_DIR}/resources"
 
 # Copy Skill.md to staging root
 cp "${SCRIPT_DIR}/Skill.md" "${STAGING_DIR}/Skill.md"
+
+# Copy resources
+if [ -d "${SCRIPT_DIR}/resources" ]; then
+  cp -r "${SCRIPT_DIR}/resources/"* "${STAGING_DIR}/resources/"
+fi
 
 # Package: ZIP must have the skill folder as its root (not files at root)
 cd "${SCRIPT_DIR}"
