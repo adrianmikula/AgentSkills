@@ -252,22 +252,35 @@ BuiltWith detects CMS platforms, plugins, and frontend technologies from public 
 - City/country (verify against target geo)
 - Note any plugins with known recent CVEs (cross-reference against current year advisories if needed)
 
-> **BuiltWith access note:** Some deep filter pages require a BuiltWith account. If a page returns a login wall, fall back to the `site:builtwith.com` search variant, which surfaces publicly cached profile pages without login.
+> **BuiltWith access note — bot wall (confirmed in live scan):** `trends.builtwith.com/websitelist/*` geo-filtered list pages return a JavaScript bot-challenge (`BWSTATE` cookie + redirect) that blocks AI reading. The `site:builtwith.com` search fallback also returns empty cached summaries for these list pages. **If BuiltWith list pages are inaccessible, skip immediately to the Agency Portfolio Fallback below** — do not retry BuiltWith list pages or waste queries on them.
+
+**Agency Portfolio Fallback (use when BuiltWith list pages are bot-walled):**
+
+WordPress agency portfolio pages are the most effective substitute — a single page names 5–15 real local businesses with confirmed WordPress builds, often with industry and client details. Search:
+- `"{{CITY}}" wordpress agency portfolio clients site:*.com.au` — surfaces Australian agency sites listing Perth SMB clients
+- `"{{CITY}}" "wordpress development" OR "wordpress websites" portfolio OR clients OR "case studies"` — broader version
+- `top wordpress agencies "{{CITY}}" 2025` — find agency listicle pages (e.g. Bluelinks, Itomic, AB Web Developers) then read their portfolio/clients pages
+
+From each agency portfolio, capture every named client that matches target geo and is in a high-value sector (healthcare, hospitality, professional services, retail, legal). Visit each client's website directly to confirm WordPress signals (`wp-content` in page source, footer attribution to agency, WordPress-pattern URL slugs like `/blog/`, `/events/event/`). Confirmed agency clients score an automatic Tier 2 (+2) for WordPress CMS detected.
+
+> **Note:** `yellowpages.com.au` and `truelocal.com.au` return 403 Forbidden to AI reads (confirmed in live Perth scan). Use the agency portfolio path instead for Australian cities.
 
 #### Priority 2 — Business Directories and Local Listings (run second; contact discovery)
 
-Once BuiltWith surfaces company names and URLs, use these sources to find contact names for outreach. Also use these as independent lead discovery if BuiltWith returns thin results for a small city.
+Once Priority 1 (BuiltWith or agency portfolio fallback) surfaces company names and URLs, use these sources to find contact names for outreach. Also use these as independent lead discovery if Priority 1 returns fewer than 5 leads.
 
-**Contact discovery for BuiltWith leads:**
+**Contact discovery for Priority 1 leads:**
 - Visit the company website directly — check About/Team page for owner or manager name
 - Search: `"{{COMPANY_NAME}}" site:linkedin.com` — find the business owner or manager on LinkedIn
 - Search: `"{{COMPANY_NAME}}" "{{CITY}}" contact OR owner OR director` — surface contact details
 
 **Independent lead discovery:**
 - `"{{CITY}}" "{{INDUSTRY}}" small business website 2024 2025` — surfaces local business directories with named entries
-- `site:yellowpages.com.au "{{CITY}}" "{{INDUSTRY}}"` — Australian local business listings with website links
-- `site:truelocal.com.au "{{CITY}}" "{{INDUSTRY}}"` — alternative Australian business directory
-- For each listed business, visit their website and check CMS via browser source (`wp-content` in page source = WordPress)
+- `"{{CITY}}" "{{INDUSTRY}}" wordpress site` — directly surfaces businesses mentioning their CMS in blog posts, reviews, or directory entries
+- `site:google.com/maps "{{CITY}}" "{{INDUSTRY}}"` — Google Maps listings often include website links; visit each to check for WordPress signals
+- For each listed business, visit their website and check for WordPress signals: `wp-content` in page source, `/wp-json/` endpoint, or footer agency attribution
+
+> **Note for Australian cities:** `yellowpages.com.au` and `truelocal.com.au` return 403 Forbidden to AI reads — do not attempt.
 
 **From directory results, score each lead:**
 - Has a public WordPress/Joomla/Drupal site with no obvious security badge or "last updated" signal → Tier 2 (+2)

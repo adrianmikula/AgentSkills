@@ -210,6 +210,72 @@ Ponemon patch management time-to-remediate [current year]
 
 ---
 
+## 10. Simulation Base Rates (Simulation Mode)
+
+### Primary sources
+
+| Parameter | Source | URL | Query method |
+|-----------|--------|-----|--------------|
+| **Business survival/closure risk** | VikingCloud 2025 SMB Threat Landscape Report | `https://www.vikingcloud.com/press-news/successful-cyberattacks-would-force-1-in-5-smbs-out-of-business-according-to-new-vikingcloud-research` | Search for "20% SMB close after cyberattack" — primary source replacing debunked "60% within 6 months" statistic |
+| | Hiscox Cyber Readiness Report 2024 | `https://www.hiscox.com/articles/over-two-thirds-us-businesses-suffered-increase-cyber-attacks-reveals-annual-hiscox-cyber` | 20% of businesses reported cyberattack nearly rendered them insolvent |
+| **Cost of breach (SMB)** | Microsoft SMB Cybersecurity Report | `https://cdn-dynmedia-1.microsoft.com/is/content/microsoftcorp/microsoft/final/en-us/microsoft-brand/documents/SMBCybersecurity-Report-Final.pdf` | Average total cost for SMB cyberattack: $254,445 |
+| | IBM Cost of a Data Breach 2025 | `https://www.ibm.com/security/data-breach` | Global average $4.44M; US $10.22M; Ransom = 15% of total cost |
+| | Hyetech Australia | `https://hyetech.com.au/` (blog/reports section) | AUD $97,000 average Australian SMB recovery cost |
+| **Downtime & recovery** | Sophos State of Ransomware 2025 | `https://www.sophos.com/en-us/content/state-of-ransomware` | 53% recover within 1 week; 33% take 1–6 months; median recovery metrics |
+| | BD Emerson 2026 Statistics | `https://www.bdemerson.com/article/small-business-cybersecurity-statistics` | 51% SMBs report 8–24 hours downtime; 50% take 24+ hours to recover |
+| **Customer churn** | Hiscox 2024 + BD Emerson | See above | 43% lost customers after attack; 70% of consumers less likely to continue |
+| **AI-era attack compression** | arXiv 2605.06713 (May 2025) | `https://arxiv.org/abs/2605.06713` | "Agentic AI and the Industrialization of Cyber Offense" — attack compression reducing time/skill/cost |
+| | UK NCSC assessment | NCSC annual report and threat assessments | AI will "almost certainly continue to make cyber intrusion operations more effective and efficient through 2027" |
+| **Australian attack rate** | ASD Annual Cyber Threat Report 2024–25 | `https://www.cyber.gov.au/about-us/view-all-content/reports-and-statistics/annual-cyber-threat-report-2024-2025` | 38% of Australian SMBs faced an attack attempt last year; 84,700 reports (1 every 6 minutes) |
+| **Ransomware prevalence** | Verizon DBIR 2025 | `https://www.verizon.com/business/resources/reports/dbir/` | 88% of SMB breaches involve ransomware; exploitation increased 34% |
+| **Cyber insurance penetration** | BD Emerson 2026 Statistics | See above | Only 18% of small businesses have cyber insurance |
+| **Regulatory fines (AU)** | OAIC enforcement history | `https://www.oaic.gov.au/about-the-OAIC/our-regulatory-approach/guide-to-privacy-regulatory-action` | ACL penalty $5.8M (2023) establishes precedent for Privacy Act civil penalties |
+
+### Industry daily rates (for downtime cost modeling)
+
+| Industry | Estimated Daily Rate (AUD) | Source/Rationale |
+|----------|---------------------------|------------------|
+| Restaurant/Café | $1,200 | Lost revenue + staff wages + spoilage |
+| Retail (independent) | $800 | Lost sales + staff wages |
+| Allied Health Clinic | $1,500 | Appointment revenue + staff costs + rescheduling |
+| Church/NFP | $400 | Limited transactional revenue, mostly operational |
+| Education/Childcare | $600 | Per-student fees + staff + regulatory risk |
+| Trades/Services | $900 | Per-job revenue + rescheduling costs |
+| Other | $700 | Weighted average |
+
+### Security posture multipliers
+
+| Posture | Multiplier | Rationale |
+|---------|------------|-----------|
+| None (no IT, unpatched) | 1.0× | Baseline — unprotected exposure |
+| Basic (Wordfence Free, no backups) | 0.6× | Basic protection, delayed patching (30-day free tier lag) |
+| Moderate (Wordfence Premium, occasional backups) | 0.35× | Real-time protection, some backup coverage |
+| Good (patched, offsite backups, MFA) | 0.15× | Defense in depth, rapid recovery capability |
+
+### Location modifiers
+
+| Location | Year 1 | Year 2 | Year 3+ | Rationale |
+|----------|--------|--------|---------|-----------|
+| Perth WA | 0.7× | 0.85× | 1.0× | Attacker scanning latency — less targeted initially |
+| Sydney NSW | 1.0× | 1.0× | 1.0× | Major metro baseline |
+| Melbourne VIC | 1.0× | 1.0× | 1.0× | Major metro baseline |
+| Brisbane QLD | 1.0× | 1.0× | 1.0× | Major metro baseline |
+| Regional Australia | 0.8× | 0.9× | 1.0× | Moderate latency as attackers expand targeting |
+| Colorado USA | 1.1× | 1.1× | 1.1× | Higher baseline threat exposure (US market) |
+
+### Mythos-era multiplier
+
+Apply 1.35× compounding annual increase to attack probability from Year 2 onward:
+- Year 1: 1.0×
+- Year 2: 1.35×
+- Year 3: 1.35² = 1.82×
+- Year 4: 1.35³ = 2.46×
+- Year 5: 1.35⁴ = 3.32×
+
+**Source**: arXiv 2605.06713 (May 2025) and NCSC assessment documenting agentic AI attack compression reducing attacker time, skill, and cost requirements.
+
+---
+
 ## Source Freshness Rules
 
 1. **Always use the most recently published report** — check the publication date before extracting figures.

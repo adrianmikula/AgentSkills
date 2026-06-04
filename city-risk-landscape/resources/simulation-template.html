@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CONFIG: Update title for target business -->
+    <title><!-- CONFIG: Location --> <!-- CONFIG: Industry --> — 5-Year Survival Simulation</title>
+    
+    <!-- Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- CONFIG: Copy simulation-template.css and customize if needed -->
+    <style>
+        /* Paste contents of simulation-template.css here */
+        /* Or link to external file: <link rel="stylesheet" href="simulation-template.css"> */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- CONFIG: Update title and subtitle for target business -->
+        <h1><!-- CONFIG: Location --> <!-- CONFIG: Industry --> — 5-Year Survival Simulation</h1>
+        <p class="subtitle"><!-- CONFIG: Business scenario description (e.g., "Micro SMB scenario, 3-12 staff, Perth WA location") --></p>
+        
+        <div class="main-grid">
+            <div class="control-panel">
+                <div class="panel-title">Business Profile</div>
+                
+                <!-- CONFIG: Industry selector - customize options and values -->
+                <div class="param-item">
+                    <span class="param-label">Industry</span>
+                    <select id="industrySelect">
+                        <!-- 
+                        CONFIG: Add industry options matching your params.industryModifiers
+                        Format: <option value="key" selected>Label ($X regulatory)</option>
+                        
+                        Examples:
+                        <option value="health" selected>Allied Health Clinic ($35k regulatory)</option>
+                        <option value="accounting">Accounting/Tax ($35k regulatory)</option>
+                        <option value="restaurant">Restaurant/Café (no regulatory)</option>
+                        <option value="retail">Retail (independent) (no regulatory)</option>
+                        -->
+                        <option value="default" selected>Default Industry ($0 regulatory)</option>
+                    </select>
+                </div>
+                
+                <!-- Standard: Security Approach selector -->
+                <div class="param-item control">
+                    <span class="param-label">Security Approach</span>
+                    <select id="securityBundleSelect">
+                        <option value="none" selected>None — No security investment</option>
+                        <option value="traditional">Traditional — Backups, firewall, MFA, staff training</option>
+                        <option value="ai-powered">AI-Powered — Automated detection, response, air-gapped recovery</option>
+                    </select>
+                    <small>Traditional = human-driven. AI-powered = automated defense.</small>
+                </div>
+                
+                <!-- CONFIG: Revenue slider - adjust min/max/default for sector -->
+                <div class="param-item control">
+                    <span class="param-label">Annual Revenue</span>
+                    <!-- CONFIG: Adjust min, max, step, and value -->
+                    <input type="range" id="revenueSlider" min="100000" max="2000000" step="50000" value="250000">
+                    <span class="param-value" id="revenueValue">$250,000</span>
+                </div>
+                
+                <!-- Standard: Profit Margin selector -->
+                <div class="param-item control">
+                    <span class="param-label">Profit Margin</span>
+                    <select id="profitMarginSelect">
+                        <option value="low" selected>Low (5-10%) — High vulnerability</option>
+                        <option value="medium">Medium (15-20%) — Moderate</option>
+                        <option value="high">High (25%+) — Resilient</option>
+                    </select>
+                </div>
+                
+                <!-- Standard: AI Business Tools toggle -->
+                <div class="param-item control">
+                    <span class="param-label">AI Business Tools (PwC 2026)</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="aiBusinessToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="param-value" id="aiBusinessValue">No — Manual processes</span>
+                    <small>Yes = +15% revenue, -15% staff costs, +35% attack surface</small>
+                </div>
+                
+                <!-- CONFIG: Online presence toggle - rename for context -->
+                <div class="param-item control">
+                    <!-- CONFIG: Rename label (e.g., "Online Booking", "Client Portal", "E-commerce") -->
+                    <span class="param-label"><!-- CONFIG: Online presence label --></span>
+                    <label class="toggle">
+                        <input type="checkbox" id="onlineBookingToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="param-value" id="onlineBookingValue">Yes (+0.25× risk)</span>
+                </div>
+                
+                <!-- Standard: Cyber Insurance toggle -->
+                <div class="param-item control">
+                    <span class="param-label">Cyber Insurance</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="insuranceToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="param-value" id="insuranceValue">No</span>
+                </div>
+            </div>
+            
+            <!-- Charts Grid - Standard layout -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">Business Survival Probability (%)</div>
+                    <canvas id="survivalChart"></canvas>
+                    <div class="footnote">
+                        Probability of remaining operational over 5 years. Gap between A/C shows value of security investment.
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Annual Attack Probability (%)</div>
+                    <canvas id="attackChart"></canvas>
+                    <div class="footnote">
+                        Yearly probability of at least one successful breach. Mythos-era multiplier 1.35× annual compounding from Year 2.
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Financial Impact Breakdown (Year 5)</div>
+                    <canvas id="financialChart"></canvas>
+                    <!-- CONFIG: Update footnote for sector regulatory context -->
+                    <div class="footnote">
+                        Single-breach cost components. <!-- CONFIG: Regulatory context -->
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Cumulative Expected Cost (5-Year)</div>
+                    <canvas id="cumulativeChart"></canvas>
+                    <div class="footnote">
+                        Expected value = attack probability × financial impact. Mythos-era 1.35× compounding from Year 2.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cost Summary Panel - Standard -->
+        <div class="cost-panel">
+            <div class="cost-item danger">
+                <div class="cost-label">Status Quo (A)</div>
+                <div class="cost-value" id="costA">$0</div>
+            </div>
+            <div class="cost-item success">
+                <div class="cost-label">Full Audit (C)</div>
+                <div class="cost-value" id="costC">$0</div>
+            </div>
+            <div class="cost-item warning">
+                <div class="cost-label">Cost of Inaction</div>
+                <div class="cost-value" id="costInaction">$0</div>
+            </div>
+            <div class="cost-item">
+                <div class="cost-label">ROI Ratio</div>
+                <div class="cost-value" id="roiRatio">0.0×</div>
+            </div>
+        </div>
+        
+        <!-- CONFIG: Methodology - customize for sector -->
+        <div class="methodology">
+            <h3>Methodology & Data Sources</h3>
+            <ul>
+                <li><strong>Attack probability (EXPONENTIAL):</strong> Base rate 38% from ASD Annual Cyber Threat Report 2024-25. Traditional security DECAYS: 50% effectiveness lost per year as AI attacks evolve—static defenses cannot adapt. AI-Powered security IMPROVES: 8% effectiveness gain per year as system learns. AI-era 1.35× compounding from Year 2.</li>
+                <li><strong>Security Approach:</strong> <strong>None:</strong> No protection (2× recovery time). <strong>Traditional:</strong> Human-driven—MFA, backups, training. Year 1: 75% attack reduction. Year 5: Only 6% reduction as AI attacks bypass static defenses. <strong>AI-Powered:</strong> Automated defense—anomaly detection, automated response. Year 1: 94% reduction. Year 5: 97% reduction as AI adapts. <em>Traditional security is becoming OBSOLETE—AI attacks evolve faster than human-driven defenses can adapt.</em></li>
+                <li><strong>AI Business Tools (EXPONENTIAL):</strong> Yes/No toggle. AI businesses capture market share EXPONENTIALLY: Year 1 +25%, Year 2 +56%, Year 3 +95%, Year 4 +144%, Year 5 +205%. Staff cost savings immediate: 15% reduction. Attack surface increase: fixed +35%.</li>
+                
+                <!-- CONFIG: Add sector-specific financial parameters -->
+                <li><!-- CONFIG: e.g., "Financial sector specifics: Recovery cost AUD $97k (Hyetech). Accounting/financial daily rate $1,800. Regulatory exposure $35,000 (OAIC precedent)." --></li>
+                
+                <li><strong>Reputational Damage (EXPONENTIAL):</strong> Breach harm compounds virally as bad news spreads. Initial hit: 12% revenue loss. Year 2: 14.4% (20% amplification). Year 3: 17.3%. Year 4: 20.7%. Year 5: 24.9%. Digital permanence + network effects create lasting damage that grows, not fades.</li>
+                <li><strong>Survival model (with CASH FLOW CATASTROPHE):</strong> 20% baseline closure risk (VikingCloud 2025). Revenue-scaled: &lt;$500k=35%, $500k-$2M=20%, >$2M=10%. <strong>Cash flow insolvency:</strong> Low-margin businesses have 1.5 months cash reserves vs 6+ months for high-margin. If breach cost exceeds available cash, immediate insolvency risk up to 80%. Profit margin determines both resilience multiplier AND cash buffer depth.</li>
+                
+                <!-- CONFIG: Add sector-specific key insight -->
+                <li><!-- CONFIG: e.g., "Key Insight: Financial services face heightened regulatory scrutiny..." --></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- CONFIG: Copy simulation-template.js and customize the CONFIG sections -->
+    <script>
+        /* Paste contents of simulation-template.js here */
+        /* Or link to external file: <script src="simulation-template.js"><\/script> */
+    </script>
+</body>
+</html>
