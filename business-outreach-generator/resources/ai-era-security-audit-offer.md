@@ -348,6 +348,9 @@ Social platforms have very low yield for this offering — small business owners
 - Website is hosted on a fully managed platform with no plugin ecosystem (Squarespace, Wix, Shopify SaaS) — no plugin attack surface
 - Business size is clearly >200 employees — outside the free-tier offering's target
 - Website is clearly actively maintained: current copyright year, recent blog posts, modern design with security headers visible
+- Business has a current, active web agency relationship (evidence within the last 12 months) — see Universal Lead Disqualifiers in `Skill.md`
+- Business requires security clearance, a government security pass, or site induction/pass for contractors — see Universal Lead Disqualifiers in `Skill.md`
+- Business is clearly based outside the target city/region `{{CITY}}` — see Universal Lead Disqualifiers in `Skill.md`
 
 ---
 

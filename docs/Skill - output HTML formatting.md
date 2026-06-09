@@ -55,7 +55,7 @@ When the human selects **High-level business impact summary**, the output MUST b
 4. **Findings & Business Risk** — one card per finding. Each card has: a severity badge (top right), a plain-English title, 2–3 plain-English paragraphs (what it is, why it matters now, consequence if exploited), and a three-column impact row (Exploit Difficulty / Breach Impact / Fix Cost). No technical commands or code blocks in this section.
 5. **AI-Era Context Callout** — dark panel with icon, headed "Why 'We Haven't Been Hacked Yet' Is No Longer a Valid Risk Assessment". Cites current HTB/benchmark data (numeric %). 2–3 sentences. Mandatory — include in every business report.
 6. **Remediation Roadmap** — dark background (`#1a1a2e`), three numbered phases: This Week / Within 2 Weeks / Ongoing. Each phase has a colour-coded tag (red/orange/green), a heading, and a bullet list of actions in plain English. No code or commands.
-7. **Footer** — dark background (`#1a1a2e`), left-aligned CodeMedic Consulting logo (`assets/codemedic-logo-transparent.png`) at `height: 48px`, company name "CodeMedic Consulting", scan target domain, report date, "Passive external observation only", "Confidential". Two linked text items on the right: "[CodeMedic Consulting](https://codemedicconsulting.wordpress.com/)" and "[Adrian Mikula on LinkedIn](https://www.linkedin.com/in/adrianmikula/)". Links use `--paper` colour with underline on hover.
+7. **Footer** — company name, domain, report date, "Passive external observation only", "Confidential".
 
 ### Design Tokens (use exactly)
 
@@ -101,81 +101,6 @@ Body typeface: 'Inter' (Google Fonts) — all other text
 
 Save as: `[domain-slug]-business-report.html`
 Example: `thewebshop-business-report.html`
-
----
-
-## Technical Risk Summary — HTML Output Specification
-
-When the human selects **Detailed technical summary**, the output MUST be a standalone HTML file delivered via `present_files`. Plain text, markdown, or inline prose is not acceptable for this format. Follow this specification exactly.
-
-### Required Sections (in order)
-
-1. **Cover** — dark background (`#1a1a2e`), company name + "AI-Era Security Audit — Technical Risk Summary" headline in Playfair Display serif, scan metadata (target, scan mode, date, scanner version) in a flex row of labelled fields.
-2. **Executive Summary** — red accent background (`#c0392b`), 2–3 sentences naming the most urgent technical finding and its immediate exploitability (AI-era chaining potential). No bullet points.
-3. **Finding Overview Scorecard** — 4-card grid showing counts for 🔴 Critical, 🟠 High, 🟡 Medium, ✅ Pass. Large Playfair Display numerals, colour-coded backgrounds.
-4. **Detailed Findings** — one card per finding. Each card has: a severity badge (top right), a technical title, a technical description paragraph, a concise **Evidence** subsection (key header names and values, endpoint paths, file paths — not full copy-pasteable dumps), a concise **Exploitation** subsection (high-level attack chain in bullet points, not step-by-step reproduction), and a concise **Remediation** subsection (the fix approach, tool names, and where to apply it — not full config diffs or exact commands). Use `<code>` inline for individual header names, file paths, or short values; avoid large `<pre>` blocks.
-5. **AI-Era Context Callout** — dark panel with icon, headed "Why 'We Haven't Been Hacked Yet' Is No Longer a Valid Risk Assessment". Cites current HTB/benchmark data (numeric %). 2–3 sentences. Mandatory — include in every technical report.
-6. **Remediation Roadmap** — dark background (`#1a1a2e`), three numbered phases: This Week / Within 2 Weeks / Ongoing. Each phase has a colour-coded tag (red/orange/green), a heading, and a bullet list of actions in concise technical language. No code blocks or config excerpts.
-7. **Appendix — Tools & Coverage** — list of tools, signatures, and heuristics used during the scan; scope limitations; false-positive caveats.
-8. **Footer** — dark background (`#1a1a2e`), left-aligned CodeMedic Consulting logo (`assets/codemedic-logo-transparent.png`) at `height: 48px`, company name "CodeMedic Consulting", scan target domain, report date, "Passive external observation only", "Confidential". Two linked text items on the right: "[CodeMedic Consulting](https://codemedicconsulting.wordpress.com/)" and "[Adrian Mikula on LinkedIn](https://www.linkedin.com/in/adrianmikula/)". Links use `--paper` colour with underline on hover.
-
-### Report Size Limit
-
-- The entire generated HTML source must stay under **8,000 tokens** (approximately 6,000–7,000 words of English prose).
-- If the scan produces more than ~8 findings, prioritise Critical and High findings; collapse Medium findings into a single grouped card or omit the lowest-priority ones.
-- This is a **risk summary report**, not a refactoring guide. Every word must answer: *What is the risk? How does an attacker use it? What is the fix direction?* Omit implementation tutorials, full config files, and copy-pasteable shell commands.
-
-### Design Tokens (use exactly)
-
-Reuse the same design tokens defined in the **Business Impact Summary** specification:
-
-```
---ink: #1a1a2e         Background: dark panel
---paper: #f8f7f2       Background: page
---accent: #c0392b      Executive summary bar, Phase 1 circle, Critical badges
---amber: #e67e22       High badges, Phase 2 circle
---green: #27ae60       Pass badges, Phase 3 circle
---slate: #5a6478       Muted label text
---rule: #d5d0c5        Divider lines
-
-Display typeface: 'Playfair Display' (Google Fonts) — cover h1, section h2, score numerals
-Body typeface: 'Inter' (Google Fonts) — all other text
-Code typeface: 'JetBrains Mono' (Google Fonts) — inline <code> only, sparingly
-```
-
-### Severity Card Colours
-
-Reuse the same severity card colours defined in the **Business Impact Summary** specification:
-
-| Severity | Background | Border |
-|----------|------------|--------|
-| Critical | `#f8e8e6` | `#e74c3c` with 4px left border |
-| High     | `#fef5ec` | `#e67e22` with 4px left border |
-| Medium   | `#fffde7` | `#f1c40f` with 4px left border |
-| Pass     | `#eafaf1` | `#27ae60` with 4px left border |
-
-### Writing Rules for Technical Section
-
-- Use precise technical terminology: CVE, HTTP header, REST API, JSON, endpoint, `.htaccess`, `wp-json`, `functions.php`, shell commands, and file paths are all permitted and expected.
-- Every finding must include: **Evidence** (the observable facts: missing headers, exposed paths, version strings), **Exploitation** (the attack chain in 3–5 concise bullets), and **Remediation** (the fix direction, relevant tools, and where to apply the change).
-- Evidence should be a short paragraph or a few inline `<code>` snippets naming the key headers/values — not a full `<pre>` block of raw HTTP or curl output. Show the *conclusion*, not the raw transcript.
-- Remediation should state *what* to change and *which tool* to use (e.g., "add `X-Frame-Options: DENY` in Vercel Edge Middleware" or "run `npm audit fix` then bump to Next.js ≥14.x"). Do not include full config files, diffs, or copy-pasteable shell scripts.
-- Reference specific tools and versions where helpful: `npm audit fix`, `socket.dev`, `Snyk`, `trivy`, `git-secrets`, `truffleHog`, `semgrep`, `CodeQL`.
-- Inline `<code>` tags are permitted for short values (header names, paths, version strings). Avoid large `<pre>` blocks entirely.
-
-### HTML Structure Rules
-
-- Single self-contained `.html` file — no external CSS files, no JavaScript frameworks.
-- All fonts loaded via Google Fonts `@import` in the `<style>` block (add `'JetBrains Mono'` for code blocks).
-- All section padding: `56px 72px` (desktop). No responsive breakpoints required.
-- `<code>` tags may be used sparingly for short inline values (header names, file paths). Avoid large `<pre>` blocks.
-- Severity badges: `font-size: 10px`, `font-weight: 700`, `letter-spacing: 0.12em`, `text-transform: uppercase`, `padding: 4px 10px`, `border-radius: 4px`.
-- Include a `@media print` block: `{ .finding { break-inside: avoid; } .phase { break-inside: avoid; } pre { break-inside: avoid; } }`
-
-### File Naming
-
-Save as: `[domain-slug]-technical-report.html`
-Example: `thewebshop-technical-report.html`
 
 ---
 
@@ -317,3 +242,10 @@ Load the following resources when scanning the relevant area:
 | Public website URL (all prod-mode categories P1–P7) | `resources/prod-mode-website-scan.md` | Scanning a public-facing website for observable AI-era vulnerabilities |
 | WordPress-specific passive enumeration | `resources/prod-mode-wordpress-scan.md` | When `X-Powered-By`, `/wp-json/`, `robots.txt`, or `<meta name="generator">` indicates WordPress during a prod-mode scan |
 | Cost estimation after scan complete | `resources/ai-era-cost-estimation.md` | After all findings have been identified and scored |
+
+---
+
+## Related Skills
+
+- **City Risk Landscape** — use this skill *before* scanning a specific company, when the human wants to identify which businesses in a city to target. It scores Perth (or target-city) SMB industries by AI attack likelihood and customer data sensitivity, then hands off here once a specific business has been selected.
+- **Business Outreach Generator** — after completing a scan, use this skill to generate personalised outreach emails, LinkedIn messages, or phone briefs for the scanned business.

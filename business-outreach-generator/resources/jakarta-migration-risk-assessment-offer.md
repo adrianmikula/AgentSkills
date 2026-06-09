@@ -334,6 +334,8 @@ GitHub is most useful for finding `javax.*` usage in public company repos, not f
 - Clearly a student or individual contributor with no company context
 - Company size signals suggest >200 employees (outside the sweet spot; note and skip)
 - Post is more than 18 months old with no recent follow-up activity
+- Business requires security clearance, a government security pass, or site induction/pass for contractors — see Universal Lead Disqualifiers in `Skill.md`
+- Business is clearly based outside the target city/region `{{CITY}}` — see Universal Lead Disqualifiers in `Skill.md`
 
 ---
 

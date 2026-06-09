@@ -60,6 +60,8 @@ Verify this company is a good fit for the AI Codebase Entropy Audit:
 - Clearly use only modern cloud-native stacks with no legacy concerns (Node.js, Go, Python, serverless only)
 - Are brand new startups with no established codebase
 - Have fewer than 5 staff or a single developer
+- Require security clearance, a government security pass, or site induction/pass for contractors — see Universal Lead Disqualifiers in `Skill.md`
+- Are clearly based outside the target city/region `{{CITY}}` — see Universal Lead Disqualifiers in `Skill.md`
 
 ### Step 4 — Localise Content
 

@@ -83,6 +83,10 @@ If the human selects **Auto-Recommend Best Fit**, change the onboarding order sl
 4. **Ask the human to confirm the recommended offering** or override it with a different choice.
 5. **Then collect Output format** and any remaining parameters.
 
+#### Pre-Screen: Universal Disqualifiers
+
+Before evaluating offering fit, apply the **Universal Lead Disqualifiers** (see section below). If either disqualifier is triggered, skip this company entirely — do not score or recommend an offering for them.
+
 #### Decision Rules
 
 For each offering, evaluate the signals found during research and assign a fit score.
@@ -197,8 +201,80 @@ Once the human selects a candidate from the shortlist, return to this skill with
 | AI-Era Security Audit Report | `resources/ai-era-security-audit-offer.md` | Active | Free public-facing website audit for small businesses; paid repository-level security analysis for tech/enterprise Java development teams. Supports Website Security Social Scanning Mode (BuiltWith-first) when no company is provided. |
 | Jakarta Migration Risk Assessment | `resources/jakarta-migration-risk-assessment-offer.md` | Active | Paid consultation for Java EE to Jakarta EE migration risk assessment for tech companies (1-99 staff) |
 | AI Codebase Entropy Audit | `resources/ai-codebase-entropy-audit-offer.md` | Active | Paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing) |
+| Agency Security Pipeline | `resources/agency-security-pipeline-offer.md` | Active | Managed white-label CI/CD security pipeline for web agencies: sandboxed staging, automated smoke tests, instant production rollback, and a client-facing security score dashboard. Pilot entry at AUD $3,000–$5,000 for 3 sites; ongoing SaaS licence from AUD $600–$1,500/month based on portfolio size. Target: agency owners managing 10+ client sites on WordPress/Winter CMS/October CMS or similar plugin-based stacks. |
 
 **To add a new offering:** Create a new resource file in `resources/`, then add a row to this table and add the routing condition in the Conditional Routing section below.
+
+---
+
+## Universal Lead Disqualifiers
+
+**Apply these checks before generating any outreach**, regardless of offering, output format, or how the lead was sourced (manual entry, scanning, or auto-recommend). Conditions 2 and 3 are hard skips. Condition 1 (web agency) has a two-path flow that may convert the lead rather than skip it — follow its instructions carefully.
+
+### 1 — Business Already Has a Web Agency (Recent)
+
+When there is credible, recent evidence that the business is currently engaged with a web agency or managed-web-services provider ("recent" means within the last 12 months), **do not immediately skip**. Instead, follow the two-path flow below.
+
+**Signals to check:**
+- Website footer or "Built by" credit linking to an active, external agency
+- Recent (≤12 months) blog post, press release, or social media announcement naming a web or digital agency as their partner or builder
+- LinkedIn posts from agency staff crediting this business as a current client
+- "Agency" or "web partner" listed in their technology or vendor section
+
+**Recency caveat:** If the agency credit appears older than 12 months with no further evidence the relationship is ongoing (e.g. no recent updates to the site, no recent social mentions), **do not disqualify** — the relationship may have lapsed. Note the uncertainty to the human and let them decide.
+
+#### Two-Path Flow When an Agency Is Confirmed
+
+**Step 1 — Identify the agency's website.** Extract the agency name and URL from the "Built by" credit, footer link, or social mention.
+
+**Step 2 — Offer to scan the agency's site.** Ask the human:
+
+> *"[Company Name] appears to currently work with [Agency Name] ([agency URL]). Before skipping, would you like me to run a quick security scan of the agency's own website? If their web agency has security problems on their own site, that's a very compelling cold-call angle — you can show the client that their current provider isn't practising what they preach."*
+
+**Step 3a — If the human says yes:** Trigger a **Prod Mode scan** of the agency's website using the **AI-Era Vulnerability Scanner** skill (`ai-era-vulnerability-scanner/Skill.md`). Run the full P1–P7 passive checklist against the agency's URL. Once complete, present the findings summary to the human.
+
+- If **significant findings exist** (any 🔴 Critical or 🟠 High rated issue): **do not skip this lead**. Instead, continue to outreach generation and inject the agency scan results as the primary cold-call angle (see **Agency Scan Angle** below).
+- If **no significant findings** (only 🟡 Medium or clean): inform the human — *"[Agency Name]'s site looks reasonably well-secured. This lead may be a harder pitch — their agency appears competent. Skip, or continue anyway?"* — and follow their decision.
+
+**Step 3b — If the human says no:** Apply the original skip behaviour — *"Skipping [Company Name] — they may already have this covered. Move to the next candidate?"*
+
+#### Agency Scan Angle (when significant findings exist)
+
+When outreach is generated for a lead where the agency scan revealed findings, adjust the message to lead with the agency credibility gap rather than the standard offering pitch. Inject the following into the outreach:
+
+- **Phone brief:** Add an "Agency Scan Summary" section listing the top 2–3 findings from the agency's own site, framed as: *"Their current web agency ([Agency Name]) has [finding] on their own website — which raises a question about the security posture of the sites they build for clients."*
+- **Email/LinkedIn:** Open with a personalised observation referencing the agency's site weakness before pivoting to the offering. Example framing: *"I noticed your website was built by [Agency Name] — I had a quick look at their own site and spotted [finding]. If that's the standard they apply to their own infrastructure, it's worth checking what's underneath yours."*
+- **Tone:** Keep this factual and non-aggressive. The goal is to raise a legitimate question, not to trash a competitor. Stick to observable, verifiable findings only.
+
+### 2 — Business Requires Security Clearance or a Site Pass
+
+Skip the business if there is any indication that in-person or contracted work requires a security clearance, government security pass, working-with-children check, police clearance, or site induction/pass that would restrict the ability to deliver the service.
+
+**Signals to check:**
+- Business operates in defence, government, intelligence, critical infrastructure, or classified research
+- Job postings or RFPs explicitly require NV1/NV2, Baseline, Top Secret, SC, DV, or equivalent clearances
+- Site access requirements listed on their website (e.g. "all contractors must hold a current security pass")
+- Industry category is defence contracting, classified government services, or similar
+- Business is located on a restricted military, government, or critical-infrastructure site
+
+**If disqualified:** State *"[Company Name] appears to require security clearance or a site pass for contractors. Skipping — this engagement may not be viable without clearance. Move to the next candidate?"*
+
+### 3 — Business Is Not Located in the Target City/Region
+
+Skip the business if it is clearly based outside the target city or region provided in `{{CITY}}`. The goal is locally-relevant outreach — a poor geo match weakens the pitch and wastes effort.
+
+**How to verify location:**
+- Check the business website's Contact page, footer address, or Google Maps listing
+- Check LinkedIn Company Page location field
+- Check ABN Lookup, Companies House, or the relevant national business registry for a registered address
+
+**Matching rules:**
+- **Exact match or adjacent suburb** — proceed without comment
+- **Same metro area / greater region** — proceed; note the suburb or district in the outreach if it adds local colour (e.g. "I noticed your office is in [suburb], just outside the CBD…")
+- **Different city, same state/county** — flag to the human: *"[Company Name] appears to be based in [actual city], not [target city]. Still want to proceed?"* Only continue if the human confirms.
+- **Different state, country, or clearly national/remote** — skip. State *"[Company Name] doesn't appear to be based in {{CITY}}. Skipping. Move to the next candidate?"*
+
+**Exception — scanning mode:** When operating in Developer or Website Security Social Scanning Mode, geo-verification is applied as part of Step 4 (Geo-Filtering) in `resources/developer-social-scanning.md`. Leads flagged as "Geo-unverified" should still have location confirmed before outreach is generated.
 
 ---
 
@@ -216,6 +292,8 @@ Based on the collected `Offering` parameter:
 - If `Offering == "Jakarta Migration Risk Assessment"` **and no company name or website has been provided**, trigger the **Developer Social Scanning Mode** (see section above) using `resources/developer-social-scanning.md` and the offering-specific signals in `resources/jakarta-migration-risk-assessment-offer.md`. Do not proceed to Step 2 until the human has selected a candidate from the scan results and confirmed they want to generate outreach for that candidate.
 - If `Offering == "Jakarta Migration Risk Assessment"` **and a company name or website has been provided**, load `resources/jakarta-migration-risk-assessment-offer.md` and proceed normally.
 - If `Offering == "AI Codebase Entropy Audit"`, load `resources/ai-codebase-entropy-audit-offer.md`
+- If `Offering == "Agency Security Pipeline"` **and no company name or website has been provided**, prompt the human: *"Which web agency would you like to target? Provide a name, URL, or city and I'll identify candidates."* Once a target agency is confirmed, run a passive scan of the agency's own site and 2–3 of their portfolio client sites using the AI-Era Vulnerability Scanner skill (Prod Mode). Use the findings to populate the scan-specific placeholders in the template, then load `resources/agency-security-pipeline-offer.md` and proceed.
+- If `Offering == "Agency Security Pipeline"` **and a company name or website has been provided**, run the passive scan as above, then load `resources/agency-security-pipeline-offer.md` and proceed normally.
 
 Follow the research instructions in the loaded resource file. Note that Jakarta Migration and AI Codebase Entropy Audit outreach do NOT require breach research; instead, they require identifying senior technical staff on the company website (with LinkedIn as fallback).
 
