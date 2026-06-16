@@ -31,6 +31,7 @@ The Skill will then generate a complete, ready-to-send message with recent local
 | AI-Era Security Audit Report | A free, no-obligation security audit report for small businesses. Emphasises the new AI-era threat landscape where automated attacks make even the smallest business a viable target. Also offers a paid repository-level analysis for tech/enterprise Java teams. |
 | Jakarta Migration Risk Assessment | A paid, multi-day consultation for tech companies (1-99 staff) to assess Java EE to Jakarta EE migration risks. Includes automated tooling, deep bytecode dependency analysis, and supply-chain security evaluation. Deliverable: detailed PDF reports with refactoring guides. |
 | AI Codebase Entropy Audit | A paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing). Includes an optional AI SDLC Observability Dashboard follow-on. |
+| Website Design | Modern, responsive website design for small businesses — three tiers from static brochure sites to full eCommerce platforms. Includes optional add-ons: social account setup, security patching, and content updates. |
 
 ## Extending the Skill
 

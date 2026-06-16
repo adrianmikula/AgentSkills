@@ -25,6 +25,8 @@ cp "${SCRIPT_DIR}/resources/ai-era-security-audit-offer.md" "${STAGING_DIR}/reso
 cp "${SCRIPT_DIR}/resources/jakarta-migration-risk-assessment-offer.md" "${STAGING_DIR}/resources/"
 cp "${SCRIPT_DIR}/resources/ai-codebase-entropy-audit-offer.md" "${STAGING_DIR}/resources/"
 cp "${SCRIPT_DIR}/resources/developer-social-scanning.md" "${STAGING_DIR}/resources/"
+cp "${SCRIPT_DIR}/resources/agency-security-pipeline-offer.md" "${STAGING_DIR}/resources/"
+cp "${SCRIPT_DIR}/resources/website-design-offer.md" "${STAGING_DIR}/resources/"
 
 # Package: ZIP must have the skill folder as its root (not files at root)
 cd "${SCRIPT_DIR}"

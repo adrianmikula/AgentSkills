@@ -117,6 +117,12 @@ For each offering, evaluate the signals found during research and assign a fit s
   - No backend development or API engineering mentioned
 - **Rationale:** This is a deep, paid engineering audit. It requires substantial codebase complexity and a technical team large enough to act on the findings.
 
+**Website Design**
+- **Strongly recommend** if the company has no public website at all, or only a social media page (Facebook/Instagram) as their online presence. Also strongly recommend if their existing site is clearly outdated (copyright 2022 or earlier, non-responsive, broken layout). **Signal boost:** If the company recently changed name or ownership (under new management, rebranded, sold in the past 12 months), this is a strong additional indicator — new owners almost always need to establish their own brand identity online.
+- **Recommend** if the company has a basic single-page site with minimal information, a free-subdomain site (e.g. `.wordpress.com`, `.wixsite.com`), or a "coming soon" page. Also recommend if they're an active local business with good reviews but no digital storefront.
+- **Discourage** if the company already has a professional, modern, actively maintained website with up-to-date content, responsive design, and clear SEO signals.
+- **Rationale:** Small local businesses without a website are losing customers to competitors who show up in local search. A modern site directly drives foot traffic, calls, and online orders. Recent ownership changes make this an especially timely conversation, since new owners are already in a mindset of making changes.
+
 #### Presenting the Recommendation
 
 Present the result in this exact format:
@@ -202,6 +208,7 @@ Once the human selects a candidate from the shortlist, return to this skill with
 | Jakarta Migration Risk Assessment | `resources/jakarta-migration-risk-assessment-offer.md` | Active | Paid consultation for Java EE to Jakarta EE migration risk assessment for tech companies (1-99 staff) |
 | AI Codebase Entropy Audit | `resources/ai-codebase-entropy-audit-offer.md` | Active | Paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing) |
 | Agency Security Pipeline | `resources/agency-security-pipeline-offer.md` | Active | Managed white-label CI/CD security pipeline for web agencies: sandboxed staging, automated smoke tests, instant production rollback, and a client-facing security score dashboard. Pilot entry at AUD $3,000–$5,000 for 3 sites; ongoing SaaS licence from AUD $600–$1,500/month based on portfolio size. Target: agency owners managing 10+ client sites on WordPress/Winter CMS/October CMS or similar plugin-based stacks. |
+| Website Design | `resources/website-design-offer.md` | Active | Modern, responsive website design for small businesses — three tiers from static brochure sites to full eCommerce platforms. Includes optional add-ons: social account setup, security patching, and content updates. Supports Website Security Social Scanning Mode (directory-first) when no company is provided. |
 
 **To add a new offering:** Create a new resource file in `resources/`, then add a row to this table and add the routing condition in the Conditional Routing section below.
 
@@ -294,6 +301,8 @@ Based on the collected `Offering` parameter:
 - If `Offering == "AI Codebase Entropy Audit"`, load `resources/ai-codebase-entropy-audit-offer.md`
 - If `Offering == "Agency Security Pipeline"` **and no company name or website has been provided**, prompt the human: *"Which web agency would you like to target? Provide a name, URL, or city and I'll identify candidates."* Once a target agency is confirmed, run a passive scan of the agency's own site and 2–3 of their portfolio client sites using the AI-Era Vulnerability Scanner skill (Prod Mode). Use the findings to populate the scan-specific placeholders in the template, then load `resources/agency-security-pipeline-offer.md` and proceed.
 - If `Offering == "Agency Security Pipeline"` **and a company name or website has been provided**, run the passive scan as above, then load `resources/agency-security-pipeline-offer.md` and proceed normally.
+- If `Offering == "Website Design"` **and no company name or website has been provided**, trigger the **Website Security Social Scanning Mode** using `resources/developer-social-scanning.md` and the offering-specific signals in `resources/website-design-offer.md` (Priority 1 — business directories / Google Maps). Do not proceed to Step 2 until the human has selected a candidate from the scan results and confirmed they want to generate outreach for that candidate.
+- If `Offering == "Website Design"` **and a company name or website has been provided**, load `resources/website-design-offer.md` and proceed normally.
 
 Follow the research instructions in the loaded resource file. Note that Jakarta Migration and AI Codebase Entropy Audit outreach do NOT require breach research; instead, they require identifying senior technical staff on the company website (with LinkedIn as fallback).
 
