@@ -52,7 +52,7 @@ When the human selects **High-level business impact summary**, the output MUST b
 1. **Cover** — dark background (`#1a1a2e`), company name + "AI-Era Security Audit — Business Impact Summary" headline in Playfair Display serif, scan metadata (target, scan type, date, audience) in a flex row of labelled fields.
 2. **Executive Summary** — red accent background (`#c0392b`), 2–3 sentences in plain English naming the most urgent risk and why it is dangerous now (AI context). No bullet points.
 3. **Finding Overview Scorecard** — 4-card grid showing counts for 🔴 Critical, 🟠 High, 🟡 Medium, ✅ Pass. Large Playfair Display numerals, colour-coded backgrounds.
-4. **Findings & Business Risk** — one card per finding. Each card has: a severity badge (top right), a plain-English title, 2–3 plain-English paragraphs (what it is, why it matters now, consequence if exploited), and a three-column impact row (Exploit Difficulty / Breach Impact / Fix Cost). No technical commands or code blocks in this section.
+4. **Findings & Business Risk** — one card per finding. Each card has: a severity badge (top right), a Threat Evolution badge (e.g. `+25%` or `NEW`, styled as a small monospace badge indicating the change in danger level over the past 12 months, placed next to the severity badge), impact category tags (small coloured badges listed inline below the severity badge), a plain-English title, 2–3 plain-English paragraphs (what it is, why it matters now, consequence if exploited), and a three-column impact row (Exploit Difficulty / Breach Impact / Fix Cost). No technical commands or code blocks in this section.
 5. **AI-Era Context Callout** — dark panel with icon, headed "Why 'We Haven't Been Hacked Yet' Is No Longer a Valid Risk Assessment". Cites current HTB/benchmark data (numeric %). 2–3 sentences. Mandatory — include in every business report.
 6. **Remediation Roadmap** — dark background (`#1a1a2e`), three numbered phases: This Week / Within 2 Weeks / Ongoing. Each phase has a colour-coded tag (red/orange/green), a heading, and a bullet list of actions in plain English. No code or commands.
 7. **Footer** — company name, domain, report date, "Passive external observation only", "Confidential".
@@ -71,6 +71,23 @@ When the human selects **High-level business impact summary**, the output MUST b
 Display typeface: 'Playfair Display' (Google Fonts) — cover h1, section h2, score numerals
 Body typeface: 'Inter' (Google Fonts) — all other text
 ```
+
+### Impact Tag Badges
+
+| Tag | Background | Text Colour |
+|-----|------------|-------------|
+| Account Access | `#e8f0fe` | `#1a73e8` |
+| Data Leak | `#fef3e8` | `#e67e22` |
+| Financial Theft | `#e6f7e6` | `#1b8a1b` |
+| Ransomware | `#fce8e6` | `#c0392b` |
+| Outage | `#f3e8ff` | `#7b1fa2` |
+| Defacement | `#e0f7fa` | `#00838f` |
+
+Impact tag badges: `font-size: 9px`, `font-weight: 600`, `letter-spacing: 0.04em`, `text-transform: capitalize`, `padding: 2px 8px`, `border-radius: 3px`, `display: inline-block`, `margin: 0 4px 4px 0`. Listed inline after the severity badge.
+
+### Threat Evolution Badge
+
+Threat Evolution badge: `font-size: 10px`, `font-weight: 700`, `font-family: 'JetBrains Mono', monospace`, `letter-spacing: 0.04em`, `padding: 3px 8px`, `border-radius: 4px`, `background: #1a1a2e`, `color: #f1c40f`, `display: inline-block`, `margin-left: 6px`. Placed inline next to the severity badge.
 
 ### Severity Card Colours
 
@@ -118,55 +135,63 @@ Example: `thewebshop-business-report.html`
 
 ### Group A — Supply Chain (npm / PyPI)
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 1 | Release-age cooldown configured | 🔴 Critical | `.npmrc` missing `min-release-age`; pnpm/bun/uv equivalents absent |
-| 2 | Lifecycle scripts disabled | 🔴 Critical | `.npmrc` missing `ignore-scripts=true`; no pnpm `onlyBuiltDependencies` allowlist |
-| 3 | Transitive dependency surface audited | 🟠 High | >500 packages for a small project; AI-added deps with no human review |
-| 4 | Deps have fast time-to-patch | 🟠 High | Low OpenSSF Scorecard scores; unmaintained packages; single-maintainer packages |
-| 5 | No git-URL dependencies | 🔴 Critical | `git+https://`, `github:`, `gitlab:` in `package.json`; `.npmrc` missing `allow-git=none` |
-| 6 | SLSA provenance not sole trust signal | 🟠 High | Pipeline accepts packages on provenance alone; no behavioral analysis at install time |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 1 | Release-age cooldown configured | 🔴 Critical | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +95% | `.npmrc` missing `min-release-age`; pnpm/bun/uv equivalents absent |
+| 2 | Lifecycle scripts disabled | 🔴 Critical | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +150% | `.npmrc` missing `ignore-scripts=true`; no pnpm `onlyBuiltDependencies` allowlist |
+| 3 | Transitive dependency surface audited | 🟠 High | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +95% | >500 packages for a small project; AI-added deps with no human review |
+| 4 | Deps have fast time-to-patch | 🟠 High | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +35% | Low OpenSSF Scorecard scores; unmaintained packages; single-maintainer packages |
+| 5 | No git-URL dependencies | 🔴 Critical | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +95% | `git+https://`, `github:`, `gitlab:` in `package.json`; `.npmrc` missing `allow-git=none` |
+| 6 | SLSA provenance not sole trust signal | 🟠 High | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak | +95% | Pipeline accepts packages on provenance alone; no behavioral analysis at install time |
 
 ### Group B — CI/CD & Pipeline
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 7 | Supply chain checks in pipeline | 🟠 High | No `npm audit`; no SCA tool (socket.dev/Snyk); no lockfile; `npm install` instead of `npm ci` |
-| 8 | GitHub Actions hardened | 🔴 Critical | `pull_request_target` + fork checkout; floating `uses:` refs (`@main`); shared cache scope |
-| 9 | Fully automated release pipeline | 🟠 High | Manual deploy steps; devs with direct prod credentials; no automated rollback |
-| 10 | No secrets sprawl | 🔴 Critical | Hardcoded tokens/keys in code; `.npmrc` auth tokens committed; MCP config files with embedded keys |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 7 | Supply chain checks in pipeline | 🟠 High | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak, ⏱️ Outage | +70% | No `npm audit`; no SCA tool (socket.dev/Snyk); no lockfile; `npm install` instead of `npm ci` |
+| 8 | GitHub Actions hardened | 🔴 Critical | 💀 Ransomware, 💰 Financial Theft, 📦 Data Leak, 🎨 Defacement | +70% | `pull_request_target` + fork checkout; floating `uses:` refs (`@main`); shared cache scope |
+| 9 | Fully automated release pipeline | 🟠 High | 🎨 Defacement, ⏱️ Outage, 💀 Ransomware | +95% | Manual deploy steps; devs with direct prod credentials; no automated rollback |
+| 10 | No secrets sprawl | 🔴 Critical | 🔑 Account Access, 📦 Data Leak, 💰 Financial Theft | +35% | Hardcoded tokens/keys in code; `.npmrc` auth tokens committed; MCP config files with embedded keys |
 
 ### Group C — Zero-Trust Inner Perimeter
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 11 | Build scripts use least privilege | 🔴 Critical | `sudo` in setup scripts; Docker steps running as root; CI jobs with over-broad IAM roles |
-| 12 | Build/test tooling is audited | 🟠 High | `vm2` in use; EOL headless browser versions; unaudited Jest/Vitest plugins; EOL test frameworks |
-| 13 | Zero-trust applied internally | 🔴 Critical | IP-only allowlisting for internal services; no mTLS; CI runners with broad internal network access |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 11 | Build scripts use least privilege | 🔴 Critical | 💀 Ransomware, ⏱️ Outage, 📦 Data Leak | +70% | `sudo` in setup scripts; Docker steps running as root; CI jobs with over-broad IAM roles |
+| 12 | Build/test tooling is audited | 🟠 High | 💀 Ransomware, 📦 Data Leak, ⏱️ Outage | +40% | `vm2` in use; EOL headless browser versions; unaudited Jest/Vitest plugins; EOL test frameworks |
+| 13 | Zero-trust applied internally | 🔴 Critical | 🔑 Account Access, 📦 Data Leak, 💀 Ransomware | +100% | IP-only allowlisting for internal services; no mTLS; CI runners with broad internal network access |
 
 ### Group D — Frontend & Code Exposure
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 14 | No source maps or raw JS in production | 🟡 Medium | `.map` files served publicly; `devtool: 'source-map'` in prod config; unminified bundles |
-| 15 | Security gates on AI-generated code | 🟠 High | No SAST on PRs; `[skip ci]` bypass allowed; no minimum reviewer enforcement |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 14 | No source maps or raw JS in production | 🟡 Medium | 📦 Data Leak, 🔑 Account Access | +30% | `.map` files served publicly; `devtool: 'source-map'` in prod config; unminified bundles |
+| 15 | Security gates on AI-generated code | 🟠 High | 📦 Data Leak, 🎨 Defacement, 🔑 Account Access | +90% | No SAST on PRs; `[skip ci]` bypass allowed; no minimum reviewer enforcement |
 
 ### Group E — Auth & AI Integration
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 16 | Crypto-agility / quantum-safe path | 🟠 High | Hardcoded `RS256`/`ES256`; no algorithm abstraction; no PQC migration plan |
-| 17 | LLM/MCP guardrails present | 🔴 Critical | Unsanitized user input into prompts; over-permissioned MCP tools; no output filtering; MCP packages unpinned |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 16 | Crypto-agility / quantum-safe path | 🟠 High | 📦 Data Leak, 💰 Financial Theft | +100% | Hardcoded `RS256`/`ES256`; no algorithm abstraction; no PQC migration plan |
+| 17 | LLM/MCP guardrails present | 🔴 Critical | 📦 Data Leak, 🔑 Account Access, 🎨 Defacement, 💰 Financial Theft | +90% | Unsanitized user input into prompts; over-permissioned MCP tools; no output filtering; MCP packages unpinned |
 
-### Group G — Cost Estimation (Final Step)
+### Follow-Up Options (after initial results)
 
-After all categories (1–17) have been scored and documented, load `resources/ai-era-cost-estimation.md` and produce cost-to-exploit and cost-to-fix estimates for each finding.
+After all categories (1–17) have been scored and documented and the initial results have been presented to the human, ask which follow-up they want:
 
-**Important**: Several categories carry a **Risk Escalation Notice** in their resource files (e.g., supply chain, CI/CD, LLM/MCP, prod-mode AI threats). During cost estimation, these findings must be explicitly flagged if the current HTB AI Range benchmark shows higher autonomous exploitation success than the escalation baseline. The cost-estimation resource contains instructions for computing months-since-escalation and surfacing the benchmark delta.
+> **Which analysis would you like next?**
+>
+> **A — Cost-to-fix analysis:** Load `resources/ai-era-cost-estimation.md` and produce cost-to-exploit and cost-to-fix estimates for each finding.
+>
+> **B — Worst-case scenario:** Load `resources/worst-case-synthesis.md` and produce a single worst-case scenario block identifying the most damaging real-world outcome achievable by chaining the identified findings.
+>
+> **C — Both:** Run cost estimation first, then worst-case scenario synthesis.
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| 18 | Cost estimation completed | — | All findings mapped to execution-difficulty, breach-impact, and attack-chaining-potential; relative cost estimates produced; recently escalated risks flagged |
+After the human selects, execute the chosen follow-up(s) and present the results.
+
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| 18 | Follow-up selected by human | — | — | — | Human chooses A (cost-to-fix), B (worst-case), or C (both). Default: ask — do not skip. |
 
 ---
 
@@ -186,25 +211,33 @@ Stop and flag immediately when:
 
 ### Group F — Public Website Scan (Passive Observation)
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| P1 | Tech stack fingerprinting | 🟡 Medium | `X-Powered-By` header; `<meta name="generator">`; `/wp-content/` URL patterns; JS framework globals (`React`, `Vue`, `Angular`) |
-| P2 | Exposed JS dependencies | 🟠 High | CDN `<script>` tags with version strings; webpack chunk names revealing packages; known-vulnerable library fingerprints (jQuery <3.5, Angular 1.x, Lodash <4.17.21) |
-| P3 | TLS & encryption posture | 🟠 High | TLS version; key exchange algorithm (classical-only vs hybrid PQC); HSTS presence/max-age; certificate details |
-| P4 | Auth protocol exposure | 🟠 High | Session cookie flags (`Secure`, `HttpOnly`, `SameSite`); `.well-known/openid-configuration`; login form patterns; MFA indicators |
-| P5 | HTTP security headers | 🟡 Medium | Missing/weak CSP; missing `X-Frame-Options`; permissive CORS (`Access-Control-Allow-Origin: *`); missing `Referrer-Policy` |
-| P6 | Information leakage | 🟠 High | Source maps publicly accessible (`.js.map` returning 200); `Server` header with version; verbose error pages; exposed API docs / GraphQL introspection |
-| P7 | AI-era threat assessment | 🔴 Critical | LLM API keys in client JS (`sk-proj-`, `sk-ant-`); chatbot/AI widgets; direct browser-to-LLM API calls; exposed agent/MCP endpoints; prompt injection surfaces |
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| P1 | Tech stack fingerprinting | 🟡 Medium | 📦 Data Leak, 🎨 Defacement | +25% | `X-Powered-By` header; `<meta name="generator">`; `/wp-content/` URL patterns; JS framework globals (`React`, `Vue`, `Angular`) |
+| P2 | Exposed JS dependencies | 🟠 High | 📦 Data Leak, 🎨 Defacement, 🔑 Account Access | +30% | CDN `<script>` tags with version strings; webpack chunk names revealing packages; known-vulnerable library fingerprints (jQuery <3.5, Angular 1.x, Lodash <4.17.21) |
+| P3 | TLS & encryption posture | 🟠 High | 📦 Data Leak, 🔑 Account Access | +15% | TLS version; key exchange algorithm (classical-only vs hybrid PQC); HSTS presence/max-age; certificate details |
+| P4 | Auth protocol exposure | 🟠 High | 🔑 Account Access | +45% | Session cookie flags (`Secure`, `HttpOnly`, `SameSite`); `.well-known/openid-configuration`; login form patterns; MFA indicators |
+| P5 | HTTP security headers | 🟡 Medium | 🎨 Defacement, 📦 Data Leak | +25% | Missing/weak CSP; missing `X-Frame-Options`; permissive CORS (`Access-Control-Allow-Origin: *`); missing `Referrer-Policy` |
+| P6 | Information leakage | 🟠 High | 📦 Data Leak, 🔑 Account Access | +35% | Source maps publicly accessible (`.js.map` returning 200); `Server` header with version; verbose error pages; exposed API docs / GraphQL introspection |
+| P7 | AI-era threat assessment | 🔴 Critical | 🔑 Account Access, 📦 Data Leak, 💰 Financial Theft | +85% | LLM API keys in client JS (`sk-proj-`, `sk-ant-`); chatbot/AI widgets; direct browser-to-LLM API calls; exposed agent/MCP endpoints; prompt injection surfaces |
 
-### Group G — Cost Estimation (Final Step)
+### Follow-Up Options (after initial results)
 
-After all categories (P1–P7) have been scored and documented, load `resources/ai-era-cost-estimation.md` and produce cost-to-exploit and cost-to-fix estimates for each finding.
+After all categories (P1–P7) have been scored and documented and the initial results have been presented to the human, ask which follow-up they want:
 
-**Important**: Several prod-mode categories (P6, P7) carry a **Risk Escalation Notice** in their resource files. During cost estimation, these findings must be explicitly flagged if the current HTB AI Range benchmark shows higher autonomous exploitation success than the escalation baseline. The cost-estimation resource contains instructions for computing months-since-escalation and surfacing the benchmark delta.
+> **Which analysis would you like next?**
+>
+> **A — Cost-to-fix analysis:** Load `resources/ai-era-cost-estimation.md` and produce cost-to-exploit and cost-to-fix estimates for each finding.
+>
+> **B — Worst-case scenario:** Load `resources/worst-case-synthesis.md` and produce a single worst-case scenario block identifying the most damaging real-world outcome achievable by chaining the identified findings.
+>
+> **C — Both:** Run cost estimation first, then worst-case scenario synthesis.
 
-| # | Check | Impact | Look For |
-|---|-------|--------|----------|
-| P8 | Cost estimation completed | — | All findings mapped to execution-difficulty, breach-impact, and attack-chaining-potential; relative cost estimates produced; recently escalated risks flagged |
+After the human selects, execute the chosen follow-up(s) and present the results.
+
+| # | Check | Impact | Tags | Threat Evolution | Look For |
+|---|-------|--------|------|-----------------|----------|
+| P8 | Follow-up selected by human | — | — | — | Human chooses A (cost-to-fix), B (worst-case), or C (both). Default: ask — do not skip. |
 
 ## Prod Mode Escalation Triggers
 

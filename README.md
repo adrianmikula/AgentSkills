@@ -83,3 +83,23 @@ To build all skills at once:
 ```
 
 This validates plugin manifests and produces ZIP files in each skill directory.
+
+## Auto-Updating the Scanner
+
+The vulnerability scanner's detection categories must evolve as frontier AI capabilities and cryptographic threats change. The file `ai-era-vulnerability-scanner/resources/external-intelligence-sources.md` tracks external threat intelligence sources and describes how to auto-generate scanner updates when those sources signal a change.
+
+**How it works:**
+1. Run an AI coding agent (Claude Code, Windsurf) with access to this repo
+2. Ask it to read `resources/external-intelligence-sources.md` and check each source for changes
+3. For each source where new developments are detected (new benchmarks, CVEs, standards, publications), the file contains explicit instructions for what scanner files to update and how
+4. The agent auto-generates the corresponding updates — new detection sub-classes, updated cost estimates, revised migration checklists
+5. You review and commit the changes
+
+**Quick start:**
+```bash
+# From the repo root — load the intel sources and ask your AI agent to check for updates
+# The agent will run source-specific curl commands, compare against baselines,
+# and apply any auto-updates identified in the instructions.
+```
+
+**When to run this:** Before each scanner release, or when a major AI capability benchmark or cryptographic standard is published. See the `Version History` table at the bottom of `external-intelligence-sources.md` to track what was last checked.
