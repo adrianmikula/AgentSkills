@@ -33,6 +33,12 @@
       "source": "./city-risk-landscape",
       "description": "Generate an interactive AI-era cyber risk landscape map for a target city. Scores industry subcategories by AI attack likelihood and customer data sensitivity using live CVE research, then renders an interactive bubble chart to identify which businesses to prioritise for security outreach.",
       "version": "1.0.0"
+    },
+    {
+      "name": "optimise-agentic-coding",
+      "source": "./optimise-agentic-coding",
+      "description": "Analyze a source code repository and apply a systematic 5-layer set of improvements that optimize it for AI agent-assisted debugging. Detects tech stack, installs structured logging, configures MCP servers, sets up agent workflows, and documents env vars.",
+      "version": "1.0.0"
     }
   ]
 }

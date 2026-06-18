@@ -11,6 +11,7 @@ A collection of Claude plugins and skills for AI-assisted security, outreach, an
 | **Cognitive Sustainability** | Preserve human decision authority and conceptual understanding during AI-assisted development. |
 | **dev-level-up** | Scan high-authority tech news for cutting-edge AI coding tools and techniques targeting Java, React, and Python. Filters to the last month and scores findings for speed, accuracy, capacity, tools, and agility. |
 | **City Risk Landscape** | Generate interactive AI-era cyber risk charts for a target city. Landscape mode scores SMB industry subcategories by attack likelihood and data sensitivity (bubble chart). Timeline mode plots WordPress/WooCommerce exploit trends over 24 months with stacked bars by incident type (ransomware, data leak, outage, money theft) and switchable Y-axes for exploit volume, time-to-exploit vs time-to-patch, and cost-to-exploit. |
+| **Optimise Agentic Coding** | Analyze a code repository and apply 5-layer debugging infrastructure: structured logger, MCP server config, agent-specific workflow instructions, framework debug mode, and env var documentation. Supports Next.js, Rails, Django, Express, Java/Kotlin, Rust, and .NET stacks via per-stack resource files. |
 
 ## Installation
 

@@ -8,6 +8,7 @@ SKILL_DIRS=(
   "cognitive-sustainability"
   "dev-level-up"
   "city-risk-landscape"
+  "optimise-agentic-coding"
 )
 
 echo "=== Validating plugin manifests ==="

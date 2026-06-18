@@ -1,0 +1,5 @@
+{
+  "name": "optimise-agentic-coding",
+  "description": "Analyze a source code repository and apply a systematic 5-layer set of improvements that optimize it for AI agent-assisted debugging. Detects tech stack, installs structured logging, configures MCP servers, sets up agent workflows, and documents env vars.",
+  "version": "1.0.0"
+}
