@@ -112,6 +112,25 @@ Example `.mcp.json`:
 }
 ```
 
+### Fast Linting
+- TypeScript: `npx tsc --noEmit` (type-check only, no build)
+- JavaScript: `npx eslint src/ --quiet`
+Run lint before any test or build — gives instant semantic feedback.
+
+### Fast Tests
+Configure Vitest (preferred) or node:test for unit tests without global setup hooks:
+```
+npm install -D vitest
+```
+Run `npx vitest run --project unit` for fast feedback. Avoid Jest global setup hooks. Keep E2E for CI.
+
+### Velocity Hacks
+- **ESM + native Node** — no Babel, no Webpack, no ts-node unless required
+- **TypeScript `--noEmit` inner loop** — typecheck only, build later
+- **Kill test runners with global setup** — prefer vitest or node:test, minimal config
+- **One-process dev server** — no clustering/workers/watchers-on-watchers; agents need determinism
+- **Dependency pruning** — Node startup cost scales with `node_modules`; strip unused deps
+
 For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector <command> <args>

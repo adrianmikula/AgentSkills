@@ -93,6 +93,23 @@ Example `.mcp.json`:
 }
 ```
 
+### Fast Linting
+Run `ruff check . --quiet` (10x faster than flake8). For type checking: `mypy --incremental .` Agents should lint before any test or run.
+
+### Fast Tests
+Configure pytest with a `fast` marker for unit tests that don't need DB:
+```python
+# pytest.ini
+markers = fast: quick unit tests, no DB
+```
+Run `pytest -m fast -x --quiet` for sub-second feedback. Full suite is CI-only.
+
+### Velocity Hacks
+- **Kill import-time side effects** — lazy imports, no module-level DB/config/env reads; Python loops are slow because imports dominate, not tests
+- **Disable pytest plugins aggressively** — coverage, asyncio, xdist (unless needed); minimal plugin set = huge gains
+- **Switch hot paths to `mypy --incremental`** — treat type checks as first signal, skip runtime for many iterations
+- **Use `uv` for package management** — 10-100x faster than pip
+
 For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector <command> <args>

@@ -100,3 +100,19 @@ For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector <command> <args>
 ```
+
+### Fast Linting
+Run `cargo clippy --quiet` before any test. For faster iteration, use `cargo check` (type-check only, no codegen): `cargo check --quiet 2>&1 | head -20`.
+
+### Fast Tests
+Run only library unit tests (skip integration tests in `tests/`):
+```
+cargo test --lib --quiet
+```
+Keep integration tests for CI only. Use `#[cfg(test)]` to isolate fast test paths.
+
+### Velocity Hacks
+- **Small crates, narrow deps** — compile speed scales with dependency graph width
+- **Freeze codegen** — Protobuf, mocks, OpenAPI → pre-generate, never recompile during iteration
+- **Table-driven tests** for pure functions — fast, deterministic, agent-friendly
+- **Feature flags to slice the system** — `#[cfg(feature = "fast")]` and `#[cfg(feature = "integration")]`

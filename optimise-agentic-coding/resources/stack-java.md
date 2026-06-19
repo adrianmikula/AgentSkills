@@ -195,23 +195,33 @@ For manual debugging via `@modelcontextprotocol/inspector`:
 npx @modelcontextprotocol/inspector <command> <args>
 ```
 
-## Agentic JVM Stack Guidance
+### Fast Linting
+- Gradle: `./gradlew checkstyleMain` or `./gradlew spotlessApply`
+- Maven: `mvn checkstyle:check -q`
+Run lint before compile — catches style/syntax issues without a full build.
 
-When optimising a JVM project for agent velocity, read the following reference documents for deeper context.
+### Fast Tests
+Create a `devFast` test task that runs only unit tests (no Spring context, no integration):
+```kotlin
+tasks.register<Test>("devFast") {
+  useJUnitPlatform { includeTags("fast") }
+}
+```
+Agents run `./gradlew devFast` for <15s feedback. Full suite is CI-only.
 
-### Dev velocity
-Load `resources/java-dev-velocity-optimisations.md` when:
-- The project is Java or Kotlin
-- You need to recommend language shifts (Kotlin over Java), runtime changes (CRaC, GraalVM), or framework selection guidance (Quarkus vs Spring Boot vs Micronaut) to improve agent edit-compile-test loop speed
-- Note: CRaC is the primary fast-startup recommendation for agent loops (production-grade, works with all frameworks). GraalVM Native Image is use-case-specific and Oracle has shifted focus away from it for Java SE. See the doc for full context.
+### Velocity Hacks
+- **Disable annotation processors locally** (Lombok, MapStruct, JPA) — often 10x compile speedup
+- **No Spring in inner loop** — use plain constructors + manual wiring in tests; if Spring starts, loop is broken
+- **Freeze generated code** (OpenAPI, Protobuf, DB codegen) into binary modules — never recompile during iteration
+- **Gradle configuration cache** — enable via `gradle.properties`: `org.gradle.configuration-cache=true`
+- **Classpath minimization** — separate "runtime" from "dev/test" deps; smaller classpath = faster everything
+- **CRaC for near-instant startup** — use CRaC-enabled JDK (Azul Zulu or Ubuntu OpenJDK CRaC) to snapshot JVM and restore in <100ms
 
-### Appserver fast feedback
-Load `resources/java-appserver-optimisations.md` when:
-- The project uses Jakarta EE / Java Enterprise (WildFly, Payara, WebLogic, WebSphere, TomEE)
-- You need to configure hot redeploy, exploded deployments, or containerless test paths
+### Reference Documents
+Load these for deeper context when applicable:
 
-### Persistent test runner
-Load `resources/java-persistent-test-runner.md` when:
-- The project has existing tests (JUnit 4/5, TestNG, Kotest)
-- The agent needs sub-1-second test feedback loops
-- You need to set up a persistent JVM daemon, JUnit 5 Launcher API, or hot code replace (HCR) pipeline
+| Scenario | Resource |
+|----------|----------|
+| Language/framework/runtime selection for velocity | `resources/java-dev-velocity-optimisations.md` |
+| Jakarta EE appserver fast feedback | `resources/java-appserver-optimisations.md` |
+| Sub-second persistent test runner setup | `resources/java-persistent-test-runner.md` |

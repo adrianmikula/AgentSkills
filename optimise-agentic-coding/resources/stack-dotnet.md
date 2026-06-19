@@ -94,6 +94,21 @@ Example `.mcp.json`:
 }
 ```
 
+### Fast Linting
+Run `dotnet format --verify-no-changes --severity error` for immediate syntax/style feedback. Use `dotnet build --no-restore -warnaserror` for compile-time checks only.
+
+### Fast Tests
+Create a `FastTests` category and run only those:
+```
+dotnet test --filter "Category=FastTests" --no-restore
+```
+Keep integration tests (`Category=Integration`) for CI only.
+
+### Velocity Hacks
+- **No heavy DI in inner loop** — test pure logic with plain constructors, skip service provider setup
+- **Pre-compile dependencies** — use NuGet fallback folders to avoid restore during iteration
+- **Source generators over reflection** — AOT-friendly, faster startup, no runtime discovery
+
 For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector <command> <args>

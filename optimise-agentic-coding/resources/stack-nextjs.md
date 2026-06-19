@@ -114,6 +114,22 @@ Create `.mcp.json` at repo root:
 }
 ```
 
+### Fast Linting
+Add lint script to `package.json` if missing: `"lint": "next lint"`. Agents should run `npm run lint -- --quiet` for immediate structural feedback before any test or build step.
+
+### Fast Tests
+Configure Vitest with jsdom for component-level tests (no browser):
+```
+npm install -D vitest @testing-library/react jsdom
+```
+Run `npx vitest run --project unit` for sub-second feedback. Keep E2E (Playwright) for CI only.
+
+### Velocity Hacks
+- **Component-level hot reload only** — disable full-app refresh, iterate per component
+- **Contract-first frontend** — freeze API schemas, use mocked backends so agents never wait on backend state
+- **Snapshot tests > DOM tests** for agent loops — fast, deterministic, no browser startup
+- **Lint-only first signal** — ESLint + TypeScript as immediate syntactic/semantic rejection before tests
+
 For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector npx -y next-devtools-mcp

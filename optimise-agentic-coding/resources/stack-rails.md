@@ -71,6 +71,23 @@ Create `.mcp.json` at repo root:
 }
 ```
 
+### Fast Linting
+Run `rubocop --quiet` before any test: `bundle exec rubocop --only lint`. Catches syntax/style issues instantly.
+
+### Fast Tests
+Configure RSpec with only unit specs (no DB, no fixtures, no integration):
+```ruby
+# In spec/spec_helper.rb or .rspec
+--tag ~integration
+--tag ~slow
+```
+Run `bundle exec rspec spec/unit --tag fast` for sub-second feedback.
+
+### Velocity Hacks
+- **Kill DB-heavy tests in inner loop** — use factory defaults, avoid full DB setup for every iteration
+- **Minimal Gemfile for dev** — split production gems into groups; fewer loaded gems = faster boot
+- **Lint-first signal** — RuboCop as first check before any test runtime
+
 For manual debugging via `@modelcontextprotocol/inspector`:
 ```
 npx @modelcontextprotocol/inspector bundle exec rails server --mcp
