@@ -301,6 +301,21 @@ If the plugin calls a cloud API, enforce these rules:
 
 ---
 
+## Shared Data Architecture
+
+If the plugin collects telemetry data, stores community-contributed data (e.g. shared block patterns, performance rankings, user-submitted content), or uses any shared cloud storage with a public/anon key visible in client code, load `resources/supabase-security.md` before designing the storage layer.
+
+The resource covers:
+- Insert-only RLS patterns for public-key clients (recommended architecture)
+- RPC-based insert functions as an alternative
+- SECURITY DEFINER view risks and how to avoid them
+- Input validation in `WITH CHECK` policies
+- A copy-paste agent prompt for future Supabase-backed plugin generation
+
+The data architecture must be designed and documented in `sql/` before writing any plugin code.
+
+---
+
 ## Code Smell Rules
 
 ### 1. No tiering language in free code
@@ -473,7 +488,7 @@ The preflight script (`scripts/preflight-check.sh`) must check against the extra
 
 When the user describes a plugin idea, follow these steps:
 
-1. **Parse the idea** into free features vs premium features
+1. **Parse the idea** into free features vs premium features. If the plugin collects telemetry, stores community-contributed data, or uses shared cloud storage, load `resources/supabase-security.md` and design the data architecture before proceeding.
 2. **Design the API contract** — what the free cloud endpoint returns, what premium adds
 3. **Create the file tree** matching the repository layout above
 4. **Write free files first** — make them fully functional standalone
