@@ -1,3 +1,12 @@
+| Optimisation | Speed | Quality | Debugging |
+|---|---|---|---|
+| Framework debug mode (Layer 1) | | | ✓ |
+| Structured logger (Layer 2) | | ✓ | ✓ |
+| MCP / tooling config (Layer 3) | | | ✓ |
+| Fast linting | ✓ | ✓ | |
+| Fast tests | ✓ | ✓ | |
+| Velocity / DX hacks | ✓ | ✓ | |
+
 # Node.js / Express Stack Optimisation
 
 Apply these settings when the detected framework is Express.js or a generic Node.js framework (not Next.js).

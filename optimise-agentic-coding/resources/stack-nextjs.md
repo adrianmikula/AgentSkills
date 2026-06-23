@@ -1,3 +1,12 @@
+| Optimisation | Speed | Quality | Debugging |
+|---|---|---|---|
+| Framework debug mode (Layer 1) | | | ✓ |
+| Structured logger (Layer 2) | | ✓ | ✓ |
+| MCP / tooling config (Layer 3) | | | ✓ |
+| Fast linting | ✓ | ✓ | |
+| Fast tests | ✓ | ✓ | |
+| Velocity / DX hacks | ✓ | ✓ | |
+
 # Next.js Stack Optimisation
 
 Apply these settings when the detected framework is Next.js (any version).
@@ -101,6 +110,8 @@ export function logger(context) {
 
 ## Layer 3: MCP server config
 
+Next.js 16+ includes built-in MCP support via [`next-devtools-mcp`](https://www.npmjs.com/package/next-devtools-mcp), giving agents runtime access to the app.
+
 Create `.mcp.json` at repo root:
 
 ```json
@@ -108,11 +119,19 @@ Create `.mcp.json` at repo root:
   "mcpServers": {
     "next-devtools": {
       "command": "npx",
-      "args": ["-y", "next-devtools-mcp"]
+      "args": ["-y", "next-devtools-mcp@latest"]
     }
   }
 }
 ```
+
+With dev server running, agents get:
+- **`get_errors`** / **`get_logs`** — build/runtime errors, console logs
+- **`get_page_metadata`** — routes, components, rendering details
+- **`get_server_action_by_id`** — inspect Server Action hierarchies
+- **`evaluate`** via integrated Playwright MCP — execute JS in browser, inspect memory/DOM, take screenshots, capture console traces
+
+For deeper browser automation (heap snapshots, network inspection, DOM queries), also add [`chrome-devtools-mcp`](https://www.npmjs.com/package/chrome-devtools-mcp).
 
 ### Fast Linting
 Add lint script to `package.json` if missing: `"lint": "next lint"`. Agents should run `npm run lint -- --quiet` for immediate structural feedback before any test or build step.

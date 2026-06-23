@@ -1,3 +1,12 @@
+| Optimisation | Speed | Quality | Debugging |
+|---|---|---|---|
+| Framework debug mode (Layer 1) | | | ✓ |
+| Structured logger (Layer 2) | | ✓ | ✓ |
+| MCP / tooling config (Layer 3) | | | ✓ |
+| Fast linting | ✓ | ✓ | |
+| Fast tests | ✓ | ✓ | |
+| Velocity / DX hacks | ✓ | ✓ | |
+
 # Java / Kotlin Stack Optimisation
 
 Apply these settings when the detected project uses Java or Kotlin (Maven `pom.xml`, Gradle `build.gradle`/`build.gradle.kts`, or `*.java`/`*.kt` source files).

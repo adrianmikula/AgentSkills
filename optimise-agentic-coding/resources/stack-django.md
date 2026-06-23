@@ -1,3 +1,12 @@
+| Optimisation | Speed | Quality | Debugging |
+|---|---|---|---|
+| Framework debug mode (Layer 1) | | | ✓ |
+| Structured logger (Layer 2) | | ✓ | ✓ |
+| MCP / tooling config (Layer 3) | | | ✓ |
+| Fast linting | ✓ | ✓ | |
+| Fast tests | ✓ | ✓ | |
+| Velocity / DX hacks | ✓ | ✓ | |
+
 # Django Stack Optimisation
 
 Apply these settings when the detected framework is Django.
