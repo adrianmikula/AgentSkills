@@ -9,6 +9,8 @@ SKILL_DIRS=(
   "dev-level-up"
   "city-risk-landscape"
   "optimise-agentic-coding"
+  "build-wordpress-plugin"
+  "business-idea-incubator"
 )
 
 echo "=== Validating plugin manifests ==="
