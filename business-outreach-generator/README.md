@@ -1,48 +1,49 @@
 # Business Outreach Generator
 
-A Claude Skill for generating targeted security outreach messages to small businesses. Supports multiple outreach offerings and three output channels: **Email**, **LinkedIn**, and **Phone** (dot-point research brief).
+A Claude Skill for generating targeted outreach messages for your business ideas. Tightly integrated with the **Business Idea Incubator** skill: offerings are loaded dynamically from `.ideas/ideas/`, and trend context from `.ideas/trends/` is folded into messaging.
+
+Supports six output channels: **Email**, **LinkedIn**, **Phone** (dot-point research brief), **Reddit** (self-post), **StackOverflow** (answer-style post), and **Airtasker** (task response / bid proposal).
 
 ## How It Works
 
-1. **Collect targeting parameters** — The Skill asks for offering type, output format, target country, city/region, industry sector, and business size.
-2. **Select offering and channel** — Conditional logic loads the correct resource template and selects the Email, LinkedIn, or Phone variant.
-3. **Research** — For AI-Era, the Skill finds 2–3 recent breaches; for Jakarta Migration, it researches senior technical staff on the company website.
-4. **Generate the message** — The template is populated with localised spelling, geo-specific examples, and tone matched to the business size.
+1. **Load offerings from Idea Incubator** — The Skill scans `.ideas/ideas/` for active ideas (Validating, Active, Building, Launched) and presents them as available offerings.
+2. **Collect targeting parameters** — The Skill asks for offering selection, output format, target country, city/region, industry sector, and business size.
+3. **Scan for leads or threads** (if no specific target provided) — The route depends on output format:
+   - **Email, LinkedIn, Phone:** Company/developer social scanning
+   - **Reddit, StackOverflow:** Thread/question scanning for highly-relevant discussions
+   - **Airtasker:** Job/task scanning for open work with few offers
+4. **Select offering and channel** — Conditional logic loads the correct resource template (or generates a generic one from the idea file) and selects the appropriate output format.
+5. **Research** — The Skill finds relevant breaches, threads, or task matches depending on the format.
+6. **Generate the message** — The template is populated with localised spelling, geo-specific examples, and tone matched to the business size.
 
 ## Usage
 
 Load the Skill and provide the targeting parameters when prompted:
 
-- **Offering:** AI-Era Security Audit Report, Jakarta Migration Risk Assessment, or AI Codebase Entropy Audit
-- **Output format:** Email, LinkedIn, or Phone
+- **Offering:** Auto-Recommend Best Fit (default), or any active idea from your Idea Incubator
+- **Output format:** Email, LinkedIn, Phone, Reddit, StackOverflow, or Airtasker
 - **Target country:** e.g., Australia, United States, United Kingdom
 - **Target city/region:** e.g., Adelaide, Manchester, Austin
 - **Industry sector:** e.g., hospitality, retail, manufacturing, professional services, tech
 - **Business size:** Micro (1–9), Small (10–99), or Medium (100–199)
 
-**For Jakarta Migration Risk Assessment, AI Codebase Entropy Audit, and AI-Era Security Audit Report when using Phone output**, also provide the company website URL for senior staff and tech stack research.
+For Phone output, the Skill will also ask for the company website URL for senior staff and tech stack research.
 
-The Skill will then generate a complete, ready-to-send message with recent local breach examples and a clear, no-pressure call to action.
+For Reddit, the Skill generates a self-post optimised for the target subreddit (e.g., r/coolgithubprojects, r/selfhosted, r/Wordpress) and respects self-promotion rules.
+
+For StackOverflow, the Skill generates an answer-style post that addresses a specific technical question and mentions the tool/service only as a relevant additional resource.
+
+For Airtasker, the Skill generates a concise bid proposal that leads with what you'll deliver, why you're qualified, and a clear fixed price or price range.
 
 ## Current Offerings
 
-| Offering | Description |
-|----------|-------------|
-| AI-Era Security Audit Report | A free, no-obligation security audit report for small businesses. Emphasises the new AI-era threat landscape where automated attacks make even the smallest business a viable target. Also offers a paid repository-level analysis for tech/enterprise Java teams. |
-| Jakarta Migration Risk Assessment | A paid, multi-day consultation for tech companies (1-99 staff) to assess Java EE to Jakarta EE migration risks. Includes automated tooling, deep bytecode dependency analysis, and supply-chain security evaluation. Deliverable: detailed PDF reports with refactoring guides. |
-| AI Codebase Entropy Audit | A paid 2-to-5-day engineering audit surfacing architectural drift, codebase entropy, and AI-assisted development risk in large-scale Java systems (AUD $1,500–$3,000 pilot pricing). Includes an optional AI SDLC Observability Dashboard follow-on. |
-| Website Design | Modern, responsive website design for small businesses — three tiers from static brochure sites to full eCommerce platforms. Includes optional add-ons: social account setup, security patching, and content updates. |
+Offerings are dynamically loaded from `.ideas/ideas/`. Any idea file with status `Validating`, `Active`, `Building`, or `Launched` will automatically appear as an offering. No manual registration required.
 
-## Extending the Skill
+## Architecture
 
-To add a new outreach offering:
-
-1. Create a new markdown file in `resources/` (e.g., `resources/compliance-gap-analysis-offer.md`).
-2. Follow the same structure as `resources/ai-era-security-audit-offer.md`: include an Email Template section, a LinkedIn Message Template section, and a Phone Research Brief section.
-3. Register the new offering in `Skill.md` under **Available Offerings** and add its routing condition under **Conditional Routing → Step 1**.
-4. Update the **Current Offerings** table in this README.
-
-4. Update `build-skill.sh` to copy the new resource file into the staging directory.
+- **Core skill** (`Skill.md`) — Dynamic offering loading, onboarding, scanning mode routing, and conditional routing. Delegates all format-specific behaviour to `resources/output-formats.md`.
+- **Output formats** (`resources/output-formats.md`) — Tone rules, template sections, presentation formats, research behaviour, and scanning behaviour for each output channel.
+- **Offering templates** (`resources/*-offer.md`) — Per-offering Email/LinkedIn/Phone templates populated with the idea's specifics.
 
 ## Building the Skill
 
