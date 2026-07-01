@@ -1,5 +1,5 @@
 ---
-name: Build WordPress Plugin
+name: build-wordpress-plugin
 description: Generate a complete WordPress plugin codebase from a plain-English description of the plugin's purpose. Produces two fully independent build outputs (free .org-clean ZIP + premium ZIP) from one monorepo, with zero trialware or telemetry violations in the free build.
 ---
 

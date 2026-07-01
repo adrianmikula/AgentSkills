@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "instagram": {
+      "command": "PROJECT_ROOT/.mcp/instagram-mcp/.venv/bin/python",
+      "args": ["-m", "instagram_mcp"],
+      "env": {
+        "INSTAGRAM_ACCESS_TOKEN": ""
+      }
+    },
+    "reddit": {
+      "command": "npx",
+      "args": ["reddit-mcp-server"],
+      "env": {
+        "REDDIT_CLIENT_ID": "",
+        "REDDIT_CLIENT_SECRET": "",
+        "REDDIT_USERNAME": "",
+        "REDDIT_PASSWORD": ""
+      }
+    },
+    "outpost": {
+      "command": "npx",
+      "args": ["@outpost/mcp-server"],
+      "env": {
+        "OUTPOST_API_KEY": ""
+      }
+    }
+  }
+}

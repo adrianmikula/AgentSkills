@@ -36,3 +36,8 @@ echo "Done: ${OUTPUT_ZIP}"
 echo ""
 echo "Contents:"
 unzip -l "${OUTPUT_ZIP}"
+
+# --- Setup agent symlinks (Kilo Code, Opencode, Devin) ---
+echo ""
+echo "=== Setting up multi-agent symlinks ==="
+bash "${SCRIPT_DIR}/../scripts/setup-agent-links.sh" "optimise-agentic-coding"

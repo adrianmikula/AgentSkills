@@ -11,3 +11,20 @@ dist/
 
 # Business Idea Incubator state (user profiles + idea notes)
 .ideas/
+
+# Devin local override (personal API keys, never committed)
+.devin/config.local.json
+
+# MCP server installations (cloned repos + venvs)
+.mcp/
+
+# Real MCP config files (use .example copies as templates)
+.kilocode/mcp.json
+.opencode/config.json
+
+# Outreach drafts (work-in-progress messages, never committed)
+.drafts/
+
+# Agent symlinks (created by scripts/setup-agent-links.sh)
+.agents/skills/
+.opencode/skill/

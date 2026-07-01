@@ -1,5 +1,5 @@
 ---
-name: Business Idea Incubator
+name: business-idea-incubator
 description: Validate, refine, and implement business ideas through multidisciplinary coaching. Adapts to your experience level across idea validation, startup foundations, marketing, sales, deployment, and more. Tracks progress and surfaces blind spots. Also tracks external market trends and conditions that affect your ideas.
 ---
 
@@ -14,6 +14,8 @@ Additionally, the Skill maintains a **Trends Log** of timestamped external facto
 ---
 
 ## State Management Protocol
+
+> **`.ideas/` is gitignored** — `glob`/`grep` skip it. See `resources/accessing-idea-files.md` for how to list, read, write, and search files under `.ideas/`.
 
 The Skill maintains persistent state across sessions using markdown files in a `.ideas/` folder at the project root.
 
@@ -119,13 +121,13 @@ Each `.ideas/trends/trend-[slug].md` follows this structure:
 
 ### Deduplication Rules
 
-**Trends:** Before creating a new trend file, search `.ideas/trends/` for existing files. Match by:
+**Trends:** Before creating a new trend file, search `.ideas/trends/` for existing files (see `resources/accessing-idea-files.md`). Match by:
 1. Exact slug match (normalized: lowercase, hyphens for spaces)
 2. Fuzzy match if title/summary closely matches a known trend
 
 If a match is found, load and update that trend. If the trend is stale (expired), trigger a refresh instead of creating a duplicate.
 
-**Ideas:** Before creating a new idea file, search `.ideas/ideas/` for existing files. Match by:
+**Ideas:** Before creating a new idea file, search `.ideas/ideas/` for existing files (see `resources/accessing-idea-files.md`). Match by:
 1. Exact slug match (normalized: lowercase, hyphens for spaces)
 2. Fuzzy match if title/description in file closely matches the new idea
 
@@ -196,11 +198,11 @@ On every interaction, run this startup sequence before anything else.
 
 ### Step 1 — Load Existing State
 
-1. Check if `.ideas/human-profile.md` exists. If yes, load it silently.
-2. Scan `.ideas/ideas/` for existing idea files. Parse each to extract the idea name and status.
+1. Check if `.ideas/human-profile.md` exists (see `resources/accessing-idea-files.md`). If yes, load it silently.
+2. List `.ideas/ideas/` for existing idea files (see `resources/accessing-idea-files.md`). Read each to extract the idea name and status.
 3. **Check trends status:**
-   - Load `.ideas/trends/index.md` if it exists. If not, the trends folder is empty.
-   - Load `.ideas/trends/refresh-queue.md` if it exists.
+   - Read `.ideas/trends/index.md` (see `resources/accessing-idea-files.md`). If it does not exist, the trends folder is empty.
+   - Read `.ideas/trends/refresh-queue.md` if it exists (see `resources/accessing-idea-files.md`).
    - For each trend in the index, check if `Expires` date is within 30 days of today's date.
    - If any trends are expired (past 30 days) or expiring within 7 days, flag them for refresh.
 
@@ -328,7 +330,7 @@ Create `.ideas/human-profile.md` and `.ideas/personality-profile.md` with the co
 When a trend is identified (from user input, research, or session context):
 
 1. Generate a normalized slug (lowercase, hyphens for spaces).
-2. Check `.ideas/trends/` for existing trend with same slug or fuzzy match.
+2. Check `.ideas/trends/` for existing trend with same slug or fuzzy match (see `resources/accessing-idea-files.md`).
 3. If found and still active (within 30 days), update it. If stale, refresh it.
 4. If new, create `.ideas/trends/trend-[slug].md` using the format above.
 5. Update `.ideas/trends/index.md` to include the new trend.
@@ -347,14 +349,14 @@ When a trend is expired or approaching expiry:
 ### Trend Querying in Idea Context
 
 When coaching on an idea:
-1. Load the idea file.
+1. Load the idea file (see `resources/accessing-idea-files.md`).
 2. Check `## Linked Trends` section (if present).
-3. Load each linked trend file to understand current context.
+3. Load each linked trend file (see `resources/accessing-idea-files.md`).
 4. If any linked trends are stale, flag them and offer to refresh before continuing.
 
 ### Ecosystem Map Reference
 
-When the human asks about upselling, combining offerings into bundles, establishing domain authority, refining a current idea, or exploring pivots, load `.ideas/ecosystem-map.md`. Use it to:
+When the human asks about upselling, combining offerings into bundles, establishing domain authority, refining a current idea, or exploring pivots, read `.ideas/ecosystem-map.md` (see `resources/accessing-idea-files.md`). Use it to:
 
 - **Upsell paths:** Identify adjacent ideas in the map that are natural next-step services for a customer already buying one offering.
 - **Bundling:** Find ideas that share `## Linked Trends`, keywords, or target markets and can be packaged into a discounted suite.
@@ -407,7 +409,7 @@ For each selected discipline:
 1. Load `resources/{discipline-file}.md`
 2. Present the "Quick-Start Guidance" section adapted to their confidence level
 3. **Actively recommend relevant Claude skills.** If a skill from the discipline's index would directly address a current task, blind spot, or low-confidence area, recommend it explicitly — explain the benefit and offer to install it. Do not passively list skills and wait for the human to ask.
-4. **If a relevant trend is active in `.ideas/trends/`, fold it into the analysis.** Reference the trend's evidence and impact assessment when applying frameworks.
+4. **If a relevant trend is active in `.ideas/trends/`, fold it into the analysis** (see `resources/accessing-idea-files.md`). Reference the trend's evidence and impact assessment when applying frameworks.
 5. Apply relevant frameworks to their specific idea
 
 ### Step 3 — Generate Deliverables
@@ -439,9 +441,9 @@ If suggestions, research, or deliverables were generated by the AI and the human
 
 If they say yes, append a dated entry. If they say no, discard the unconfirmed content.
 
-Procedure for both cases:
-1. Check if an idea file exists in `.ideas/ideas/`
-2. If not, create one using the deduplication logic
+Procedure for both cases (see `resources/accessing-idea-files.md` for all `.ideas/` operations):
+1. Check if an idea file exists in `.ideas/ideas/`. If found, read it.
+2. If not, create one using the deduplication logic.
 3. For Case 1: append immediately. For Case 2: ask first.
 4. Confirm with the human: *"I've updated your idea file. Want me to save anything else?""
 
@@ -470,7 +472,7 @@ Do not install skills without explicit permission, but do not remain silent abou
 - **Length:** Varies by task. Research reports: 800–2,000 words. Action plans: 5–10 steps. Code: production-ready with comments.
 - **Jargon:** Explain terms on first use. Match the human's vocabulary level.
 - **Actionability:** Every session ends with at least one concrete next step.
-- **State Hygiene:** After every significant interaction — confirmation, refinement, decision, strategy selection, or goal change — update the matching `.ideas/ideas/{slug}.md` file with a dated progress log entry. Do not skip this step. Update `.ideas/trends/index.md` and related trend files when trends are added, refreshed, or archived.
+- **State Hygiene:** After every significant interaction — confirmation, refinement, decision, strategy selection, or goal change — update the matching `.ideas/ideas/{slug}.md` file with a dated progress log entry (see `resources/accessing-idea-files.md`). Do not skip this step. Check `.ideas/trends/` for changes; update `.ideas/trends/index.md` and related trend files when trends are added, refreshed, or archived.
 - **Blind Spot Care:** When coaching in weak areas, be extra patient, provide examples, and celebrate small wins.
 
 ---
@@ -487,6 +489,6 @@ To add a new discipline:
 
 To add trend tracking:
 
-1. Ensure `.ideas/trends/` directory structure is maintained.
+1. Ensure `.ideas/trends/` directory structure is maintained (see `resources/accessing-idea-files.md`).
 2. Follow the trend file format above for consistency.
 3. Update the startup flow to include trend refresh checks.

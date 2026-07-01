@@ -1,5 +1,5 @@
 ---
-name: Business Outreach Generator
+name: business-outreach-generator
 description: Generate targeted outreach emails, LinkedIn messages, phone call scripts, Reddit posts, StackOverflow answers, or Airtasker task responses for any business idea. Offerings are automatically derived from the Business Idea Incubator (../.ideas/ideas/). Supports Auto-Recommend, developer social scanning, website scanning, and geo-localised outreach.
 ---
 
@@ -13,14 +13,27 @@ Before generating any outreach, the Skill collects targeting parameters from the
 
 ## Startup Sequence — Load Offerings from Idea Incubator
 
+> **`.ideas/` is gitignored** — `glob`/`grep` skip it. See `resources/accessing-idea-files.md` for how to list, read, and write files under `../.ideas/`.
+
 On every interaction, before collecting parameters:
 
-1. Scan `../.ideas/ideas/` for all `.md` files.
-2. Parse each to extract: `# [Idea Name]`, `**Slug:**`, `**Status:**`, `## Context`, `## Keywords` (if present), and `## Current Focus` (if present).
+1. List `../.ideas/ideas/` for `.md` files (see `resources/accessing-idea-files.md`).
+2. Parse each to extract: `# [Idea Name]`, `**Slug:**`, `**Status:**`, `## Context`, `## Keywords` (if present), `## Current Focus` (if present), and `## Positioning` (if present — use the Elevator Pitch and USP for messaging).
 3. Filter to ideas with `Status` in: `Validating`, `Active`, `Building`, `Launched`. Exclude `Ideation` and `Paused`.
 4. Sort ideas so that those with a `## Current Focus` section appear first in the offering list. These are the ideas you are actively working on right now.
 5. Build the offering options list dynamically from these ideas, including the extracted keywords for use in scanning.
-6. Also load `../.ideas/trends/index.md` (if it exists) to surface active trends relevant to the selected offering.
+6. Also read `../.ideas/trends/index.md` (see `resources/accessing-idea-files.md`) to surface active trends relevant to the selected offering.
+
+7. **Check for existing drafts** — List `../.drafts/` for `.md` files. Parse each for `**Status:**` in the header block. Present any with Status `Draft`:
+   ```
+   You have [N] saved draft outreach message(s):
+     [1] [title] — for [idea name], [format], created [date]
+     [2] [title] — for [idea name], [format], created [date]
+   Would you like to review/resume one, start fresh, or archive drafts you've already posted?
+   ```
+   - If the human selects a draft: load it, ask *"What would you like to refine?"*, and skip the normal onboarding. The loaded offering and format are determined by the file's `**Target Idea:**` and `**Target Format:**` fields.
+   - If the human selects "start fresh": proceed with normal onboarding below.
+   - If the human selects "archive": prompt them to mark drafts as `Posted` or `Archived` and save the file. Then proceed with normal onboarding.
 
 ---
 
@@ -30,8 +43,8 @@ Do not generate any outreach until the following parameters have been collected.
 
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
-| 1 | **Offering** | `Auto-Recommend Best Fit (default)`, followed by all active ideas loaded from `../.ideas/ideas/` — determines which idea file to load. If the human is unsure, default to **Auto-Recommend**. |
-| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, or `Airtasker` |
+| 1 | **Offering** | `Trend-Match (default)`, `Auto-Recommend Best Fit`, followed by all active ideas loaded from `../.ideas/ideas/` (see `resources/accessing-idea-files.md`) — determines which idea file to load. If the human is unsure, default to **Trend-Match**. |
+| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, or `Airtasker` |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Derived from the selected idea file if it specifies one; otherwise infer from `## Context` and `## Key Facts` (e.g., tech, software development, SMBs, agencies, e-commerce, hospitality). If ambiguous, present a shortlist of 3–5 prime target industries for that idea and ask the human to pick one. — used for relevant examples |
@@ -90,8 +103,8 @@ If the human selects **Auto-Recommend Best Fit**, change the onboarding order sl
 
 1. **Collect company name, website URL, country, city, and industry first** — these are needed for research.
 2. **Research the company website** (and LinkedIn if needed) following the same rate-limiting rules above.
-3. **Load the active trends from `../.ideas/trends/index.md`** to understand current market conditions.
-4. **Evaluate each active idea from `../.ideas/ideas/`** against the company's signals. Use the idea's own `## Context`, `## Key Facts`, and any `## Linked Trends` to determine fit.
+3. **Read `../.ideas/trends/index.md`** (see `resources/accessing-idea-files.md`) to understand current market conditions.
+4. **Evaluate each active idea from `../.ideas/ideas/`** against the company's signals (see `resources/accessing-idea-files.md`). Use the idea's own `## Context`, `## Key Facts`, and any `## Linked Trends` to determine fit.
 5. Score each idea based on:
    - Direct match between idea's target market and the company's profile
    - Relevant active trends that increase urgency
@@ -115,6 +128,39 @@ Present the result in this exact format:
 Then ask: *"Does this look right, or would you prefer a different offering?"*
 
 If the human overrides, proceed with their manual choice. If they confirm, proceed with the recommended offering.
+
+---
+
+## Trend-Based Offering Selection (when Offering == "Trend-Match")
+
+When the human selects **Trend-Match** (the default), select the offering by matching active trends to available ideas rather than asking the human to choose directly:
+
+1. **Load active ideas** — Use the idea list already loaded during the Startup Sequence (filtered to Status: `Validating`, `Active`, `Building`, `Launched`).
+
+2. **Read trend data** — Load `../.ideas/trends/index.md` (see `resources/accessing-idea-files.md`) and parse the trends table for all entries where `Status` is `Active`.
+
+3. **Cross-reference** — For each active trend, look up its `Linked Ideas` column. Match slugs against the loaded ideas to find which ideas are linked to which trends.
+
+4. **Score ideas** by the following criteria:
+   - **Trend count:** number of active trends linked to the idea (higher is better)
+   - **Trend urgency:** preference for trends categorised as `Security` over `Technology`, and trends with the most recent `Last Verified` date
+   - **Idea status:** `Validating` ideas get a slight bonus (they benefit most from trend-driven outreach); `Active` and `Building` are neutral; `Launched` get no bonus
+
+5. **Select the top-scoring idea.** If there is a tie, prefer the idea with the most recently verified linked trend, then the idea whose `## Context` most closely mirrors the trend description.
+
+6. **Present the selection** to the human with rationale:
+   ```
+   **Trend-Match Result:** [Idea Name from incubator]
+   **Status:** [Idea Status]
+   **Matched Trend(s):** [trend titles, one per line]
+   **Rationale:** [1–2 sentences explaining why this trend makes this offering timely]
+   ```
+
+7. **Confirm** with the human: *"This is my recommendation based on current trends. Shall I proceed with [Idea Name], or would you prefer a different offering?"*
+
+8. If the human confirms, proceed with the selected offering, passing the matched trend context into the outreach generation (Step 4 of Conditional Routing will use it for research). If they override, proceed with their manual choice.
+
+**How this differs from Auto-Recommend Best Fit:** Trend-Match selects based on macro-level market trends (what's being discussed broadly on Reddit, news, and social platforms), not on a specific target company's signals. Auto-Recommend selects based on a specific company's technology stack, industry, and profile. Trend-Match does not require a company website or LinkedIn research.
 
 ---
 
@@ -244,7 +290,7 @@ Replace all placeholder tokens in the selected template with the collected param
 Follow the instructions in the loaded resource file to:
 
 1. Adjust spelling and phrasing to match the target country's English variant (e.g., Australian English: "programme", "localise"; US English: "program", "localize").
-2. Check `../.ideas/trends/index.md` for any active trends linked to the selected idea. If linked trends exist:
+2. Read `../.ideas/trends/index.md` (see `resources/accessing-idea-files.md`) for any active trends linked to the selected idea. If linked trends exist:
    - For **Email, LinkedIn, Phone** formats: research 2–3 recent (2025–2026) breaches or incidents illustrating the trend's evidence. Prefer **obscure, non-high-profile victims** — family-owned businesses, regional franchises, niche suppliers, small hospitality groups, local manufacturers. Avoid multinationals unless no local examples exist. Verify sources are reputable and include links.
    - For **Reddit, StackOverflow** formats: find 1–2 relevant threads or incidents from the trend to reference naturally in the post/answer. Do not force-fit breach examples into technical threads.
    - For **Airtasker** format: no breach research needed; focus on matching the task requirements.
@@ -266,11 +312,47 @@ Consult `resources/output-formats.md` whenever generating any outreach message.
 
 ---
 
+## Drafts System
+
+Draft outreach messages are stored in `../.drafts/` (gitignored — never committed). Each draft is a markdown file with a header block containing metadata:
+
+```markdown
+# [Human-readable title]
+
+**Target Idea:** [idea-slug]
+**Target Format:** [Email | LinkedIn | Phone | Reddit | StackOverflow | Instagram | Airtasker]
+**Status:** [Draft | Posted | Archived]
+**Created:** [YYYY-MM-DD]
+**Thread:** [URL to thread/post being replied to, if applicable]
+```
+
+### Draft lifecycle
+
+1. **Created** — The agent writes the draft and saves it to `../.drafts/{slug}.md` with Status: `Draft`.
+2. **Resumed** — On next skill init, the Startup Sequence detects Draft-status files and offers to resume them.
+3. **Refined** — If the human chooses to resume, load the draft, apply their requested changes, and re-save.
+4. **Posted / Archived** — After the human confirms the message is final, ask: *"Mark this as Posted or Archive it?"* Update the Status field and save.
+
+### Draft directory conventions
+
+- `../.drafts/` is gitignored — safe to save incomplete messages, API keys, or thread URLs.
+- Filenames should be descriptive: `{topic}-{format}-{target}.md` (e.g., `jakarta-migration-reddit-r-springboot.md`).
+- Each file contains the **final rendered message**, not a template. The header metadata is the only structured section.
+- Deleting a draft file is equivalent to discarding it. The agent can suggest deletion if a draft is stale, but should confirm with the human first.
+
+---
+
+## MCP Automation Setup
+
+MCP servers can formalize API calls for outreach formats. See `resources/mcp-tools-for-outreach.md` for a catalog of available servers per format, installation instructions, and recommended setup order. Once configured, the agent can use MCP tools to discover leads, post content, and send messages directly from within the session.
+
+---
+
 ## Extension Guide (For Maintainers)
 
 To add a new outreach offering:
 
-1. **Add the idea** to the Business Idea Incubator by creating a new `../.ideas/ideas/{slug}.md` file with Status: `Validating` or `Active`.
+1. **Add the idea** to the Business Idea Incubator by creating a new `../.ideas/ideas/{slug}.md` file with Status: `Validating` or `Active` (see `resources/accessing-idea-files.md`).
 2. **Optionally create** `resources/{slug}-offer.md` following the structure of `ai-era-security-audit-offer.md` for the offering.
 3. **If the idea** is developer-tooling or technical consulting, it will automatically trigger Developer Social Scanning Mode based on slug/keyword matching.
 4. **If the idea** is security or website-focused, it will automatically trigger Website Security Social Scanning Mode based on slug/keyword matching.

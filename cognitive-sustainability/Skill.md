@@ -1,5 +1,5 @@
 ---
-name: Cognitive Sustainability
+name: cognitive-sustainability
 description: Apply cognitive sustainability rules to preserve human decision authority and conceptual understanding during AI-assisted development. Use for architecture, security, schema, or high-autonomy coding sessions.
 ---
 

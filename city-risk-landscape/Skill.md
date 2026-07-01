@@ -1,5 +1,5 @@
 ---
-name: City Risk Landscape
+name: city-risk-landscape
 description: Generate interactive AI-era cyber risk charts for a target city. Three modes available — Landscape (bubble chart of industry subcategories by vulnerability vs data sensitivity), Timeline (24-month exploit trend analysis), and Simulation (5-year business survival probability calculator with financial exposure modeling).
 ---
 

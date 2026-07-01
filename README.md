@@ -12,6 +12,8 @@ A collection of Claude plugins and skills for AI-assisted security, outreach, an
 | **dev-level-up** | Scan high-authority tech news for cutting-edge AI coding tools and techniques targeting Java, React, and Python. Filters to the last month and scores findings for speed, accuracy, capacity, tools, and agility. |
 | **City Risk Landscape** | Generate interactive AI-era cyber risk charts for a target city. Landscape mode scores SMB industry subcategories by attack likelihood and data sensitivity (bubble chart). Timeline mode plots WordPress/WooCommerce exploit trends over 24 months with stacked bars by incident type (ransomware, data leak, outage, money theft) and switchable Y-axes for exploit volume, time-to-exploit vs time-to-patch, and cost-to-exploit. |
 | **Optimise Agentic Coding** | Analyze a code repository and apply 5-layer debugging infrastructure: structured logger, MCP server config, agent-specific workflow instructions, framework debug mode, and env var documentation. Supports Next.js, Rails, Django, Express, Java/Kotlin, Rust, and .NET stacks via per-stack resource files. |
+| **Build WordPress Plugin** | Generate a complete WordPress plugin codebase from a plain-English description. Produces free (.org-clean) and premium ZIPs from one monorepo with zero telemetry violations. |
+| **Business Idea Incubator** | Validate, refine, and implement business ideas through multidisciplinary coaching across 11 disciplines. Tracks progress and surfaces blind spots. |
 
 ## Installation
 
@@ -32,41 +34,46 @@ Replace `ai-era-vulnerability-scanner` with the plugin name you want.
 2. Go to **Settings > Capabilities > Skills > Upload**.
 3. Select the ZIP file. Claude will read the `SKILL.md` and display the skill name and description.
 
+### Multi-Agent Setup (Kilo Code, Opencode, Devin)
+
+All three agents use the same `.agents/skills/` standard for skill discovery. Skills are symlinked into `.agents/skills/<name>/SKILL.md` automatically when you run the build script (see [Building Skills](#building-skills)).
+
+| Agent | Discovery paths |
+|-------|----------------|
+| **Kilo Code** | `.kilocode/skills/`, `.agents/skills/` |
+| **Opencode** | `.opencode/skill/`, `.claude/skills/`, `.kilocode/skills/` |
+| **Devin** | `.devin/skills/`, `.agents/skills/` |
+
+The build script creates symlinks under `.agents/skills/<name>/` (shared by Kilo Code and Devin) and `.opencode/skill/<name>/` (for Opencode). All symlinks point back to the canonical source files, so edits to `Skill.md` or `resources/` are immediately reflected.
+
+After building, invoke any skill by name in your agent:
+
+```bash
+# Kilo Code — triggered by matching description or /skill-name
+# Opencode — triggered by matching description or in-skill prompt
+# Devin CLI — /skill-name or automatic when relevant
+```
+
+#### Manual symlink setup (no build required)
+
+```bash
+# From the repo root
+SKILL=city-risk-landscape
+mkdir -p .agents/skills/$SKILL
+ln -sf ../../$SKILL/Skill.md .agents/skills/$SKILL/SKILL.md
+ln -sf ../../$SKILL/resources .agents/skills/$SKILL/resources
+mkdir -p .opencode/skill/$SKILL
+ln -sf ../../../.agents/skills/$SKILL/SKILL.md .opencode/skill/$SKILL/SKILL.md
+ln -sf ../../../.agents/skills/$SKILL/resources .opencode/skill/$SKILL/resources
+```
+
+Repeat for each skill. Run `./build-all.sh` to set up all skills at once.
+
 ### Windsurf (Cascade)
 
-Windsurf supports the same `SKILL.md` format natively. Skills are auto-invoked when your prompt matches the skill description, or triggered manually with `@skill-name`.
+Windsurf supports the same `SKILL.md` format natively via `.agents/skills/` (already set up by the build script).
 
-> **Note on filename casing:** Windsurf expects `SKILL.md` (all-caps). The files in this repo are named `Skill.md`. Rename the file after copying, or use the one-liner below which handles it automatically.
-
-#### Option A — Workspace skill (project-specific, committed with your repo)
-
-```bash
-# From your project root — example for city-risk-landscape
-SKILL=city-risk-landscape
-mkdir -p .windsurf/skills/$SKILL
-cp -r /path/to/AgentSkills/$SKILL/* .windsurf/skills/$SKILL/
-mv .windsurf/skills/$SKILL/Skill.md .windsurf/skills/$SKILL/SKILL.md
-```
-
-Repeat for each skill you want. The `.windsurf/skills/` folder is committed with your repo, so your whole team gets the skill automatically.
-
-#### Option B — Global skill (available in every workspace on your machine)
-
-```bash
-SKILL=city-risk-landscape
-mkdir -p ~/.codeium/windsurf/skills/$SKILL
-cp -r /path/to/AgentSkills/$SKILL/* ~/.codeium/windsurf/skills/$SKILL/
-mv ~/.codeium/windsurf/skills/$SKILL/Skill.md ~/.codeium/windsurf/skills/$SKILL/SKILL.md
-```
-
-#### Invoking skills in Cascade
-
-| Method | How |
-|--------|-----|
-| **Auto-invocation** | Describe what you want — Cascade reads the skill description and loads it automatically |
-| **Manual** | Type `@city-risk-landscape` (or the skill name) in the Cascade input box |
-
-> **Cross-agent path:** Windsurf also discovers skills placed in `.agents/skills/` — useful if you want a single copy shared by multiple agents without committing to `.windsurf/`.
+> **Note on filename casing:** Windsurf expects `SKILL.md` (all-caps). The symlinks in `.agents/skills/<name>/` use the correct casing.
 
 ## Building Skills
 

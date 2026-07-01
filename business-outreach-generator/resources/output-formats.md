@@ -28,6 +28,7 @@ After the offering resource is loaded (or a generic template is generated from t
 | `Phone` | `## Phone Call Template` |
 | `Reddit` | `## Reddit Post Template` |
 | `StackOverflow` | `## StackOverflow Post Template` |
+| `Instagram` | `## Instagram Post Template` |
 | `Airtasker` | `## Airtasker Task Response Template` |
 
 If the loaded resource file does not contain the requested section, fall back to a **Generic Template** built from the idea's `## Context` and `## Key Facts`, formatted appropriately for the channel.
@@ -48,6 +49,7 @@ If the loaded resource file does not contain the requested section, fall back to
 - **Tone:** Conversational peer-to-peer, not a sales pitch
 - **Style:** First-person, informal but credible. Avoid jargon. Reference shared context where possible.
 - **CTA:** Soft ask — "Would you be open to a quick chat?" or "Happy to share more if useful."
+- **Hook framing check:** Before writing the opener, assess whether the problem is already trending. Search social/forums for discussion volume on the topic. If the problem is well-known (multiple papers, active threads, high discussion volume): do NOT lead with "nobody talks about this" or "what nobody knows" framing. Instead, acknowledge the known problem and pivot to the gap in tooling, data, or approach. If the problem is genuinely under-discussed: lead with the discovery framing.
 
 ### Phone
 - **Length:** Dot-point brief, 60–120 words of bullet points
@@ -62,6 +64,41 @@ If the loaded resource file does not contain the requested section, fall back to
 - **Style:** Self-post (text post). Honest, story-driven. Mention the tool/idea as something you built while solving your own problem.
 - **CTA:** Invite feedback, not sales. "Would love feedback on what rules/features to add." or "Happy to answer questions in comments."
 - **Rules:** Follow subreddit rules — no direct linking in self-posts unless explicitly allowed. Mention the project tangentially or offer to share the link in comments. Respect strict-self-promo rules.
+- **Hook framing check:** Before writing the opener, assess whether the problem is already widely discussed on Reddit and across the industry. Search recent posts, papers, and blogs for discussion volume. If the problem is well-known (multiple papers, active threads, high upvote counts): do NOT lead with "nobody talks about this" or "what nobody knows" framing. Instead, acknowledge the known problem and pivot to what's still missing — tooling, data, measurement, or a specific angle. If the problem is genuinely under-discussed: lead with the discovery framing.
+
+#### Sales Pitch Avoidance (Reddit)
+
+Reddit communities are aggressive toward self-promotion. Posts that read as ads get downvoted, reported to mods, and can get the account banned.
+
+**Phrasing that triggers "this is a pitch" detection:**
+- ❌ *"I've been experimenting with/building/working on a tool that..."* — Sounds like product development, not genuine experience sharing.
+- ❌ *"Early results are promising"* — Classic SaaS teaser language.
+- ❌ *"Curious if others have tried this"* — Reads as market validation fishing rather than genuine curiosity.
+- ❌ *"I've been digging into this from a [service] angle"* — Suggests you're selling a service, not sharing findings.
+- ❌ *"Happy to share more" / "feel free to DM me"* — Implies a funnel.
+- ❌ *"The AI fights it at first, but once guardrails are in place"* — Product marketing voice.
+
+**Safe alternatives:**
+- ✅ Frame as personal experience: *"What I noticed on my team was..."*
+- ✅ Cite independent research: *"The SlopCodeBench paper found that..."*
+- ✅ Admit uncertainty: *"Not sure what the fix is — maybe we just accept the debt cost."*
+- ✅ Be self-deprecating: *"Is my team unusually bad at this?"*
+- ✅ Stay on-topic: Answer OP's question directly before introducing your angle.
+
+**Moderation red flags (getting you banned):**
+- Posting history of only self-promo across multiple subreddits
+- Account younger than 6 months posting about their own project
+- Asking for signups, leads, DMs, or "check out my profile"
+- Reposting the same content to multiple subreddits
+- Arguing with mods when a post is removed
+
+**Subreddit-specific strategies:**
+- **r/ExperiencedDevs, r/programming:** Must be data-backed or experience-grounded. Cite personal experiments or academic papers. Never lead with a solution. The community values critical thinking over enthusiasm.
+- **r/vibecoding, r/reactjs:** More accepting of project mentions, but still no direct pitches. Frame as "I ran into this problem building my own thing" rather than "I built a tool that solves this."
+- **r/WordPress:** Focus on specific technical advice. Plugin/theme mentions are expected, but don't pitch your own unless it directly solves the thread's exact problem.
+- **r/SpringBoot:** Pure technical discussion. Don't mention your service unless someone explicitly asks "does anyone offer this as a service?"
+
+**The one-post rule:** If you can't imagine reading the post and seeing a genuine contribution that happens to mention your area of work, it's a pitch. Rewrite until the product mention is optional.
 
 ### StackOverflow
 - **Length:** 100–250 words (answer body only)
@@ -76,6 +113,13 @@ If the loaded resource file does not contain the requested section, fall back to
 - **Style:** Lead with deliverable and timeline. State qualifications succinctly. Include fixed price or price range.
 - **CTA:** Clear next step — "Message me to discuss details" or "I can start within 48 hours."
 - **Rules:** Differentiate on expertise, not just price. Airtasker users are comparing multiple bids.
+
+### Instagram
+- **Length:** Carousel: 5–10 slides, ~40–60 words per slide. Reel caption: 80–150 words.
+- **Tone:** Authoritative but accessible. Educational, not salesy.
+- **Style:** Visual-forward. Lead with a hook slide (question or bold statement), build the case across middle slides (data, screenshots, before/after), close with a soft CTA slide. Caption expands on the content with context and a discussion prompt.
+- **CTA:** Soft — "Tag a teammate who needs to see this" or "Drop a comment if you've run into this." No direct sales links in captions. Link in bio or story sticker for deeper funnel.
+- **Rules:** Follow Instagram's community guidelines — no misleading claims, no prohibited content (hacking tools, surveillance tech). Do not mention "audit", "scan", "vulnerability" in a way that implies unauthorized access. Frame as educational content, not a service advertisement. Use relevant hashtags (3–5 max) in the first comment, not the caption.
 
 ---
 
@@ -92,6 +136,7 @@ When loading an offering resource file, extract the section matching the selecte
 | Phone | 4–6 dot points: company context, problem signal, suggested angle, 1–2 questions |
 | Reddit | Title (question/statement format) + body paragraphs (story + details + feedback ask) |
 | StackOverflow | Direct answer to question + 1–2 sentences contextualising + optional mention of related tooling |
+| Instagram | Hook slide (question/stat) + 3–8 evidence slides (data, screenshots, comparisons) + CTA slide (discussion prompt) + caption expanding on the topic |
 | Airtasker | Greeting + qualifications + deliverable summary + price + timeline + CTA |
 
 When building a fallback, draw content from the idea file's `## Context` and `## Key Facts` sections.
@@ -109,6 +154,7 @@ When presenting the final output to the human:
 | **Phone** | Dot-point research brief: company overview, industry focus, products/services, tech stack, suggested offering focus, 1–2 leading questions. |
 | **Reddit** | Title + body as a self-post. Note which subreddit it targets, character count, and whether direct links are allowed per that subreddit's rules. |
 | **StackOverflow** | Question title + answer body. Note: "Verify the question is still open and on-topic before posting." |
+| **Instagram** | Slide-by-slide carousel plan (slide 1 hook, slides 2–n evidence, final slide CTA) + caption text + suggested hashtags (3–5 in first comment). Recommend whether to post as a carousel, Reel, or single image based on content. Note: "Image assets will need to be created from the descriptions below." |
 | **Airtasker** | Task response / bid proposal: short intro, why you're qualified, what you'll deliver, fixed price or price range, and a clear next step. Note: "Include your price and timeline in the response." |
 
 ---
@@ -143,6 +189,24 @@ These formats are **thread-centric**. The skill does **not** search for companie
    - Create new threads (unless the human explicitly requests it and the subreddit allows)
    - Target specific companies from thread discussions
 
+### Instagram
+
+This format is **audience-centric**. The skill creates educational or awareness-building content targeting a specific professional niche, not a specific company or thread:
+
+1. **Identifies the target audience** from the selected offering's `## Keywords`, `## Context`, and `## Key Facts`
+2. **Researches the audience's pain points** — what questions are developers/businesses asking on Reddit, Stack Overflow, and Twitter/X that the offering addresses
+3. **Selects a content angle** from the offering's key facts that works visually:
+   - Before/after comparison (e.g., "before DriftGuard vs after" codebase metrics)
+   - Data-driven insight (e.g., "3 stats that show AI code degradation is real")
+   - Educational how-to (e.g., "how to check if your WordPress plugins are vulnerable")
+   - Myth-busting (e.g., "5 things people get wrong about Jakarta migration")
+4. **Builds a carousel narrative** — hook → evidence (3–8 slides) → CTA
+5. **Generates caption** that expands on the content and invites discussion
+6. **Does NOT:**
+   - Pitch services directly in the caption
+   - Tag specific companies or individuals without their consent
+   - Use sensitive security terminology in a way that could trigger content moderation
+
 ### Airtasker
 
 This format is **job-centric**. The skill:
@@ -176,7 +240,29 @@ When no specific company or thread is provided, the mode triggered depends on th
 |---------------|--------------|----------------------|
 | `Email`, `LinkedIn`, `Phone` | Company / Developer Social Scanning | Companies and technical staff |
 | `Reddit`, `StackOverflow` | Thread / Question Scanning | Relevant discussion threads and questions |
+| `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content |
 | `Airtasker` | Job / Task Scanning | Open tasks with few offers matching the offering |
+
+### Audience / Trend Scanning (Instagram)
+
+When `Output format` is `Instagram` and no specific audience has been provided:
+
+1. **Research trending pain points** in the offering's domain using the idea's `## Keywords`:
+   - Search X/Twitter, Reddit, and LinkedIn for questions, complaints, and discussion threads matching the idea's keywords
+   - Identify 3–5 recurring themes or questions that visual content could address
+2. **Select the strongest content angle** based on:
+   - Frequency of the pain point (how many people are discussing it)
+   - Visual potential (can this be shown with screenshots, diagrams, or before/after comparisons?)
+   - Alignment with the offering's differentiation
+3. **Build carousel content plan**:
+   - Slide 1: Hook (bold statement or question)
+   - Slides 2–7: Evidence (screenshots, data points, comparisons, code snippets)
+   - Final slide: Soft CTA (discussion prompt, not a sales pitch)
+4. **Draft caption** that expands on the visual content and includes:
+   - Context and framing (1–2 sentences)
+   - Key takeaway (1–2 sentences)
+   - Discussion question (1 sentence)
+   - Relevant hashtags (3–5, placed in first comment, not the caption)
 
 ### Thread / Question Scanning (Reddit + StackOverflow)
 

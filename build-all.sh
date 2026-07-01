@@ -36,6 +36,40 @@ fi
 echo "  OK: marketplace.json"
 
 echo ""
+echo "=== Validating Skill.md frontmatter (Kilo compatibility) ==="
+for dir in "${SKILL_DIRS[@]}"; do
+  skill_md="${SCRIPT_DIR}/${dir}/Skill.md"
+  if ! head -5 "${skill_md}" | grep -q "^name: ${dir}$"; then
+    echo "ERROR: ${skill_md} frontmatter 'name' must match directory name '${dir}'" >&2
+    echo "  Found: $(head -3 "${skill_md}" | grep '^name:' | sed 's/^name: //')" >&2
+    exit 1
+  fi
+  echo "  OK: ${dir}"
+done
+
+echo ""
+echo "=== Setting up multi-agent symlinks ==="
+for dir in "${SKILL_DIRS[@]}"; do
+  bash "${SCRIPT_DIR}/scripts/setup-agent-links.sh" "${dir}"
+done
+
+echo ""
+echo "=== Validating agent symlinks ==="
+for dir in "${SKILL_DIRS[@]}"; do
+  agents_link="${SCRIPT_DIR}/.agents/skills/${dir}/SKILL.md"
+  if [[ ! -L "${agents_link}" ]]; then
+    echo "ERROR: Missing symlink ${agents_link}" >&2
+    exit 1
+  fi
+  opencode_link="${SCRIPT_DIR}/.opencode/skill/${dir}/SKILL.md"
+  if [[ ! -L "${opencode_link}" ]]; then
+    echo "ERROR: Missing symlink ${opencode_link}" >&2
+    exit 1
+  fi
+  echo "  OK: ${dir}"
+done
+
+echo ""
 echo "=== Building individual skill ZIPs ==="
 for dir in "${SKILL_DIRS[@]}"; do
   echo ""

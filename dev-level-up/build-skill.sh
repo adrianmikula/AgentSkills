@@ -33,3 +33,8 @@ zip -r "${OUTPUT_ZIP}" "${SKILL_NAME}/"
 rm -rf "${STAGING_DIR}"
 
 echo "Build complete: ${OUTPUT_ZIP}"
+
+# --- Setup agent symlinks (Kilo Code, Opencode, Devin) ---
+echo ""
+echo "=== Setting up multi-agent symlinks ==="
+bash "${SCRIPT_DIR}/../scripts/setup-agent-links.sh" "dev-level-up"

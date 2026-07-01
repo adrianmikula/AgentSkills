@@ -1,5 +1,5 @@
 ---
-name: Optimise Agentic Coding
+name: optimise-agentic-coding
 description: Analyze a source code repository and apply a systematic 5-layer set of improvements that optimize it for AI agent-assisted debugging and coding velocity. Detects tech stack, sets up fast lint + fast tests + velocity hacks, installs structured logging, configures MCP servers, creates command catalogue + common issues doc, sets up agent workflows, and documents env vars.
 ---
 
