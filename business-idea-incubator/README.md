@@ -1,6 +1,6 @@
 # Business Idea Incubator
 
-A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and implement business ideas. Adapts to your experience level across 11 key disciplines and tracks progress over time.
+A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and implement business ideas. Adapts to your experience level across 12 key disciplines — including funding & capital strategy — and tracks progress over time. A core priority is understanding your actual financial resources before making any recommendations.
 
 ## Disciplines Covered
 
@@ -17,6 +17,7 @@ A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and 
 | 9 | Production Deployment | Hosting, CI/CD, monitoring, security hardening |
 | 10 | E-commerce & Online Selling | Store setup, CRO, fulfilment, payment processing |
 | 11 | Social Media Presence | Content strategy, platform selection, community building |
+| 12 | Funding & Capital Strategy | Pre-revenue funding, bootstrapping, grants, crowdfunding, angels/VC, revenue-first strategies, funding securement process |
 
 ## How It Works
 
@@ -32,8 +33,10 @@ The Skill creates a `.ideas/` folder in your project root:
 
 ```
 .ideas/
-├── human-profile.md       # Your expertise levels and preferences
+├── human-profile.md       # Your expertise levels, financial resources, and preferences
 ├── personality-profile.md # Working style, strengths, weaknesses
+├── funding/
+│   └── [idea-slug].md      # Funding status, milestones, and grant/investor tracking per idea
 └── ideas/
     └── [idea-name].md     # One file per business idea (deduplicated)
 ```

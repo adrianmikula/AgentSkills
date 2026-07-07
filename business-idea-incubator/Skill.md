@@ -5,9 +5,9 @@ description: Validate, refine, and implement business ideas through multidiscipl
 
 ## Overview
 
-This Skill helps entrepreneurs incubate business ideas by combining insights from multiple disciplines: idea validation, startup foundations, marketing, outreach framing, profitability, competitive intelligence, business operations, vibe coding, production deployment, e-commerce selling, and social media. 
+This Skill helps entrepreneurs incubate business ideas by combining insights from multiple disciplines: idea validation, startup foundations, marketing, outreach framing, profitability, competitive intelligence, business operations, vibe coding, production deployment, e-commerce selling, social media, and funding & capital strategy. 
 
-It adapts to your experience level, focusing research, advice, and coaching on the disciplines where you need the most help — especially areas you identify as weaknesses or blind spots.
+It adapts to your experience level, focusing research, advice, and coaching on the disciplines where you need the most help — especially areas you identify as weaknesses or blind spots. A core priority is understanding your actual financial resources before making any recommendations about funding, and matching funding strategies to your specific stage, industry, and value proposition.
 
 Additionally, the Skill maintains a **Trends Log** of timestamped external factors (threat landscapes, regulatory changes, technology shifts, competitive moves) that affect the viability and positioning of your ideas. Trends are refreshed automatically if older than 30 days.
 
@@ -24,8 +24,10 @@ The Skill maintains persistent state across sessions using markdown files in a `
 ```
 .ideas/
 ├── ecosystem-map.md       # Visual/composite map of all ideas, trends, and relationships — use for upsell paths, bundling opportunities, and authority domain strategy
-├── human-profile.md       # Your expertise, background, and preferences
+├── human-profile.md       # Your expertise, background, and financial resources
 ├── personality-profile.md # Working style, strengths/weaknesses, communication preferences
+├── funding/
+│   └── [idea-slug].md      # Funding status, milestones, and grant/investor tracking per idea
 ├── trends/
 │   ├── index.md           # Index of all trends with timestamps and expiry dates
 │   ├── trend-[slug].md    # One file per trend (deduplicated by slug)
@@ -39,8 +41,9 @@ The Skill maintains persistent state across sessions using markdown files in a `
 | File | Purpose | Update Trigger |
 |------|---------|----------------|
 | `.ideas/ecosystem-map.md` | Composite view of all ideas and trends — used to identify upsell paths, bundling opportunities, and authority domain gaps | Update whenever a new idea or trend is added that changes the relationship landscape |
-| `.ideas/human-profile.md` | Stores your confidence/experience level per discipline, background context, and tool preferences | Initial onboarding, then only when you explicitly update it |
+| `.ideas/human-profile.md` | Stores your confidence/experience level per discipline, financial resources, background context, and tool preferences | Initial onboarding, then only when you explicitly update it |
 | `.ideas/personality-profile.md` | Stores your working style, known strengths/weaknesses, and how you prefer to receive feedback | Initial onboarding, then when you share new self-awareness |
+| `.ideas/funding/{slug}.md` | Tracks funding status, milestones, grant applications, investor contacts, and financial resources for a specific business idea | After each funding-related interaction, capital change, or milestone |
 | `.ideas/trends/index.md` | Master index of all tracked trends with timestamps, category tags, and expiry dates | Added/updated when trends are logged or refreshed |
 | `.ideas/trends/trend-[slug].md` | Detailed record of a single trend: source, context, impact assessment, and linked ideas | Added when new trend is recorded; updated when trend is refreshed |
 | `.ideas/trends/refresh-queue.md` | Auto-generated list of trends approaching or past 30-day expiry, with refresh status | Updated every session during startup |
@@ -190,7 +193,89 @@ The `## Keywords` field is used by the Business Outreach Generator to build cons
 
 Do not store full conversation transcripts. Append only structured summaries of decisions, findings, and next steps.
 
+### Funding Section in Idea Files
+
+Each `.ideas/ideas/{slug}.md` may include a funding section (append after Key Facts or Linked Trends):
+
+```markdown
+## Funding
+
+**Stage:** Pre-Revenue / Prototype / Early Traction / Revenue
+**Available Capital:** $[amount]
+**Runway:** [X] months
+**Salary Requirement:** [Yes / No / Part-time]
+**Friends & Family Access:** [Yes / No / Amount range]
+**Previous Funding:** [None / Amount and stage]
+
+### Funding Plan
+[Summarize the current funding strategy: bootstrap, grants, pre-sales, etc.]
+
+### Funding Milestones Log
+
+| Date | Action | Amount | Status | Notes |
+|------|--------|--------|--------|-------|
+| [Date] | [Applied to grant / pitched to angel / pre-sold] | $[amount] | [Pending / Won / Lost] | [Notes] |
+```
+
+Update the funding section whenever the financial situation changes, a funding milestone is reached, or a new funding option is being pursued.
+
+### Funding File Format
+
+Each `.ideas/funding/{slug}.md` follows this structure:
+
+```markdown
+# Funding: [Idea Name]
+
+**Slug:** `[slug]`
+**Last Updated:** [Date]
+
+## Financial Position
+- **Available Capital:** $[amount]
+- **Monthly Burn Estimate:** $[amount]
+- **Runway:** [X] months
+- **Salary Requirement:** [Yes / No / Part-time]
+
+## Funding Strategy
+
+### Phase 1 — Bootstrap (Now — [Month X])
+- **Goal:** [Revenue target or validation milestone]
+- **Actions:** [List specific actions: pre-sales, service-wrap, no-code, etc.]
+- **Expected capital required:** $[amount]
+- **Expected capital generated:** $[amount]
+
+### Phase 2 — Non-Dilutive Funding ([Month X] — [Month Y])
+- **Grants to apply for:** [List specific grants with deadlines]
+- **Competitions to enter:** [List with dates]
+- **Expected capital:** $[amount]
+
+### Phase 3 — External Funding ([Month Y] — [Month Z])
+- **Funding type:** [Bootstrapping / Angels / Micro-VC / Accelerator / VC]
+- **Ask amount:** $[amount]
+- **Dilution target:** [X]%
+- **Milestones required:** [List]
+- **Investor targets:** [List]
+
+## Funding Milestones Log
+
+| Date | Action | Amount | Outcome | Notes |
+|------|--------|--------|---------|-------|
+| [Date] | [Action] | $[amount] | [Pending / Won / Lost] | [Notes] |
+
+## Linked Ideas
+
+| Idea Slug | Relationship |
+|-----------|-------------|
+| [idea-slug] | Same funding pool / shared runway |
+```
+
+The funding file is optional but recommended for ideas where funding is a significant factor. Create it when:
+- The human explicitly discusses funding for the idea
+- A grant, competition, or investor is being actively pursued
+- The human requests a funding plan
+- Financial milestones are being tracked
+
 ---
+
 
 ## Startup Flow
 
@@ -249,6 +334,25 @@ When starting a new idea, check if `.ideas/human-profile.md` exists:
 
 Collect the following before generating any deliverables:
 
+**Step A — Financial Resource Assessment (ask before idea parameters)**
+
+Before collecting idea details, ask the human about their financial resources for this project. These questions inform all subsequent funding recommendations. Never assume capital availability.
+
+| # | Question | Expected Response |
+|---|----------|-------------------|
+| F1 | **What is your total available capital for this project right now?** | $[amount] or "None / Unsure" |
+| F2 | **How many months can you sustain this without any income?** | [X] months or "Need income from day one" |
+| F3 | **Can you afford to go 6–12 months without a salary?** | Yes / No / Part-time income needed |
+| F4 | **Do you have access to friends/family capital?** | Yes (range) / No / Not comfortable asking |
+| F5 | **What's your personal financial situation?** | Employed / Unemployed / Student / Retired / Other |
+| F6 | **Have you raised any capital previously?** | Yes (amount, stage, investors) / No |
+| F7 | **What's your target timeline to first revenue?** | Immediate / 3 months / 6 months / 12+ months |
+| F8 | **What's your ideal outcome?** | Revenue business / Acquihire / VC-scale exit / Lifestyle |
+
+Record the answers. Save them to `.ideas/human-profile.md` (append a Financial Resources section) and use them to calibrate all funding recommendations throughout the session.
+
+**Step B — Idea Parameters**
+
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 1 | **Idea summary** | Free text (2–3 sentences) — describe the core business concept, product/service, and target customer. |
@@ -256,9 +360,41 @@ Collect the following before generating any deliverables:
 | 3 | **Target market** | Free text (e.g., SMBs, enterprise, consumers, developers, local businesses) |
 | 4 | **Geography** | Free text (e.g., Australia, United States, global, Southeast Asia) |
 
-After collecting these 4 parameters, proceed to **Conditional Routing** to select disciplines and generate deliverables.
+After collecting these parameters, proceed to **Conditional Routing** to select disciplines and generate deliverables.
 
 ---
+
+## Financial Resources in Human Profile
+
+When the financial resource questions are answered (Step A above), append or update the following section in `.ideas/human-profile.md`:
+
+```markdown
+## Financial Resources
+
+**Last Updated:** [Date]
+
+### Current Project Financials
+- **Available Capital:** $[amount]
+- **Runway Without Income:** [X] months
+- **Salary Requirement:** [Yes / No / Part-time income needed]
+- **Friends & Family Capital Access:** [Yes / Amount range / No / Not comfortable]
+
+### Personal Financial Situation
+- **Employment Status:** [Employed / Unemployed / Student / Retired / Other]
+- **Previous Capital Raised:** [None / Amount and stage]
+- **Revenue Timeline Target:** [Immediate / 3 months / 6 months / 12+ months]
+
+### Ideal Outcome
+- [Revenue business / Acquihire / VC-scale exit / Lifestyle / Other]
+
+### Notes
+- [Any relevant context: e.g., "Can dedicate 20 hrs/week while employed", "Has $50K savings but needs to cover rent"]
+```
+
+Update this section whenever the human's financial situation changes. Do not make assumptions about their financial resources — always ask and record their actual answers.
+
+---
+
 
 ## Human Profile Initialization
 
@@ -284,7 +420,8 @@ Go through each discipline in order, waiting for the human's response before mov
 9. Production Deployment
 10. E-commerce & Online Selling
 11. Social Media Presence
-12. Trend Analysis (tracking external market conditions, threat landscapes, competitive moves)
+12. Funding & Capital Strategy (pre-revenue funding, bootstrapping, grants, crowdfunding, angels/VC, revenue-first)
+13. Trend Analysis (tracking external market conditions, threat landscapes, competitive moves)
 
 Record the human's selection for each discipline. For internal confidence scoring used in adaptive coaching:
 - Easy/Confident → 1
@@ -384,7 +521,8 @@ Each discipline has its own resource file containing frameworks, tools, pitfalls
 | 9 | Production Deployment | `resources/production-deployment.md` | Yes |
 | 10 | E-commerce & Online Selling | `resources/ecommerce-selling.md` | Yes |
 | 11 | Social Media Presence | `resources/social-media.md` | Yes |
-| 12 | Trend Analysis | (built-in — uses `.ideas/trends/` directly) | No |
+| 12 | Funding & Capital Strategy | `resources/funding.md` | No |
+| 13 | Trend Analysis | (built-in — uses `.ideas/trends/` directly) | No |
 
 **To add a new discipline:** Create a new resource file in `resources/`, add a row to this table, and update the onboarding survey in Step 1 above.
 
@@ -399,7 +537,8 @@ Determine which disciplines to load based on:
 2. Their confidence profile (load more content for low-confidence areas)
 3. Blind spots (prioritize these)
 4. The idea's current phase (e.g., if validating, emphasize idea-validation and competitive-intelligence)
-5. **Active trends linked to the idea** — if an idea is linked to a fresh trend that changes its positioning, weight disciplines accordingly (e.g., a new security threat trend → emphasize competitive intelligence and marketing)
+5. **The human's financial resources and funding stage** — if pre-revenue with limited capital, emphasize Funding & Capital Strategy, Revenue-First strategies, and Profitability. If actively fundraising, emphasize pitch preparation, investor targeting, and milestone planning.
+6. **Active trends linked to the idea** — if an idea is linked to a fresh trend that changes its positioning, weight disciplines accordingly (e.g., a new security threat trend → emphasize competitive intelligence and marketing)
 
 If the human requests "full incubation" or "help with everything," load all disciplines. Otherwise, load only the relevant subset.
 
@@ -418,6 +557,9 @@ Based on the human's desired output, use templates from the loaded discipline re
 - **Research Report** — Deep-dive analysis with data and frameworks, incorporating active trends where relevant
 - **Action Plan** — Concrete next steps with timelines and owners, adjusted for current market conditions
 - **Framework Canvas** — Completed business model canvas, Lean Canvas, etc.
+- **Funding Plan** — Phase-by-phase funding strategy matched to current capital, runway, stage, industry, and ideal outcome (bootstrap → non-dilutive → external)
+- **Investor Summary** — Pitch-ready summary for angels, micro-VC, or accelerators (when human is ready to raise)
+- **Grant/Competition Tracker** — Curated list of relevant grants, competitions, and application timelines matched to industry and stage
 - **Code Prototype** — Working vibe-coded prototype (when vibe-coding discipline is active)
 - **Deployment Guide** — Step-by-step production deployment instructions
 - **Trend Brief** — Summary of relevant trends and how they affect the idea's market window
@@ -446,6 +588,7 @@ Procedure for both cases (see `resources/accessing-idea-files.md` for all `.idea
 2. If not, create one using the deduplication logic.
 3. For Case 1: append immediately. For Case 2: ask first.
 4. Confirm with the human: *"I've updated your idea file. Want me to save anything else?""
+5. **If the interaction involved funding, financial resources, or capital:** also check for and update `.ideas/funding/{slug}.md`. Create it if it doesn't exist. Append a dated entry for any funding milestone, grant application, investor contact, or capital change.
 
 ---
 
@@ -472,7 +615,7 @@ Do not install skills without explicit permission, but do not remain silent abou
 - **Length:** Varies by task. Research reports: 800–2,000 words. Action plans: 5–10 steps. Code: production-ready with comments.
 - **Jargon:** Explain terms on first use. Match the human's vocabulary level.
 - **Actionability:** Every session ends with at least one concrete next step.
-- **State Hygiene:** After every significant interaction — confirmation, refinement, decision, strategy selection, or goal change — update the matching `.ideas/ideas/{slug}.md` file with a dated progress log entry (see `resources/accessing-idea-files.md`). Do not skip this step. Check `.ideas/trends/` for changes; update `.ideas/trends/index.md` and related trend files when trends are added, refreshed, or archived.
+- **State Hygiene:** After every significant interaction — confirmation, refinement, decision, strategy selection, goal change, or financial/funding update — update the matching `.ideas/ideas/{slug}.md` file with a dated progress log entry AND update the `.ideas/funding/{slug}.md` file if the interaction involved funding. Do not skip this step. Check `.ideas/trends/` for changes; update `.ideas/trends/index.md` and related trend files when trends are added, refreshed, or archived.
 - **Blind Spot Care:** When coaching in weak areas, be extra patient, provide examples, and celebrate small wins.
 
 ---

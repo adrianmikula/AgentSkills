@@ -33,6 +33,7 @@ cp "${SCRIPT_DIR}/resources/production-deployment.md" "${STAGING_DIR}/resources/
 cp "${SCRIPT_DIR}/resources/ecommerce-selling.md" "${STAGING_DIR}/resources/"
 cp "${SCRIPT_DIR}/resources/social-media.md" "${STAGING_DIR}/resources/"
 cp "${SCRIPT_DIR}/resources/accessing-idea-files.md" "${STAGING_DIR}/resources/"
+cp "${SCRIPT_DIR}/resources/funding.md" "${STAGING_DIR}/resources/"
 
 # Package: ZIP must have the skill folder as its root (not files at root)
 cd "${SCRIPT_DIR}"

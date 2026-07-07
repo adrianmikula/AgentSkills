@@ -257,6 +257,12 @@ Use the shared scanning framework in `resources/developer-social-scanning.md` wi
 
 ---
 
+## Local Business Lead Generation
+
+When the selected offering targets micro/local businesses (cafes, restaurants, hairdressers, retail, etc.) that may need website work, use `resources/local-business-lead-gen.md` instead of developer/website scanning modes. That file contains lead sources, search queries, scoring criteria, and outreach angles specific to this segment.
+
+---
+
 ## Conditional Routing
 
 After collecting the onboarding parameters, select the template and resource using the following logic:
@@ -309,6 +315,50 @@ All tone rules, length guidelines, platform-specific rules, and presentation gui
 - **Lead-Scanning Mode Routing** — how scanning modes adapt to the output format
 
 Consult `resources/output-formats.md` whenever generating any outreach message.
+
+---
+
+## Grounding Requirement — No Hallucinated Claims
+
+All outreach messages must be factually grounded in the selected idea file. **Do not invent capabilities, experiments, or metrics that don't exist.**
+
+### Required Pre-Generation Check
+
+Before writing any outreach, load the selected idea file and extract:
+
+1. **`## Current Focus`** — What you are actively building/working on right now. Only claim features listed here.
+2. **`## Positioning` → Elevator Pitch** — The one-sentence description of what your product/service actually does.
+3. **`## Positioning` → USP** — The specific differentiator. Don't invent others.
+4. **`## Context` and `## Key Facts`** — Any specific research findings, papers, or data points referenced here may be cited. Do not cite research not listed here.
+
+### Claim Validation Rules
+
+For every specific claim in the draft, verify:
+
+| Claim type | Must be grounded in | Example violation | Example fix |
+|---|---|---|---|
+| "I built / I've been building / I'm experimenting with X" | `## Current Focus` | "I built a CI gate" (tool runs IDE-only) | "I'm experimenting with IDE-level drift detection" |
+| "X does Y" (product capability) | `## Elevator Pitch` or `## USP` | "SlopGuard runs structural CI checks" (only flags IDE problems) | "SlopGuard flags problems while the agent is coding" |
+| "Research shows Z" (data/papers) | `## Key Facts` or cited in idea file | Citing a paper not in the idea file | Only cite papers listed in the idea file |
+| "I've been tracking / measuring W" | `## Current Focus` or `## Context` | "Tracking afferent coupling" (no such feature) | "Researching patterns of architectural drift in AI code" |
+
+### When in Doubt, Vague Up
+
+If you're unsure whether a claim is accurate for the actual product:
+- Do NOT guess or embellish
+- Use generic framing: *"I've been researching..."*, *"I'm exploring..."*, *"The [paper name] paper found..."*
+- Keep claims at the observation/research level, not the product level
+- When referencing the product, use the exact language from the Positioning section — no more, no less
+
+### Audit Trail
+
+Save the verification with the draft metadata:
+```
+**Grounded In:** [idea-slug]
+**Verified Claims:** [list of claims made and where each is grounded]
+```
+
+This applies to **all formats** — Email, LinkedIn, Reddit, StackOverflow, Instagram, Phone, Airtasker.
 
 ---
 

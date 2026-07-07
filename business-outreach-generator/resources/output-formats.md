@@ -50,6 +50,7 @@ If the loaded resource file does not contain the requested section, fall back to
 - **Style:** First-person, informal but credible. Avoid jargon. Reference shared context where possible.
 - **CTA:** Soft ask — "Would you be open to a quick chat?" or "Happy to share more if useful."
 - **Hook framing check:** Before writing the opener, assess whether the problem is already trending. Search social/forums for discussion volume on the topic. If the problem is well-known (multiple papers, active threads, high discussion volume): do NOT lead with "nobody talks about this" or "what nobody knows" framing. Instead, acknowledge the known problem and pivot to the gap in tooling, data, or approach. If the problem is genuinely under-discussed: lead with the discovery framing.
+- **Grounding check (see Skill.md → Grounding Requirement):** Every claim about what you've built or are experimenting with must be verifiable against the selected idea file's `## Current Focus` and `## Positioning` sections. If you're unsure, vague up — use "researching" / "exploring" instead of claiming specific capabilities.
 
 ### Phone
 - **Length:** Dot-point brief, 60–120 words of bullet points

@@ -51,7 +51,9 @@ If the answer is no, the code does not belong in the free build.
 │
 ├── scripts/
 │   ├── build.sh                   # Produces both ZIPs
-│   └── preflight-check.sh         # Grep checks before submission
+│   ├── preflight-check.sh         # Grep checks before submission
+│   ├── deploy-to-svn.sh           # Push a built release to WordPress.org SVN (from template)
+│   └── validate-svn.sh            # Verify the deployed SVN files/structure (from template)
 
 ├── bin/
 │   └── install-wp-tests.sh        # One-command WP_PHPUnit bootstrap script
@@ -453,6 +455,89 @@ if ( file_exists( MYPLUGIN_DIR . 'premium/loader.php' ) ) {
 
 ---
 
+## WordPress.org SVN Deployment
+
+When a plugin is ready to ship, it must be pushed to the official WordPress.org SVN repository. The skill generates two slug-agnostic helper scripts from templates so every new plugin gets a working deploy/verify workflow without hand-editing paths.
+
+### Generated scripts (copy from `resources/`)
+
+Copy `resources/deploy-to-svn.sh` and `resources/validate-svn.sh` into the new plugin's `scripts/` directory and make them executable:
+
+```bash
+cp resources/deploy-to-svn.sh scripts/deploy-to-svn.sh
+cp resources/validate-svn.sh   scripts/validate-svn.sh
+chmod +x scripts/deploy-to-svn.sh scripts/validate-svn.sh
+```
+
+Both scripts are slug-agnostic. They read their configuration from `${PLUGIN_SRC}/.env` (falling back to `.env.example`) and the shell environment — do NOT hardcode the plugin slug or paths into the script body.
+
+### Required configuration (set in `.env`)
+
+| Variable | Purpose |
+|----------|---------|
+| `PLUGIN_SLUG` | Plugin slug — also the main plugin file name (e.g. `my-plugin`). Used to locate `readme.txt`, the main `.php` file, and the zip root. |
+| `SVN_REPO_PATH` | Local checkout of the WordPress.org SVN repo. Create it once with `svn co "https://plugins.svn.wordpress.org/${PLUGIN_SLUG}" "$SVN_REPO_PATH"` |
+
+### Optional configuration (with defaults)
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PLUGIN_SRC` | current directory | Path to the built plugin source dir |
+| `ASSETS_SRC` | `PLUGIN_SRC/../assets` | Path to the assets dir (banner/icon/screenshots) |
+| `WP_CLI_PATH` | `/home/adrian/Studio/plugin-test` | Local WordPress install for the live WP-CLI install test |
+
+### `deploy-to-svn.sh`
+
+- Cleans `trunk/`, then copies plugin files respecting `.distignore` (via `rsync --exclude` plus a second pass that force-removes any excluded paths that were previously tracked)
+- Stages `svn add` / `svn rm` so the working tree is clean
+- Copies the `assets/` directory (banner/icon/screenshots)
+- Creates `/tags/<version>` via `svn copy` unless it already exists
+- Version is taken from the first argument, or falls back to the `Stable tag:` in `readme.txt`
+- Prints a reminder to `svn commit`
+
+```bash
+# One-time setup:
+svn co "https://plugins.svn.wordpress.org/${PLUGIN_SLUG}" "$SVN_REPO_PATH"
+# Deploy (version from readme.txt Stable tag):
+scripts/deploy-to-svn.sh
+# Deploy with explicit version:
+scripts/deploy-to-svn.sh 1.2.3
+# Then commit:
+svn commit "$SVN_REPO_PATH" -m "Release 1.2.3"
+```
+
+### `validate-svn.sh`
+
+Validates the deployed state in the SVN checkout before/after commit. It reports `[PASS]`/`[FAIL]`/`[WARN]` lines and exits non-zero on any failure. Checks include:
+
+1. Detects the version from `trunk/readme.txt` `Stable tag:`
+2. `readme.txt` and the main plugin file exist at `trunk/` root
+3. The main plugin file is at `trunk/` root, not nested in a subfolder
+4. `readme.txt` has the `=== Plugin Name ===`, `Stable tag:`, and `License: GPL` headers
+5. The main plugin file has `Plugin Name:` and `Version:` headers
+6. No dev files leaked into trunk (`composer.json`, `.env`, `vendor/`, `premium/`, `tests/`, `*.md`, `*.sh`, `*.sql`, `*.ps1`, etc.)
+7. SVN status is clean (no missing `!` items, warns on untracked `?`)
+8. `/tags/<version>` exists and is non-empty
+9. `assets/` exists and has files (warns if empty/missing)
+10. Builds a test zip from `trunk/` and verifies `.php` files, `readme.txt`, and the main plugin file are at the zip root
+11. Optionally does a live WP-CLI install/uninstall test against `WP_CLI_PATH`
+
+```bash
+scripts/validate-svn.sh
+# Result: PASS  (exit 0)  or  Result: FAIL  (exit 1)
+```
+
+### Deploy workflow summary
+
+1. `./scripts/build.sh` — produce the free + premium ZIPs
+2. (optional) `./scripts/preflight-check.sh` against the free ZIP
+3. First time only: `svn co` the repo into `SVN_REPO_PATH`
+4. `./scripts/deploy-to-svn.sh [VERSION]` — populate trunk, assets, and tag
+5. `./scripts/validate-svn.sh` — confirm the deployed files are correct
+6. `svn commit "$SVN_REPO_PATH" -m "Release <version>"`
+
+---
+
 ## Preflight Checklist
 
 The preflight script (`scripts/preflight-check.sh`) must check against the extracted free ZIP:
@@ -494,13 +579,14 @@ When the user describes a plugin idea, follow these steps:
 4. **Write free files first** — make them fully functional standalone
 5. **Write tests alongside each free class** — one test file per class. Pure-logic tests must run identically in both WP_PHPUnit and Brain Monkey modes. Guard WP-API-dependent assertions with `TEST_MODE` constant checks
 6. **Write premium files** — additive features only
-7. **Write build scripts** — `.distignore`, `build.sh`, `preflight-check.sh`
+7. **Write build scripts** — `.distignore`, `build.sh`, `preflight-check.sh`, and copy `deploy-to-svn.sh` + `validate-svn.sh` from `resources/` into `scripts/` (see WordPress.org SVN Deployment). Add `PLUGIN_SLUG` and `SVN_REPO_PATH` to `.env`/`.env.example`.
 8. **Write test infrastructure** — `phpunit.xml.dist`, `tests/bootstrap.php` (auto-detecting bootstrap), `tests/TestCase.php` (dual-mode base class), `tests/wp-tests-config.php` (template), `bin/install-wp-tests.sh`
 9. **Write readme.txt** — free-only description + External Services section
 10. **Run tests in fallback mode** — `composer install && composer test:unit` — all tests pass without any external setup
 11. **Run build** and verify both ZIPs
 12. **Run preflight** against free ZIP — zero non-informational failures
-13. **Return the ZIPs** and a summary of what was built
+13. **Verify deploy scaffolding** — `scripts/deploy-to-svn.sh` and `scripts/validate-svn.sh` are executable, `PLUGIN_SLUG`/`SVN_REPO_PATH` are documented in `.env.example`. If the user has a local SVN checkout, run `scripts/validate-svn.sh` after a dry deploy to confirm trunk structure
+14. **Return the ZIPs** and a summary of what was built, including how to deploy (WordPress.org SVN Deployment section)
 
 ---
 
@@ -515,6 +601,7 @@ The skill generates:
 - `tests/TestCase.php`, `tests/TestMinifier.php`, `tests/TestCache.php`, `tests/TestAdmin.php`, `tests/bootstrap.php`, `tests/wp-tests-config.php`
 - `bin/install-wp-tests.sh`
 - `phpunit.xml.dist`, `composer.json` with `phpunit` and `brain/monkey` dev deps
-- Build scripts, preflight, readme.txt with External Services section
+- Build scripts, preflight, deploy-to-svn.sh + validate-svn.sh (copied from resources/), readme.txt with External Services section
+- `.env.example` documenting `PLUGIN_SLUG` and `SVN_REPO_PATH` for the SVN deploy workflow
 - Free ZIP: basic on-the-fly minification with cache — no CDN, no source maps, no exclusions
 - Premium ZIP: all features, CDN API key baked into config.php
