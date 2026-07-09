@@ -27,6 +27,16 @@ This resource covers **Business Operations** — the systems, processes, and inf
 | `build_wordpress_plugin` | Automate operational workflows with plugins |
 | `cognitive-sustainability` | Maintain decision-making clarity as complexity grows; preserve human authority in agent-assisted workflows |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| Linear / Jira MCP | Manage tasks, sprints, and OKR tracking directly from conversation | Configure via MCP settings |
+| Notion MCP | Manage operations docs, process docs, SOPs, and metrics dashboards | Configure via MCP settings |
+| Google Sheets MCP | Track operational metrics, cash flow, and KPI dashboards | Configure via MCP settings |
+| Slack MCP | Monitor team communications, automate operational alerts | Configure via MCP settings |
+| GitHub MCP | Automate workflow triggers, issue tracking, and project board management | Configure via MCP settings |
+
 ## Output Templates
 
 ### Operations Scorecard Template

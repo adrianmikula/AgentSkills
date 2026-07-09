@@ -28,6 +28,14 @@ This resource covers **Startup Foundations** — the legal, structural, and phil
 | `business-outreach-generator` | Reach out to potential cofounders, advisors, or early beta customers |
 | `build_wordpress_plugin` | If your startup needs a web presence or MVP, generate it fast |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| GitHub MCP | Set up repositories, manage project boards, automate founder task tracking | Configure via MCP settings |
+| Google Drive / Docs MCP | Collaborate on founder agreements, cap table docs, and legal templates | Configure via MCP settings |
+| Filesystem MCP | Manage local legal documents and incorporation paperwork | Built-in / Configure |
+
 ## Output Templates
 
 ### Founder Readiness Assessment

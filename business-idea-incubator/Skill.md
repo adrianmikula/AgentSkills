@@ -9,6 +9,8 @@ This Skill helps entrepreneurs incubate business ideas by combining insights fro
 
 It adapts to your experience level, focusing research, advice, and coaching on the disciplines where you need the most help — especially areas you identify as weaknesses or blind spots. A core priority is understanding your actual financial resources before making any recommendations about funding, and matching funding strategies to your specific stage, industry, and value proposition.
 
+2026-native validation methods are embedded throughout: **pain-mining tools** that scrape frustration language from Reddit, HN, and Product Hunt; **AEO query mining** for verbatim demand language from AI search systems; **pre-sale validation** as the gold-standard demand signal; and **adverse review mining** to identify where adjacent products underserve customers. These replace older "check Google Trends" and "would you use this?" survey patterns with higher-signal techniques.
+
 Additionally, the Skill maintains a **Trends Log** of timestamped external factors (threat landscapes, regulatory changes, technology shifts, competitive moves) that affect the viability and positioning of your ideas. Trends are refreshed automatically if older than 30 days.
 
 ---
@@ -433,7 +435,9 @@ Record the human's selection for each discipline. For internal confidence scorin
 Adaptive coaching thresholds invert accordingly:
 - **Confidence 1–2:** Advanced strategies, edge cases, peer-level discussion (human is strong here).
 - **Confidence 3:** Best practices, nuance, and optimization tips.
-- **Confidence 4–5:** Foundational frameworks, step-by-step guidance, and recommended resources. Offer to install relevant Claude skills. Do not assume prior knowledge.
+- **Confidence 4–5:** Foundational frameworks, step-by-step guidance, and recommended resources. Do not assume prior knowledge.
+
+**Auto-recommend for blind spots:** For any blind spot (Confidence 4-5) that does **not** already have an Active strategy recorded in the human profile's `## Blind Spot Strategies` section, automatically recommend installing/using the relevant MCP tools and Claude skills listed in the discipline's resource file (see `## Blind Spot Strategy Tracking` below). If the blind spot already has an Active strategy, skip the recommendation.
 
 **Blind spot flagging:** Only explicitly flag disciplines as blind spots if the human selected:
 - Difficult/Hate It
@@ -457,6 +461,42 @@ Ask:
 ### Step 4 — Save Profile
 
 Create `.ideas/human-profile.md` and `.ideas/personality-profile.md` with the collected data.
+
+---
+
+## Blind Spot Strategy Tracking
+
+Track what practical help/assistance strategies are in place for each blind spot. This prevents redundant recommendations once a strategy is already active.
+
+### Strategy Table in Human Profile
+
+Maintain a `## Blind Spot Strategies` section in `.ideas/human-profile.md`:
+
+```markdown
+## Blind Spot Strategies
+
+| Discipline | Strategy | MCP Tools | Claude Skills | Status |
+|------------|----------|-----------|---------------|--------|
+| Marketing | [Description of the practical strategy in place] | [MCP tools installed/used] | [Claude skills installed/used] | Active / Needs Update |
+| Outreach & Offer Framing | [Description] | [MCP tools installed/used] | [Claude skills installed/used] | Active / Needs Update |
+```
+
+### When to Update
+
+Update this section whenever:
+- A new MCP tool or Claude skill is installed for a blind spot area
+- A blind spot strategy changes, completes, or expands
+- A new blind spot is identified during onboarding or sessions
+- The human explicitly confirms they have a working approach for a blind spot
+
+### Recommendation Guard
+
+Before recommending any MCP tool or Claude skill for a blind spot:
+1. Read `.ideas/human-profile.md` and locate the `## Blind Spot Strategies` section
+2. Check if the discipline has a row in the table with status **Active**
+3. If **Active** exists, skip the recommendation for that discipline
+4. If the discipline is missing from the table, or its status is **Needs Update**, proceed with the recommendation
+5. After the human confirms installation, update the table immediately (add or update the row)
 
 ---
 
@@ -508,21 +548,23 @@ Always ground recommendations in the actual map content — do not speculate abo
 
 Each discipline has its own resource file containing frameworks, tools, pitfalls, recommended Claude skills, and output templates.
 
-| # | Discipline | Resource File | Claude Skills Index |
-|---|-----------|--------------|---------------------|
-| 1 | Idea Validation | `resources/idea-validation.md` | Yes |
-| 2 | Startup Foundations | `resources/startup-foundations.md` | Yes |
-| 3 | Marketing | `resources/marketing.md` | Yes |
-| 4 | Outreach & Offer Framing | `resources/outreach-framing.md` | Yes |
-| 5 | Profitability & Financial Modelling | `resources/profitability.md` | Yes |
-| 6 | Competitive Intelligence | `resources/competitive-intelligence.md` | Yes |
-| 7 | Business Operations | `resources/business-operations.md` | Yes |
-| 8 | Vibe Coding / Rapid Prototyping | `resources/vibe-coding.md` | Yes |
-| 9 | Production Deployment | `resources/production-deployment.md` | Yes |
-| 10 | E-commerce & Online Selling | `resources/ecommerce-selling.md` | Yes |
-| 11 | Social Media Presence | `resources/social-media.md` | Yes |
-| 12 | Funding & Capital Strategy | `resources/funding.md` | No |
-| 13 | Trend Analysis | (built-in — uses `.ideas/trends/` directly) | No |
+| # | Discipline | Resource File | Claude Skills | MCP Tools |
+|---|-----------|--------------|---------------|-----------|
+| 1 | Idea Validation | `resources/idea-validation.md` | Yes | Listed in `## MCP Tools` |
+| 2 | Startup Foundations | `resources/startup-foundations.md` | Yes | Listed in `## MCP Tools` |
+| 3 | Marketing | `resources/marketing.md` | Yes | Listed in `## MCP Tools` |
+| 4 | Outreach & Offer Framing | `resources/outreach-framing.md` | Yes | Listed in `## MCP Tools` |
+| 5 | Profitability & Financial Modelling | `resources/profitability.md` | Yes | Listed in `## MCP Tools` |
+| 6 | Competitive Intelligence | `resources/competitive-intelligence.md` | Yes | Listed in `## MCP Tools` |
+| 7 | Business Operations | `resources/business-operations.md` | Yes | Listed in `## MCP Tools` |
+| 8 | Vibe Coding / Rapid Prototyping | `resources/vibe-coding.md` | Yes | Listed in `## MCP Tools` |
+| 9 | Production Deployment | `resources/production-deployment.md` | Yes | Listed in `## MCP Tools` |
+| 10 | E-commerce & Online Selling | `resources/ecommerce-selling.md` | Yes | Listed in `## MCP Tools` |
+| 11 | Social Media Presence | `resources/social-media.md` | Yes | Listed in `## MCP Tools` |
+| 12 | Funding & Capital Strategy | `resources/funding.md` | Yes | Listed in `## MCP Tools` |
+| 13 | Trend Analysis | (built-in — uses `.ideas/trends/` directly) | No | Listed in `## MCP Tools` |
+
+Each discipline resource file now includes both a `## Recommended Claude Skills` section and a `## MCP Tools` section. The agent should check **both** sections when auto-recommending for blind spots (see `## Blind Spot Strategy Tracking`).
 
 **To add a new discipline:** Create a new resource file in `resources/`, add a row to this table, and update the onboarding survey in Step 1 above.
 
@@ -547,9 +589,10 @@ If the human requests "full incubation" or "help with everything," load all disc
 For each selected discipline:
 1. Load `resources/{discipline-file}.md`
 2. Present the "Quick-Start Guidance" section adapted to their confidence level
-3. **Actively recommend relevant Claude skills.** If a skill from the discipline's index would directly address a current task, blind spot, or low-confidence area, recommend it explicitly — explain the benefit and offer to install it. Do not passively list skills and wait for the human to ask.
-4. **If a relevant trend is active in `.ideas/trends/`, fold it into the analysis** (see `resources/accessing-idea-files.md`). Reference the trend's evidence and impact assessment when applying frameworks.
-5. Apply relevant frameworks to their specific idea
+3. **Actively recommend relevant Claude skills and MCP tools.** If a skill or MCP tool from the discipline's resource file would directly address a current task, blind spot, or low-confidence area, recommend it explicitly — explain the benefit and offer to install/use it. Do not passively list options and wait for the human to ask.
+4. **Check blind spot strategy coverage before recommending.** Before recommending skills or MCP tools, read `.ideas/human-profile.md` and check the `## Blind Spot Strategies` section. If the blind spot already has an Active strategy with installed tools/skills, skip the recommendation. If missing or marked "Needs Update", proceed with the recommendation.
+5. **If a relevant trend is active in `.ideas/trends/`, fold it into the analysis** (see `resources/accessing-idea-files.md`). Reference the trend's evidence and impact assessment when applying frameworks.
+6. Apply relevant frameworks to their specific idea
 
 ### Step 3 — Generate Deliverables
 
@@ -592,20 +635,30 @@ Procedure for both cases (see `resources/accessing-idea-files.md` for all `.idea
 
 ---
 
-## Recommended Claude Skills Index
+## Recommended Claude Skills & MCP Tools
 
-Each discipline resource includes a curated list of Claude skills that can be installed to extend capability in that domain. The agent must **actively recommend** skills when:
-- The human has flagged the discipline as a blind spot (Confidence 5 / Difficult-Hate-It or Unfamiliar)
-- The current task would be materially faster or higher quality with the skill
+Each discipline resource file includes:
+- A `## Recommended Claude Skills` section listing Claude skills that can be installed to extend capability in that domain
+- An `## MCP Tools` section listing MCP (Model Context Protocol) servers and tools relevant to that discipline
+
+The agent must **actively recommend** skills and MCP tools when:
+- The human has flagged the discipline as a blind spot (Confidence 4-5) **AND** no Active strategy is recorded in `## Blind Spot Strategies`
+- The current task would be materially faster or higher quality with the tool/skill
 - The human is stuck or expressing frustration in that domain
 
 When recommending:
-1. Show the skill name and what it does
-2. Explain specifically how it helps with their current task
-3. Recommend it as a solution to their blocker or weakness
-4. Ask if they want to install it, or install it directly if permissions allow
+1. **Check `## Blind Spot Strategies` first** — read `.ideas/human-profile.md` and skip if an Active strategy already exists for this discipline
+2. Show the skill or MCP tool name and what it does
+3. Explain specifically how it helps with their current task or blind spot
+4. Recommend it as a solution to their blocker or weakness
+5. **Distinguish between Claude skills and MCP tools** — explain the installation method for each:
+   - **Claude skills:** Installed via Claude's skill system (e.g., `skill <name>`)
+   - **MCP tools:** Installed via the MCP server registry or configured in the MCP settings file
+6. Ask if they want to proceed with installation/configuration
 
-Do not install skills without explicit permission, but do not remain silent about relevant skills when they would clearly help.
+**After the human confirms installation** of any MCP tool or Claude skill for a blind spot, immediately update `.ideas/human-profile.md` — add or update the discipline's row in the `## Blind Spot Strategies` table.
+
+Do not install tools or skills without explicit permission, but do not remain silent about relevant tools when they would clearly help.
 
 ---
 

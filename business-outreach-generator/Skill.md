@@ -44,7 +44,7 @@ Do not generate any outreach until the following parameters have been collected.
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 1 | **Offering** | `Trend-Match (default)`, `Auto-Recommend Best Fit`, followed by all active ideas loaded from `../.ideas/ideas/` (see `resources/accessing-idea-files.md`) — determines which idea file to load. If the human is unsure, default to **Trend-Match**. |
-| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, or `Airtasker` |
+| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, or `Airtasker`. When `LinkedIn` or `Instagram` is selected, an AntV Infographic visual asset is co-generated alongside the text. See `resources/infographic-offer.md` for details. |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Derived from the selected idea file if it specifies one; otherwise infer from `## Context` and `## Key Facts` (e.g., tech, software development, SMBs, agencies, e-commerce, hospitality). If ambiguous, present a shortlist of 3–5 prime target industries for that idea and ask the human to pick one. — used for relevant examples |
@@ -291,7 +291,7 @@ Within the loaded resource (or generic template), apply the output-format-specif
 
 Replace all placeholder tokens in the selected template with the collected parameters and data loaded from the idea incubator. Placeholder definitions are in the loaded resource file or `resources/output-formats.md` → "Template Sections".
 
-### Step 4 — Localise and Research
+### Step 4 — Localise, Research, and Generate Infographic (if applicable)
 
 Follow the instructions in the loaded resource file to:
 
@@ -301,6 +301,7 @@ Follow the instructions in the loaded resource file to:
    - For **Reddit, StackOverflow** formats: find 1–2 relevant threads or incidents from the trend to reference naturally in the post/answer. Do not force-fit breach examples into technical threads.
    - For **Airtasker** format: no breach research needed; focus on matching the task requirements.
 3. If no linked trends exist, fall back to standard breach research for `{{INDUSTRY}}` in `{{COUNTRY}}` using the same criteria (Email, LinkedIn, Phone only).
+4. **If Output format is `LinkedIn` or `Instagram`:** Generate an AntV Infographic HTML file alongside the text. Load `resources/infographic-offer.md` for data point extraction, template selection, syntax construction, and HTML generation. Save the file to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html` and note its path in the draft metadata.
 
 ---
 
@@ -374,6 +375,7 @@ Draft outreach messages are stored in `../.drafts/` (gitignored — never commit
 **Status:** [Draft | Posted | Archived]
 **Created:** [YYYY-MM-DD]
 **Thread:** [URL to thread/post being replied to, if applicable]
+**Infographic:** [Path to generated infographic HTML file, if applicable]
 ```
 
 ### Draft lifecycle

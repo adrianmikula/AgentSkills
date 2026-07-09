@@ -27,6 +27,15 @@ This resource covers **E-commerce & Online Selling** — setting up online store
 | `coreyhaines31/marketingskills` | CRO, copywriting, email sequences, and analytics setup for non-marketers |
 | `optimise-agentic-coding` | Optimize store performance for Core Web Vitals and SEO |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| Stripe MCP | Manage payments, refunds, subscription billing directly from conversation | Configure via MCP settings |
+| Shopify / WooCommerce MCP | Manage product listings, inventory, and orders programmatically | Configure via MCP settings |
+| Google Sheets MCP | Track unit economics, inventory levels, and order fulfillment status | Configure via MCP settings |
+| Puppeteer MCP | Run competitor price checks, monitor marketplace listings | Configure via MCP settings |
+
 ## Output Templates
 
 ### Store Setup Checklist

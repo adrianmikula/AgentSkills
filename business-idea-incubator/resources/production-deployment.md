@@ -26,6 +26,17 @@ This resource covers **Production Deployment** — taking a working prototype an
 | `ai-era-vulnerability-scanner` | Scan your deployed app for security vulnerabilities: supply chain risks, CI/CD misconfigs, secrets sprawl |
 | `build_wordpress_plugin` | If deploying a WordPress product, ensure it's .org-compliant and production-ready |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| Docker MCP | Build, manage, and deploy containers to production servers | Configure via MCP settings |
+| GitHub MCP | Automate CI/CD pipelines, manage deployments via GitHub Actions | Configure via MCP settings |
+| Database MCP (PostgreSQL, SQLite) | Run production migrations, verify data integrity, debug issues | Configure via MCP settings |
+| Puppeteer MCP | Run smoke tests and end-to-end checks post-deployment | Configure via MCP settings |
+| Sentry / Error Monitoring MCP | Track production errors and monitor deployment health | Configure via MCP settings |
+| `cloudflare/mcp-server-cloudflare` | Deploy to Cloudflare Workers, Pages, manage DNS and CDN config | Configure via MCP settings |
+
 ## Output Templates
 
 ### Deployment Checklist Template

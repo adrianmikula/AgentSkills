@@ -27,6 +27,16 @@ This resource covers **Social Media Presence** — building and maintaining an a
 | `marketing` | Align social strategy with overall marketing positioning and messaging |
 | `build_wordpress_plugin` | Embed social feeds, social proof widgets, or auto-posting tools |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| YouTube Transcript MCP | Transcribe competitor videos, extract content ideas, repurpose scripts | Configure via MCP settings |
+| Brave Search MCP | Research trending topics, find viral content patterns in your niche | Configure via MCP settings |
+| Puppeteer MCP | Automate social media posting, scrape engagement metrics, schedule content | Configure via MCP settings |
+| Exa AI MCP | Deep research on social media trends, audience sentiment, and content gaps | Configure via MCP settings |
+| Image Generation MCP (DALL-E / Stable Diffusion) | Generate social media visuals, thumbnails, and branded graphics | Configure via MCP settings |
+
 ## Output Templates
 
 ### Content Strategy Template

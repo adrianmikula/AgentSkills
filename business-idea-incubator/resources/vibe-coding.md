@@ -28,6 +28,16 @@ This resource covers **Vibe Coding** — rapidly building working prototypes, MV
 | `production-deployment` | Deploy your prototype to a real URL for user testing |
 | `cognitive-sustainability` | Maintain clarity on what the MVP actually needs to test; avoid over-engineering before understanding the problem |
 
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| GitHub MCP | Create repos, manage PRs, and automate code review for rapid prototyping | Configure via MCP settings |
+| Puppeteer / Browserbase MCP | Test prototypes in real browsers, capture screenshots for validation decks | Configure via MCP settings |
+| Docker MCP | Containerize prototypes for consistent deployment across environments | Configure via MCP settings |
+| Supabase MCP | Spin up databases and auth for prototypes without manual setup | Configure via MCP settings |
+| Sequential Thinking MCP | Structure problem-solving and architecture decisions during rapid prototyping | Configure via MCP settings |
+
 ## Output Templates
 
 ### MVP Definition Template

@@ -13,6 +13,7 @@ When `Skill.md` needs format-specific details, it delegates to this file. Format
 - [Template Sections](#template-sections)
 - [Presentation by Format](#presentation-by-format)
 - [Format-Specific Research Behaviour](#format-specific-research-behaviour)
+- [Infographic Generation (Instagram + LinkedIn)](#infographic-generation-instagram--linkedin)
 - [Lead-Scanning Mode Routing](#lead-scanning-mode-routing)
 
 ---
@@ -45,9 +46,9 @@ If the loaded resource file does not contain the requested section, fall back to
 - **Guarantee:** Explicitly mention any free audit is no-obligation and no follow-up spam.
 
 ### LinkedIn
-- **Length:** 100–180 words (shorter, punchier)
+- **Length:** 100–180 words (shorter, punchier) + accompanying infographic when generated
 - **Tone:** Conversational peer-to-peer, not a sales pitch
-- **Style:** First-person, informal but credible. Avoid jargon. Reference shared context where possible.
+- **Style:** First-person, informal but credible. Avoid jargon. Reference shared context where possible. The infographic should visualise 1–2 key data points from the text.
 - **CTA:** Soft ask — "Would you be open to a quick chat?" or "Happy to share more if useful."
 - **Hook framing check:** Before writing the opener, assess whether the problem is already trending. Search social/forums for discussion volume on the topic. If the problem is well-known (multiple papers, active threads, high discussion volume): do NOT lead with "nobody talks about this" or "what nobody knows" framing. Instead, acknowledge the known problem and pivot to the gap in tooling, data, or approach. If the problem is genuinely under-discussed: lead with the discovery framing.
 - **Grounding check (see Skill.md → Grounding Requirement):** Every claim about what you've built or are experimenting with must be verifiable against the selected idea file's `## Current Focus` and `## Positioning` sections. If you're unsure, vague up — use "researching" / "exploring" instead of claiming specific capabilities.
@@ -116,9 +117,9 @@ Reddit communities are aggressive toward self-promotion. Posts that read as ads 
 - **Rules:** Differentiate on expertise, not just price. Airtasker users are comparing multiple bids.
 
 ### Instagram
-- **Length:** Carousel: 5–10 slides, ~40–60 words per slide. Reel caption: 80–150 words.
+- **Length:** Carousel: 5–10 slides, ~40–60 words per slide. Reel caption: 80–150 words. Infographic supplement: HTML file with 3–6 visual slides.
 - **Tone:** Authoritative but accessible. Educational, not salesy.
-- **Style:** Visual-forward. Lead with a hook slide (question or bold statement), build the case across middle slides (data, screenshots, before/after), close with a soft CTA slide. Caption expands on the content with context and a discussion prompt.
+- **Style:** Visual-forward. Lead with a hook slide (question or bold statement), build the case across middle slides (data, screenshots, before/after), close with a soft CTA slide. The co-generated infographic should cover the hook + evidence slides as a single shareable visual asset. Caption expands on the content with context and a discussion prompt.
 - **CTA:** Soft — "Tag a teammate who needs to see this" or "Drop a comment if you've run into this." No direct sales links in captions. Link in bio or story sticker for deeper funnel.
 - **Rules:** Follow Instagram's community guidelines — no misleading claims, no prohibited content (hacking tools, surveillance tech). Do not mention "audit", "scan", "vulnerability" in a way that implies unauthorized access. Frame as educational content, not a service advertisement. Use relevant hashtags (3–5 max) in the first comment, not the caption.
 
@@ -142,6 +143,20 @@ When loading an offering resource file, extract the section matching the selecte
 
 When building a fallback, draw content from the idea file's `## Context` and `## Key Facts` sections.
 
+### Infographic Co-generation (Instagram and LinkedIn)
+
+When the output format is `Instagram` or `LinkedIn`, generate an AntV Infographic HTML file alongside the text content. Load `resources/infographic-offer.md` for template selection, syntax construction, and HTML generation.
+
+The text content and the infographic are generated together — the infographic is the visual anchor of the post, not an afterthought. Extract 3–5 visual-worthy data points during research (see `Format-Specific Research Behaviour` below), then construct the AntV Infographic syntax and write a standalone HTML file.
+
+The infographic file is saved to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`. Note the file path in the draft header as:
+
+```markdown
+**Infographic:** ../.drafts/infographics/next-square-instagram-2026-07-09-infographic.html
+```
+
+When presenting the final output, show both the text content and the infographic file path with instructions to open the HTML, view it in a browser, and export as SVG for upload.
+
 ---
 
 ## Presentation by Format
@@ -151,12 +166,22 @@ When presenting the final output to the human:
 | Format | What to show |
 |--------|-------------|
 | **Email** | Full email with Subject line, body, and placeholder sign-off block. Note: "Replace [First Name] before sending." |
-| **LinkedIn** | Single block of text optimised for character limits and conversational style. |
+| **LinkedIn** | Text caption + infographic file path and instructions. |
 | **Phone** | Dot-point research brief: company overview, industry focus, products/services, tech stack, suggested offering focus, 1–2 leading questions. |
 | **Reddit** | Title + body as a self-post. Note which subreddit it targets, character count, and whether direct links are allowed per that subreddit's rules. |
 | **StackOverflow** | Question title + answer body. Note: "Verify the question is still open and on-topic before posting." |
-| **Instagram** | Slide-by-slide carousel plan (slide 1 hook, slides 2–n evidence, final slide CTA) + caption text + suggested hashtags (3–5 in first comment). Recommend whether to post as a carousel, Reel, or single image based on content. Note: "Image assets will need to be created from the descriptions below." |
+| **Instagram** | Text caption + infographic file path and instructions. |
 | **Airtasker** | Task response / bid proposal: short intro, why you're qualified, what you'll deliver, fixed price or price range, and a clear next step. Note: "Include your price and timeline in the response." |
+
+### Infographic File Instructions
+
+For `LinkedIn` and `Instagram` outputs, include the following note after the text content:
+
+```
+**Infographic generated:** {file-path}
+
+Open the HTML file in any browser to preview. Use the "Download SVG" button or right-click the infographic to export as SVG. Screenshots also work for quick uploads.
+```
 
 ---
 
@@ -169,6 +194,8 @@ These formats are **company-centric**. The skill:
 2. Researches that company's website, tech stack, and relevant staff
 3. Finds 2–3 local breach examples in the target country/city/industry
 4. Populates the template with company-specific details
+
+> **LinkedIn + Instagram extra step:** Extract 3–5 visual-worthy data points during research for infographic co-generation. See `resources/infographic-offer.md` for data shapes and `Infographic Generation (Instagram + LinkedIn)` below.
 
 ### Reddit, StackOverflow
 
@@ -196,14 +223,20 @@ This format is **audience-centric**. The skill creates educational or awareness-
 
 1. **Identifies the target audience** from the selected offering's `## Keywords`, `## Context`, and `## Key Facts`
 2. **Researches the audience's pain points** — what questions are developers/businesses asking on Reddit, Stack Overflow, and Twitter/X that the offering addresses
-3. **Selects a content angle** from the offering's key facts that works visually:
+3. **Extracts 3–5 visual-worthy data points** for the co-generated infographic. See `resources/infographic-offer.md` for template selection and syntax guidance.
+4. **Selects a content angle** from the offering's key facts that works visually:
    - Before/after comparison (e.g., "before DriftGuard vs after" codebase metrics)
    - Data-driven insight (e.g., "3 stats that show AI code degradation is real")
    - Educational how-to (e.g., "how to check if your WordPress plugins are vulnerable")
    - Myth-busting (e.g., "5 things people get wrong about Jakarta migration")
-4. **Builds a carousel narrative** — hook → evidence (3–8 slides) → CTA
-5. **Generates caption** that expands on the content and invites discussion
-6. **Does NOT:**
+5. **Builds a carousel narrative** — hook → evidence (3–8 slides) → CTA
+6. **Generates caption** that expands on the visual content and includes:
+   - Context and framing (1–2 sentences)
+   - Key takeaway (1–2 sentences)
+   - Discussion question (1 sentence)
+   - Relevant hashtags (3–5, placed in first comment, not the caption)
+7. **Generates the AntV Infographic HTML file** alongside the text. Save to `../.drafts/infographics/{idea-slug}-instagram-{date}-infographic.html`.
+8. **Does NOT:**
    - Pitch services directly in the caption
    - Tag specific companies or individuals without their consent
    - Use sensitive security terminology in a way that could trigger content moderation
@@ -233,16 +266,45 @@ This format is **job-centric**. The skill:
 
 ---
 
+## Infographic Generation (Instagram + LinkedIn)
+
+When the output format is `Instagram` or `LinkedIn`, the skill generates a standalone AntV Infographic HTML file alongside the text content. This is not optional — the infographic is part of the deliverable.
+
+### Generation Steps
+
+1. **Read `resources/infographic-offer.md`** for template catalogue, syntax rules, and the HTML template.
+2. **Extract 3–5 data points** from the research conducted in Step 4 of `Skill.md`. Data must be grounded in the idea file's `## Key Facts`, `## Context`, or in credible research findings. Do not invent statistics.
+3. **Select a template** from the catalogue in `infographic-offer.md` that matches the data shape (list, comparison, sequence, chart, hierarchy).
+4. **Construct the AntV Infographic syntax** following the DSL rules in `infographic-offer.md`.
+5. **Write the HTML file** to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html` using the HTML template in `infographic-offer.md`.
+6. **Note the file path** in the draft metadata: `**Infographic:** ../.drafts/infographics/{filename}.html`
+7. **Tell the human** to open the file in a browser, preview it, and export as SVG or screenshot for upload.
+
+### Instagram infographic structure
+
+- **Mobile-first design:** Keep text large and concise — 3–6 data points max.
+- **Templates:** `list-row-simple-horizontal-arrow`, `list-row-icon-box`, `compare-horizontal-bar`
+- **File naming:** `{idea-slug}-instagram-{YYYY-MM-DD}-infographic.html`
+
+### LinkedIn infographic structure
+
+- **Landscape design:** More data-dense than Instagram — 4–6 data points acceptable.
+- **Templates:** `compare-horizontal-bar`, `chart-column-simple`, `sequence-steps`, `list-row-icon-box`
+- **File naming:** `{idea-slug}-linkedin-{YYYY-MM-DD}-infographic.html`
+
+---
+
 ## Lead-Scanning Mode Routing
 
 When no specific company or thread is provided, the mode triggered depends on the output format:
 
-| Output format | Scanning mode | What it searches for |
-|---------------|--------------|----------------------|
-| `Email`, `LinkedIn`, `Phone` | Company / Developer Social Scanning | Companies and technical staff |
-| `Reddit`, `StackOverflow` | Thread / Question Scanning | Relevant discussion threads and questions |
-| `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content |
-| `Airtasker` | Job / Task Scanning | Open tasks with few offers matching the offering |
+| Output format | Scanning mode | What it searches for | Co-generated asset |
+|---------------|--------------|----------------------|-------------------|
+| `Email`, `Phone` | Company / Developer Social Scanning | Companies and technical staff | None |
+| `LinkedIn` | Company / Developer Social Scanning | Companies and technical staff | AntV Infographic HTML |
+| `Reddit`, `StackOverflow` | Thread / Question Scanning | Relevant discussion threads and questions | None |
+| `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content | AntV Infographic HTML |
+| `Airtasker` | Job / Task Scanning | Open tasks with few offers matching the offering | None |
 
 ### Audience / Trend Scanning (Instagram)
 

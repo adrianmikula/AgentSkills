@@ -28,6 +28,15 @@ This resource covers **Profitability & Financial Modelling** — building financ
 | `getagentseal/founder-playbook` (`monetizing-innovation`) | Pricing/packaging economics from the Innovation pro: value-based pricing, price elasticity |
 | `getagentseal/founder-playbook` (`100m-offers`) | Offer structuring to maximize margin and perceived value |
 | `business-outreach-generator` | Price your offer and structure outreach around value, not cost |
+| `daymade/claude-code-skills` (`financial-data-collector`) | Pull real company financials for market-sizing your buyer segment — useful if you're targeting insurance/cat-modeling firms or any segment where you need to demonstrate TAM/SAM with real revenue figures |
+
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| Google Sheets MCP | Build financial models, unit economics calculators, and pricing matrices collaboratively | Configure via MCP settings |
+| SQLite / PostgreSQL MCP | Query revenue data, run cohort analyses, verify unit economics against real data | Configure via MCP settings |
+| Exa AI MCP | Research industry pricing benchmarks, competitor financial data, and margin norms | Configure via MCP settings |
 
 ## Output Templates
 

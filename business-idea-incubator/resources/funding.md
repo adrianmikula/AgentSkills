@@ -438,6 +438,26 @@ Use this template when creating a funding plan for an idea:
 
 ---
 
+## Recommended Claude Skills
+
+| Skill | Why It Helps | When to Install |
+|-------|-------------|-----------------|
+| `iamzifei/show-me-the-money` (`finance`) | Unit economics, revenue tracking, session checkpointing for viability testing — directly addresses the "no capital, needs income fast" scenario | **Recommended now** — Funding is a blind spot; this gives you financial viability checks without having to build models from scratch |
+| `founderjourney/claude-skills` (`saas-financial-projections`) | Dense CFO skill: MRR/ARR, LTV:CAC, Rule of 40, cohort-based projections, 2025-26 valuation benchmarks | Useful once you have your first revenue data to project |
+| `getagentseal/founder-playbook` (`100m-offers`, `monetizing-innovation`) | Offer structuring, pricing strategy, and revenue-first frameworks | **Recommended** — directly applicable to your course pricing and monetisation |
+| `ferdinandobons/startup-skill` (`startup-pitch`, `startup-finances`) | Investor pitch prep and financial projection templates | Useful if you pursue external funding later |
+| `cognitive-sustainability` | Maintain clarity on financial decisions; avoid over-engineering before you have revenue | Lower priority — useful when you're juggling multiple offers |
+| `business-outreach-generator` | Generate pre-sales outreach and grant application letters | **Recommended now** — can write your pre-sale emails and pitch copy |
+
+## MCP Tools
+
+| MCP Tool | Why It Helps | How to Install |
+|----------|-------------|----------------|
+| Google Sheets MCP | Build funding plans, cap table models, and runway projections | Configure via MCP settings |
+| Brave Search MCP | Research grant deadlines, investor profiles, and competitor funding rounds | Configure via MCP settings |
+| Exa AI MCP | Deep search for grant programs, angel investor networks, and accelerator applications | Configure via MCP settings |
+| Notion MCP | Track grant applications, investor outreach pipeline, and milestone progress | Configure via MCP settings |
+
 ## Output Templates
 
 ### Funding Plan Template
