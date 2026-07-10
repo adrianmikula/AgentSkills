@@ -13,7 +13,7 @@ When `Skill.md` needs format-specific details, it delegates to this file. Format
 - [Template Sections](#template-sections)
 - [Presentation by Format](#presentation-by-format)
 - [Format-Specific Research Behaviour](#format-specific-research-behaviour)
-- [Infographic Generation (Instagram + LinkedIn)](#infographic-generation-instagram--linkedin)
+- [Visual Asset Generation (Instagram, LinkedIn, PowerPoint)](#visual-asset-generation-instagram-linkedin-powerpoint)
 - [Lead-Scanning Mode Routing](#lead-scanning-mode-routing)
 
 ---
@@ -30,6 +30,7 @@ After the offering resource is loaded (or a generic template is generated from t
 | `Reddit` | `## Reddit Post Template` |
 | `StackOverflow` | `## StackOverflow Post Template` |
 | `Instagram` | `## Instagram Post Template` |
+| `PowerPoint` | `## PowerPoint Slide Deck` |
 | `Airtasker` | `## Airtasker Task Response Template` |
 
 If the loaded resource file does not contain the requested section, fall back to a **Generic Template** built from the idea's `## Context` and `## Key Facts`, formatted appropriately for the channel.
@@ -139,23 +140,25 @@ When loading an offering resource file, extract the section matching the selecte
 | Reddit | Title (question/statement format) + body paragraphs (story + details + feedback ask) |
 | StackOverflow | Direct answer to question + 1–2 sentences contextualising + optional mention of related tooling |
 | Instagram | Hook slide (question/stat) + 3–8 evidence slides (data, screenshots, comparisons) + CTA slide (discussion prompt) + caption expanding on the topic |
+| PowerPoint | Title slide + content slides (problem, demo, data, comparison, offer) + CTA/close slide. Each slide is a 1920×1080 HTML file. See `../../infographic-generator/SKILL.md` for slide structure. |
 | Airtasker | Greeting + qualifications + deliverable summary + price + timeline + CTA |
 
 When building a fallback, draw content from the idea file's `## Context` and `## Key Facts` sections.
 
-### Infographic Co-generation (Instagram and LinkedIn)
+### Visual Asset Co-generation (Instagram, LinkedIn, PowerPoint)
 
-When the output format is `Instagram` or `LinkedIn`, generate an AntV Infographic HTML file alongside the text content. Load `resources/infographic-offer.md` for template selection, syntax construction, and HTML generation.
+When the output format is `Instagram` or `LinkedIn`, generate an infographic HTML file alongside the text content. When the output format is `PowerPoint`, generate a series of 1920×1080 slide HTML files. Load `../../infographic-generator/SKILL.md` for canvas dimensions, branding rules, slide structure, and HTML generation.
 
-The text content and the infographic are generated together — the infographic is the visual anchor of the post, not an afterthought. Extract 3–5 visual-worthy data points during research (see `Format-Specific Research Behaviour` below), then construct the AntV Infographic syntax and write a standalone HTML file.
+For Instagram and LinkedIn, extract 3–5 visual-worthy data points during research (see `Format-Specific Research Behaviour` below), then write a standalone HTML file at the appropriate dimensions. Save to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`.
 
-The infographic file is saved to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`. Note the file path in the draft header as:
+For PowerPoint, save each slide as a numbered HTML file under `../.drafts/slides/{deck-name}/` and generate an index deck file. Note the path in the draft header:
 
 ```markdown
 **Infographic:** ../.drafts/infographics/next-square-instagram-2026-07-09-infographic.html
+**Slide Deck:** ../.drafts/slides/free-webinar-slides/index.html
 ```
 
-When presenting the final output, show both the text content and the infographic file path with instructions to open the HTML, view it in a browser, and export as SVG for upload.
+When presenting the final output, show the text content and the visual asset file path with instructions to open the HTML files in a browser.
 
 ---
 
@@ -171,16 +174,25 @@ When presenting the final output to the human:
 | **Reddit** | Title + body as a self-post. Note which subreddit it targets, character count, and whether direct links are allowed per that subreddit's rules. |
 | **StackOverflow** | Question title + answer body. Note: "Verify the question is still open and on-topic before posting." |
 | **Instagram** | Text caption + infographic file path and instructions. |
+| **PowerPoint** | Slide deck index path. Note: "Open the index.html file in a browser to review all slides. Screenshot each slide for PowerPoint insertion, or present directly from the browser in fullscreen." |
 | **Airtasker** | Task response / bid proposal: short intro, why you're qualified, what you'll deliver, fixed price or price range, and a clear next step. Note: "Include your price and timeline in the response." |
 
-### Infographic File Instructions
+### Visual Asset File Instructions
 
-For `LinkedIn` and `Instagram` outputs, include the following note after the text content:
+For `LinkedIn`, `Instagram`, and `PowerPoint` outputs, include the appropriate note after the text content:
 
+**LinkedIn / Instagram:**
 ```
 **Infographic generated:** {file-path}
 
-Open the HTML file in any browser to preview. Use the "Download SVG" button or right-click the infographic to export as SVG. Screenshots also work for quick uploads.
+Open the HTML file in any browser to preview. Use the "Download SVG" button or right-click to export as SVG. Screenshots also work for quick uploads.
+```
+
+**PowerPoint:**
+```
+**Slide deck generated:** {slide-deck-path}
+
+Open the index.html file in a browser to view all slides in sequence. Present directly from the browser in fullscreen (F11), or screenshot each slide and insert into PowerPoint.
 ```
 
 ---
@@ -195,7 +207,7 @@ These formats are **company-centric**. The skill:
 3. Finds 2–3 local breach examples in the target country/city/industry
 4. Populates the template with company-specific details
 
-> **LinkedIn + Instagram extra step:** Extract 3–5 visual-worthy data points during research for infographic co-generation. See `resources/infographic-offer.md` for data shapes and `Infographic Generation (Instagram + LinkedIn)` below.
+> **LinkedIn + Instagram extra step:** Extract 3–5 visual-worthy data points during research for infographic co-generation. See `../../infographic-generator/SKILL.md` for data shapes and visual generation guidance.
 
 ### Reddit, StackOverflow
 
@@ -223,7 +235,7 @@ This format is **audience-centric**. The skill creates educational or awareness-
 
 1. **Identifies the target audience** from the selected offering's `## Keywords`, `## Context`, and `## Key Facts`
 2. **Researches the audience's pain points** — what questions are developers/businesses asking on Reddit, Stack Overflow, and Twitter/X that the offering addresses
-3. **Extracts 3–5 visual-worthy data points** for the co-generated infographic. See `resources/infographic-offer.md` for template selection and syntax guidance.
+3. **Extracts 3–5 visual-worthy data points** for the co-generated infographic. See `../../infographic-generator/SKILL.md` for canvas dimensions and visual generation.
 4. **Selects a content angle** from the offering's key facts that works visually:
    - Before/after comparison (e.g., "before DriftGuard vs after" codebase metrics)
    - Data-driven insight (e.g., "3 stats that show AI code degradation is real")
@@ -240,6 +252,18 @@ This format is **audience-centric**. The skill creates educational or awareness-
    - Pitch services directly in the caption
    - Tag specific companies or individuals without their consent
    - Use sensitive security terminology in a way that could trigger content moderation
+
+### PowerPoint
+
+This format is **material-centric**. The skill generates slides directly from the provided source material (script, outline, or idea file). No external research is needed unless specified.
+
+1. **Extract slide sections** from the source material — title, problem statement, evidence/data, comparison, offer, CTA.
+2. **Identify visual-worthy data points** — stats, comparisons, before/after metrics, tables.
+3. **Generate one HTML file per slide** at 1920×1080 following the slide template in `../../infographic-generator/SKILL.md`.
+4. **Generate index deck** for browser-based review.
+5. **Does NOT:**
+   - Search for external data (unless explicitly requested — e.g., "find recent stats on X")
+   - Generate outreach messaging
 
 ### Airtasker
 
@@ -266,31 +290,28 @@ This format is **job-centric**. The skill:
 
 ---
 
-## Infographic Generation (Instagram + LinkedIn)
+## Visual Asset Generation (Instagram, LinkedIn, PowerPoint)
 
-When the output format is `Instagram` or `LinkedIn`, the skill generates a standalone AntV Infographic HTML file alongside the text content. This is not optional — the infographic is part of the deliverable.
+When the output format is `Instagram` or `LinkedIn`, the skill generates an infographic HTML file alongside the text content. When the format is `PowerPoint`, a series of slide HTML files are generated. This is not optional — the visual asset is part of the deliverable.
 
-### Generation Steps
+### Generation Steps (Instagram & LinkedIn)
 
-1. **Read `resources/infographic-offer.md`** for template catalogue, syntax rules, and the HTML template.
+1. **Read `../../infographic-generator/SKILL.md`** for canvas dimensions, brand colors, layout rules, and HTML template.
 2. **Extract 3–5 data points** from the research conducted in Step 4 of `Skill.md`. Data must be grounded in the idea file's `## Key Facts`, `## Context`, or in credible research findings. Do not invent statistics.
-3. **Select a template** from the catalogue in `infographic-offer.md` that matches the data shape (list, comparison, sequence, chart, hierarchy).
-4. **Construct the AntV Infographic syntax** following the DSL rules in `infographic-offer.md`.
-5. **Write the HTML file** to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html` using the HTML template in `infographic-offer.md`.
+3. **Write the HTML file** at the appropriate canvas dimensions for the selected platform.
+4. **Convert to PNG** using: `npx capture-website-cli {input.html} --output {output.png} --element .canvas --scale-factor 1`
+5. **Save** both `.html` and `.png` to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`
 6. **Note the file path** in the draft metadata: `**Infographic:** ../.drafts/infographics/{filename}.html`
-7. **Tell the human** to open the file in a browser, preview it, and export as SVG or screenshot for upload.
+7. **Tell the human** to open the file in a browser, preview it, and export as PNG or screenshot for upload.
 
-### Instagram infographic structure
+### Generation Steps (PowerPoint)
 
-- **Mobile-first design:** Keep text large and concise — 3–6 data points max.
-- **Templates:** `list-row-simple-horizontal-arrow`, `list-row-icon-box`, `compare-horizontal-bar`
-- **File naming:** `{idea-slug}-instagram-{YYYY-MM-DD}-infographic.html`
-
-### LinkedIn infographic structure
-
-- **Landscape design:** More data-dense than Instagram — 4–6 data points acceptable.
-- **Templates:** `compare-horizontal-bar`, `chart-column-simple`, `sequence-steps`, `list-row-icon-box`
-- **File naming:** `{idea-slug}-linkedin-{YYYY-MM-DD}-infographic.html`
+1. **Read `../../infographic-generator/SKILL.md` → "PowerPoint Slide Generation"** for slide dimensions, structure, and deck organization.
+2. **Extract slide content** from the source material (script, outline, or idea file). Identify the sequence of slides needed.
+3. **Write one HTML file per slide** at 1920×1080 following the slide template.
+4. **Generate an index deck** HTML file that embeds all slides for review.
+5. **Save** as `../.drafts/slides/{deck-name}/{nn}-{slug}.html` and note the index path in the draft metadata.
+6. **Tell the human** to open the index file in a browser to review all slides, then screenshot each or present directly from the browser.
 
 ---
 
@@ -303,7 +324,8 @@ When no specific company or thread is provided, the mode triggered depends on th
 | `Email`, `Phone` | Company / Developer Social Scanning | Companies and technical staff | None |
 | `LinkedIn` | Company / Developer Social Scanning | Companies and technical staff | AntV Infographic HTML |
 | `Reddit`, `StackOverflow` | Thread / Question Scanning | Relevant discussion threads and questions | None |
-| `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content | AntV Infographic HTML |
+| `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content | Pure HTML/CSS Infographic |
+| `PowerPoint` | No scanning needed | Slides are generated from source material directly (script, outline, or idea file) | 1920×1080 slide HTML files |
 | `Airtasker` | Job / Task Scanning | Open tasks with few offers matching the offering | None |
 
 ### Audience / Trend Scanning (Instagram)

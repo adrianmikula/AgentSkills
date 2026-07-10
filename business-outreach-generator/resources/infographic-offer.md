@@ -1,6 +1,8 @@
-# Infographic — Outreach Visual Asset Generation
+# Infographic — Outreach Visual Asset Generation (DEPRECATED)
 
-This resource is loaded alongside `output-formats.md` when the selected output format is `Instagram` or `LinkedIn`. It defines how to generate AntV Infographic visual assets to accompany the text outreach.
+**This resource is deprecated.** The infographic generation capability has been extracted into its own top-level skill at `../../infographic-generator/SKILL.md`. The pure HTML/CSS approach in that skill supersedes the AntV library approach documented here.
+
+This file is retained for reference only. Do not use for new generation tasks.
 
 Infographics are generated as standalone HTML files using the [AntV Infographic](https://github.com/antvis/Infographic) library via CDN. No npm install or local build is required — the skill generates an `.html` file that the human can open in any browser to view, screenshot, or export as SVG.
 

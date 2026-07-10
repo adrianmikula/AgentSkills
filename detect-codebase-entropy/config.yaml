@@ -1,0 +1,72 @@
+# Config for skillified-slopguard
+# SKILL VERSION: 1.1.2
+
+thresholds:
+  max_method_length: 50
+  max_nesting_depth: 3
+  max_cyclomatic_complexity: 10
+  max_boolean_ops: 3
+  max_if_else_chain: 2
+  max_duplicate_strings: 2
+  max_duplicate_numbers: 2
+  max_repeated_method_calls: 3
+  max_params: 4
+  max_class_fields: 8
+  max_brace_imbalance: 2
+  max_prose_density: 0.3
+  variations_per_prompt: 5
+  max_null_returns: 3
+
+scoring:
+  category_weights:
+    security: 0.35
+    complexity: 0.20
+    duplication: 0.20
+    performance: 0.10
+    corruption: 0.15
+  risk_levels:
+    low_max: 30
+    medium_max: 60
+    high_min: 61
+  max_score: 100
+
+lists:
+  excluded_extensions:
+    - .md
+    - .class
+    - .tst
+    - .log
+    - .jar
+  hardcoded_token_patterns:
+    - AKIA       # AWS access key
+    - ghp_       # GitHub PAT
+    - gho_       # GitHub OAuth
+    - AIza       # Google API
+    - sk-        # Stripe/OpenAI
+    - eyJ        # JWT (base64 header)
+    - Bearer     # Bearer token prefix
+    - Basic      # Basic auth prefix
+  placeholder_domains:
+    - example.com
+    - example.org
+    - example.net
+    - localhost
+    - 127.0.0.1
+
+data_sources:
+  analysis_rules_path: "config/analysis-rules.yaml"
+  generator_config_path: "config/generator.json"
+  workspace_dir: "workspace/generated/"
+  results_csv: "workspace/generated/results.csv"
+  scan_output_dir: ".aicodequalityrisk/"
+  scan_output_file: ".aicodequalityrisk/latest-scan.json"
+
+limits:
+  edit_cooldown_ms: 30000
+  max_findings: 7
+  llm_retries: 3
+  max_retries: 3
+
+# Research mode (optional — see resources/research-mode.md)
+research_mode:
+  enabled: false

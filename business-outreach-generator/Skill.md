@@ -44,7 +44,7 @@ Do not generate any outreach until the following parameters have been collected.
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 1 | **Offering** | `Trend-Match (default)`, `Auto-Recommend Best Fit`, followed by all active ideas loaded from `../.ideas/ideas/` (see `resources/accessing-idea-files.md`) — determines which idea file to load. If the human is unsure, default to **Trend-Match**. |
-| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, or `Airtasker`. When `LinkedIn` or `Instagram` is selected, an AntV Infographic visual asset is co-generated alongside the text. See `resources/infographic-offer.md` for details. |
+| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, `PowerPoint`, or `Airtasker`. When `LinkedIn` or `Instagram` is selected, an infographic is co-generated alongside the text. When `PowerPoint` is selected, a series of 1920×1080 slide HTML files are generated for use as presentation slides. See `../infographic-generator/Skill.md` for details. |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Derived from the selected idea file if it specifies one; otherwise infer from `## Context` and `## Key Facts` (e.g., tech, software development, SMBs, agencies, e-commerce, hospitality). If ambiguous, present a shortlist of 3–5 prime target industries for that idea and ask the human to pick one. — used for relevant examples |
@@ -301,7 +301,13 @@ Follow the instructions in the loaded resource file to:
    - For **Reddit, StackOverflow** formats: find 1–2 relevant threads or incidents from the trend to reference naturally in the post/answer. Do not force-fit breach examples into technical threads.
    - For **Airtasker** format: no breach research needed; focus on matching the task requirements.
 3. If no linked trends exist, fall back to standard breach research for `{{INDUSTRY}}` in `{{COUNTRY}}` using the same criteria (Email, LinkedIn, Phone only).
-4. **If Output format is `LinkedIn` or `Instagram`:** Generate an AntV Infographic HTML file alongside the text. Load `resources/infographic-offer.md` for data point extraction, template selection, syntax construction, and HTML generation. Save the file to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html` and note its path in the draft metadata.
+4. **If Output format is `LinkedIn` or `Instagram`:** Generate an infographic alongside the text and convert to PNG. Load `../infographic-generator/Skill.md` for canvas dimensions, branding rules, styling approach, and PNG generation. Save both the `.html` and `.png` files to `../.infographics/` and note the PNG path in the draft metadata.
+
+5. **If Output format is `PowerPoint`:** Generate a series of 1920×1080 slide HTML files for use as presentation slides. Load `../infographic-generator/Skill.md` → "PowerPoint Slide Generation" for dimensions, slide structure, and deck organization. Save each slide as a numbered HTML file under `../.slides/{deck-name}/` and generate an index deck file. Note the slide directory path in the draft metadata.
+
+### Branding Assets
+
+When generating infographics or slides, source images from `.branding/`. See `../infographic-generator/Skill.md` → "Branding Assets" for directory structure, theme selection, and embedding rules.
 
 ---
 
@@ -359,7 +365,11 @@ Save the verification with the draft metadata:
 **Verified Claims:** [list of claims made and where each is grounded]
 ```
 
-This applies to **all formats** — Email, LinkedIn, Reddit, StackOverflow, Instagram, Phone, Airtasker.
+This applies to **all formats** — Email, LinkedIn, Reddit, StackOverflow, Instagram, Phone, PowerPoint, Airtasker.
+
+### Infographic-Specific Grounding
+
+When generating an infographic (Instagram, LinkedIn visual) or slide deck (PowerPoint), the rules above apply to the accompanying text. For the visual content itself (stats, quotes, personas rendered on the canvas), see `../infographic-generator/Skill.md` → "Grounding Rules — No Hallucinated Content" — which prohibits fabricated testimonials, unsourced metrics, and includes a post-generation verification step.
 
 ---
 
@@ -371,11 +381,12 @@ Draft outreach messages are stored in `../.drafts/` (gitignored — never commit
 # [Human-readable title]
 
 **Target Idea:** [idea-slug]
-**Target Format:** [Email | LinkedIn | Phone | Reddit | StackOverflow | Instagram | Airtasker]
+**Target Format:** [Email | LinkedIn | Phone | Reddit | StackOverflow | Instagram | PowerPoint | Airtasker]
 **Status:** [Draft | Posted | Archived]
 **Created:** [YYYY-MM-DD]
 **Thread:** [URL to thread/post being replied to, if applicable]
 **Infographic:** [Path to generated infographic HTML file, if applicable]
+**Slide Deck:** [Path to generated slide deck directory, if applicable]
 ```
 
 ### Draft lifecycle

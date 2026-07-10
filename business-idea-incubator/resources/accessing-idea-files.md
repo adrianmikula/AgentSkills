@@ -2,6 +2,12 @@
 
 The `.ideas/` directory is **gitignored**. The `glob` and `grep` tools skip gitignored paths by default, so they **will not** return files under `.ideas/`. You must use `bash` and the `read`/`write` tools on explicit full paths instead.
 
+**Critical: First check if `.ideas/` exists at all.** Start every session with:
+```
+ls .ideas/            (bash — will show contents or error if missing)
+```
+If `ls` errors, the directory doesn't exist — treat as "no existing state." Do NOT use `glob` to check for `.ideas/` — it will return nothing even if the directory exists.
+
 | Task | How |
 |------|-----|
 | List all ideas | `ls .ideas/ideas/` (bash, from repo root) |

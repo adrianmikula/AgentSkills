@@ -25,6 +25,13 @@ dist/
 # Outreach drafts (work-in-progress messages, never committed)
 .drafts/
 
+# Generated slides and infographics (presentation assets, never committed)
+.slides/
+.infographics/
+
+# Branding assets (stock images, artwork, licensed media — never committed)
+.branding/
+
 # Agent symlinks (created by scripts/setup-agent-links.sh)
 .agents/skills/
 .opencode/skill/
