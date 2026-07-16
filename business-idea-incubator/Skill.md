@@ -1,6 +1,14 @@
 ---
 name: business-idea-incubator
 description: Validate, refine, and implement business ideas through multidisciplinary coaching. Adapts to your experience level across idea validation, startup foundations, marketing, sales, deployment, and more. Tracks progress and surfaces blind spots. Also tracks external market trends and conditions that affect your ideas.
+search_aliases:
+  - todo list
+  - to-do
+  - next steps
+  - next actions
+  - follow-ups
+  - action items
+  - Monday list
 ---
 
 ## Overview
@@ -8,6 +16,8 @@ description: Validate, refine, and implement business ideas through multidiscipl
 This Skill helps entrepreneurs incubate business ideas by combining insights from multiple disciplines: idea validation, startup foundations, marketing, outreach framing, profitability, competitive intelligence, business operations, vibe coding, production deployment, e-commerce selling, social media, and funding & capital strategy. 
 
 It adapts to your experience level, focusing research, advice, and coaching on the disciplines where you need the most help — especially areas you identify as weaknesses or blind spots. A core priority is understanding your actual financial resources before making any recommendations about funding, and matching funding strategies to your specific stage, industry, and value proposition.
+
+Cross-references the Business Outreach Generator's To-Do Index at `../.leads/todo-index.md` for tracking next actions. Use keywords "todo list", "to-do", "next steps", "next actions", "follow-ups", "action items", or "Monday list" to surface action items from active leads.
 
 2026-native validation methods are embedded throughout: **pain-mining tools** that scrape frustration language from Reddit, HN, and Product Hunt; **AEO query mining** for verbatim demand language from AI search systems; **pre-sale validation** as the gold-standard demand signal; and **adverse review mining** to identify where adjacent products underserve customers. These replace older "check Google Trends" and "would you use this?" survey patterns with higher-signal techniques.
 
@@ -167,6 +177,9 @@ Each `.ideas/ideas/{slug}.md` follows this structure:
 ## Keywords
 [Comma-separated list of relevant keywords for outreach, scanning, and search. Include technology terms, platform names, pain-point terms, and target audience descriptors. Example: "Java EE, Jakarta EE, migration, OpenRewrite, Spring, IntelliJ, enterprise Java"]
 
+## USP
+[1–2 sentences describing the unique selling proposition — the specific differentiator that sets this idea apart. Used by the Business Outreach Generator to inform wording and focus of outreach messages.]
+
 ## Key Facts
 - [Fact 1]
 - [Fact 2]
@@ -292,6 +305,7 @@ On every interaction, run this startup sequence before anything else.
    - Read `.ideas/trends/refresh-queue.md` if it exists (see `resources/accessing-idea-files.md`).
    - For each trend in the index, check if `Expires` date is within 30 days of today's date.
    - If any trends are expired (past 30 days) or expiring within 7 days, flag them for refresh.
+4. **Check action items** — Read `../.leads/todo-index.md` if it exists (this aggregates `Next Action` fields from all lead files). If the human mentions "todo list", "to-do", "next steps", "next actions", "follow-ups", "action items", or "Monday list", present the index and offer to update leads or next actions.
 
 ### Step 2 — Present Choice to User
 
@@ -669,6 +683,7 @@ Do not install tools or skills without explicit permission, but do not remain si
 - **Jargon:** Explain terms on first use. Match the human's vocabulary level.
 - **Actionability:** Every session ends with at least one concrete next step.
 - **State Hygiene:** After every significant interaction — confirmation, refinement, decision, strategy selection, goal change, or financial/funding update — update the matching `.ideas/ideas/{slug}.md` file with a dated progress log entry AND update the `.ideas/funding/{slug}.md` file if the interaction involved funding. Do not skip this step. Check `.ideas/trends/` for changes; update `.ideas/trends/index.md` and related trend files when trends are added, refreshed, or archived.
+- **To-Do Index Hygiene:** When updating lead files or recording next actions, also regenerate `../.leads/todo-index.md` to keep the central index in sync. This ensures the "Monday list" and "next steps" queries always return current action items.
 - **Blind Spot Care:** When coaching in weak areas, be extra patient, provide examples, and celebrate small wins.
 
 ---

@@ -216,7 +216,7 @@ Content layout flows top-to-bottom naturally:
                         total: 1350px
 ```
 
-- **Headline:** Bold number, question, or contrast (e.g., "60% of agencies miss this" or "$2,240/mo in lost revenue")
+- **Headline:** Bold number, question, or contrast (e.g., "60% of agencies miss this" or "Premium sites, half price — $500")
 - **Body:** 4–6 feature cards, 2–3 step process, or comparison with supporting detail
 - **CTA:** Soft lead-gen — "DM me for a free audit" / "Link in comments" / "Tag a colleague"
 - **Spacing:** Sections spread evenly; 24–36px gaps between blocks; bottom-positioned elements use larger values (e.g., footer at `bottom: 60px`)
@@ -290,7 +290,7 @@ Layout is naturally more compact:
 - One clear focal point (headline, stat, or visual hierarchy)
 - No more than 4–5 distinct content blocks per canvas
 - CTA at the bottom (price, website, contact, or value proposition)
-- Footer line with "NextSquare — branded online ordering..." style tagline
+- Footer line with "Branded online ordering for Australian cafes" style tagline
 
 ---
 
@@ -319,8 +319,8 @@ All claims must be grounded in the idea file. See Grounding Requirement in `SKIL
 Where `{platform}` is `instagram` or `linkedin`, `{n}` is a sequence number (1, 2, 3...) and `{topic}` describes the slide content.
 
 Examples:
-- `next-square-instagram-1-hook.html` / `next-square-instagram-1-hook.png`
-- `next-square-linkedin-1-comparison.html` / `next-square-linkedin-1-comparison.png`
+- `branded-site-instagram-1-hook.html` / `branded-site-instagram-1-hook.png`
+- `branded-site-linkedin-1-comparison.html` / `branded-site-linkedin-1-comparison.png`
 
 ---
 

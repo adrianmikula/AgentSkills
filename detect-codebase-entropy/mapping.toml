@@ -1,0 +1,256 @@
+# Skill-to-code mapping for slopguard
+# Generated: 2026-07-09
+
+skill_version = "1.1.2"
+codebase_version = "{git-hash}"
+
+[[capabilities]]
+name = "Analyze File"
+description = "Analyze a single file and return quality risk findings with score"
+
+  [[capabilities.sections]]
+  skill_section = "Logic — capture state"
+  config_key = null
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/capture/DiffCaptureService.kt", type = "service", function = "captureDiff" },
+  ]
+  test_files = ["src/test/kotlin/com/aicodequalityrisk/plugin/capture/DiffCaptureServiceTest.kt"]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — AST analysis"
+  config_key = "thresholds.max_method_length, thresholds.max_nesting_depth, thresholds.max_cyclomatic_complexity, thresholds.max_boolean_ops"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/ASTAnalyzer.kt", type = "logic", function = "analyzeAST" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/ASTMetrics.kt", type = "model", function = "ASTMetrics" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/ASTSubtreeComparator.kt", type = "logic", function = "compareSubtrees" },
+  ]
+  test_files = [
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/ASTAnalyzerTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/ASTAnalyzerScalaTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/ASTSubtreeComparatorTest.kt",
+  ]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — Tree-sitter fuzzy detection"
+  config_key = "thresholds.max_duplicate_strings, thresholds.max_duplicate_numbers, thresholds.max_repeated_method_calls, thresholds.max_params"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/TreeSitterFuzzyDetector.kt", type = "logic", function = "detectPatterns" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/FuzzyMetrics.kt", type = "model", function = "FuzzyMetrics" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/MultiGranularShingleBuilder.kt", type = "logic", function = "buildShingles" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/EnhancedMethodFingerprint.kt", type = "logic", function = "fingerprintMethod" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/LLMRepetitionIntensity.kt", type = "logic", function = "measureRepetition" },
+  ]
+  test_files = [
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/TreeSitterFuzzyDetectorTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/TreeSitterFuzzyDetectorEnhancedTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/TreeSitterFuzzyDetectorKotlinTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/MultiGranularShingleBuilderTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/LLMRepetitionIntensityTest.kt",
+  ]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — corrupted source detection"
+  config_key = "thresholds.max_brace_imbalance, thresholds.max_prose_density"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/CorruptedSourceDetector.kt", type = "logic", function = "detectCorruption" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/CorruptedSourceMetrics.kt", type = "model", function = "CorruptedSourceMetrics" },
+  ]
+  test_files = [
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/CorruptedSourceDetectorTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/CorruptedSourceDetectorKotlinTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/CorruptedSourceDetectorScalaTest.kt",
+  ]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — rule engine"
+  config_key = "data_sources.analysis_rules_path, scoring.category_weights"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/LocalMockAnalyzerClient.kt", type = "logic", function = "analyze" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/RuleFactory.kt", type = "logic", function = "createRules" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/RuleModels.kt", type = "model", function = "RuleDefinition" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/ConfigModels.kt", type = "model", function = "AnalysisConfig" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/AnalysisConfigLoader.kt", type = "service", function = "loadConfig" },
+  ]
+  test_files = ["src/test/kotlin/com/aicodequalityrisk/plugin/analysis/LocalMockAnalyzerClientTest.kt"]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — score calculation"
+  config_key = "scoring.*, thresholds.*"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/EntropyScoreCalculator.kt", type = "logic", function = "calculate" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/AdaptiveThresholdCalculator.kt", type = "logic", function = "adjustThresholds" },
+  ]
+  test_files = [
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/EntropyScoresTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/AdaptiveThresholdCalculatorTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/CodeEntropyPatternsTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/analysis/HighQualityCodeTest.kt",
+  ]
+
+  [[capabilities.sections]]
+  skill_section = "Logic — orchestration"
+  config_key = "limits.edit_cooldown_ms, limits.max_findings"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/pipeline/AnalysisOrchestrator.kt", type = "service", function = "trigger" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/pipeline/LatestOnlyRunner.kt", type = "logic", function = "run" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/pipeline/TaskRunner.kt", type = "interface", function = "TaskRunner" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/analysis/AnalyzerClient.kt", type = "interface", function = "AnalyzerClient" },
+  ]
+  test_files = [
+    "src/test/kotlin/com/aicodequalityrisk/plugin/pipeline/AnalysisOrchestratorTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/pipeline/AnalysisOrchestratorLicensingTest.kt",
+    "src/test/kotlin/com/aicodequalityrisk/plugin/pipeline/LatestOnlyRunnerTest.kt",
+  ]
+
+  [[capabilities.sections]]
+  skill_section = "Error states — license expired"
+  config_key = null
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/service/LicenseService.kt", type = "service", function = "checkLicense" },
+  ]
+  test_files = ["src/test/kotlin/com/aicodequalityrisk/plugin/service/LicenseServiceTest.kt"]
+
+[[capabilities]]
+name = "Analyze Project"
+description = "Analyze all eligible files in the project"
+
+  [[capabilities.sections]]
+  skill_section = "Logic — project scan"
+  config_key = "lists.excluded_extensions, limits.max_findings"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/plugin/actions/AnalyzeProjectAction.kt", type = "entrypoint", function = "actionPerformed" },
+  ]
+  test_files = []
+
+  [[capabilities.sections]]
+  skill_section = "Error states — no eligible files"
+  config_key = null
+  impl_files = []
+  test_files = []
+
+[[capabilities]]
+name = "Run Code Generator"
+description = "Generate Java Spring Boot projects via LLM to study code quality evolution"
+
+  [[capabilities.sections]]
+  skill_section = "Logic — prompt building"
+  config_key = null
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/builder/PromptBuilder.kt", type = "logic", function = "build" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/model/PromptTemplate.kt", type = "model", function = "PromptTemplate" },
+  ]
+  test_files = []
+
+  [[capabilities.sections]]
+  skill_section = "Logic — LLM invocation"
+  config_key = "limits.llm_retries, thresholds.variations_per_prompt"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/llm/LlmCaller.kt", type = "logic", function = "call" },
+  ]
+  test_files = []
+
+  [[capabilities.sections]]
+  skill_section = "Logic — output parsing and writing"
+  config_key = "data_sources.workspace_dir"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/parser/FileExtractor.kt", type = "logic", function = "extract" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/writer/ProjectWriter.kt", type = "logic", function = "write" },
+  ]
+  test_files = []
+
+  [[capabilities.sections]]
+  skill_section = "Logic — experiment orchestration"
+  config_key = "data_sources.generator_config_path, data_sources.results_csv"
+  config_file = "config.yaml"
+  impl_files = [
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/runner/ExperimentRunner.kt", type = "logic", function = "run" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/runner/DetectionRunner.kt", type = "logic", function = "detect" },
+    { file = "src/main/kotlin/com/aicodequalityrisk/generator/Main.kt", type = "entrypoint", function = "main" },
+  ]
+  test_files = []
+
+[data_models]
+  [[data_models.fields]]
+  model = "RiskResult"
+  field = "score"
+  type = "number (0-100, nullable)"
+  maps_to_skill_param = "score"
+  config_key = "scoring.risk_levels"
+  file = "src/main/kotlin/com/aicodequalityrisk/plugin/model/Models.kt"
+
+  [[data_models.fields]]
+  model = "RiskResult"
+  field = "findings"
+  type = "Finding[]"
+  maps_to_skill_param = "findings"
+  config_key = "limits.max_findings"
+  file = "src/main/kotlin/com/aicodequalityrisk/plugin/model/Models.kt"
+
+  [[data_models.fields]]
+  model = "Finding"
+  field = "severity"
+  type = "enum (HIGH|MEDIUM|LOW)"
+  maps_to_skill_param = "severity"
+  config_key = null
+  file = "src/main/kotlin/com/aicodequalityrisk/plugin/model/Models.kt"
+
+  [[data_models.fields]]
+  model = "Finding"
+  field = "category"
+  type = "enum (SECURITY|COMPLEXITY|DUPLICATION|PERFORMANCE|CORRUPTION)"
+  maps_to_skill_param = "category"
+  config_key = "scoring.category_weights"
+  file = "src/main/kotlin/com/aicodequalityrisk/plugin/model/Models.kt"
+
+  [[data_models.fields]]
+  model = "ExperimentConfig"
+  field = "mode"
+  type = "enum (SINGLE_SHOT|ITERATIVE)"
+  maps_to_skill_param = "mode"
+  config_key = null
+  file = "src/main/kotlin/com/aicodequalityrisk/generator/model/GenerationMode.kt"
+
+[config_mapping]
+  skill_var = "thresholds.max_method_length"
+  code_var = "config/thresholds.yaml → maxMethodLength"
+  file = "config/thresholds.yaml"
+
+  skill_var = "thresholds.max_nesting_depth"
+  code_var = "config/thresholds.yaml → maxNestingDepth"
+  file = "config/thresholds.yaml"
+
+  skill_var = "thresholds.max_cyclomatic_complexity"
+  code_var = "config/thresholds.yaml → maxCyclomaticComplexity"
+  file = "config/thresholds.yaml"
+
+  skill_var = "limits.edit_cooldown_ms"
+  code_var = "cooldownMillis"
+  file = "src/main/kotlin/com/aicodequalityrisk/plugin/pipeline/AnalysisOrchestrator.kt"
+
+  skill_var = "data_sources.analysis_rules_path"
+  code_var = "analysis-rules.yaml path"
+  file = "src/main/resources/config/analysis-rules.yaml"
+
+[external_services]
+  name = "IntelliJ Marketplace Trial API"
+  purpose = "License verification"
+  api_version = "2024.1"
+  config_key = null
+  skill_impact = "License API changes may affect trial flow"
+
+  name = "opencode CLI"
+  purpose = "LLM invocation for code generator"
+  config_key = null
+  skill_impact = "CLI interface changes may break generator"
+
+[conflict_resolution]
+  # No known conflicts in current skill tree

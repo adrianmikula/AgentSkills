@@ -1,19 +1,33 @@
 ---
 name: skillify-codebase
-description: Examine an existing codebase, extract its core logic and inputs/outputs into a reusable Claude skill, and establish a deterministic, config-driven skill-sync workflow that keeps the skill (upstream spec) and code (downstream implementation) in lockstep.
+description: Examine any codebase, map its architectural boundaries (Human Input, AI/Skills, Code, Config), and produce a complete set of boundary-aligned skills — an orchestrator plus per-module skills — with explicit human/AI separation of responsibilities and a deterministic config-driven skill-sync workflow.
 ---
 
 ## Overview
 
-This Skill extracts the functional essence of a codebase into a skill that mirrors the codebase's inputs and outputs. The resulting skill becomes the **upstream source of truth** — changes flow from skill → code via a documented mapping and sync process.
+This Skill analyzes a codebase's architecture, extracts its core logic and inputs/outputs into boundary-aligned Claude skills, and establishes a deterministic, config-driven skill-sync workflow that keeps the skill (upstream spec) and code (downstream implementation) in lockstep.
 
-**Core insight:** Instead of maintaining code and documentation separately, the Claude skill is the executable specification. Code is the rendered output. When business logic changes, update the skill and sync to code.
+**Standard mode (default):** Produces an orchestrator skill + one skill per major module, with explicit input/output contracts and human/AI ownership per architectural boundary.
 
-An optional **research mode** extends this model with affordance schemas (fixed vs open layers), lockfile-pinned builds, skill dependency trees, and conflict resolution. See `resources/research-mode.md` to activate.
+**Research mode (optional):** Extends the model with affordance schemas, lockfile-pinned builds, skill dependency trees, and conflict resolution. See `resources/research-mode.md` to activate.
 
 ---
 
 ## Core Concepts
+
+### Four Architectural Boundaries
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                      ARCHITECTURAL BOUNDARIES                        │
+├─────────────────┬─────────────────┬─────────────────┬────────────────┤
+│  Human Input    │   AI / Skills   │      Code       │     Config     │
+│                 │                 │                 │                │
+│  Content, data, │  Decision-making│  Deterministic  │  Environment,  │
+│  fixtures, CMS, │  orchestration, │  transformation, │  build, runtime│
+│  external APIs  │  generation     │  rendering       │  behavior      │
+└─────────────────┴─────────────────┴─────────────────┴────────────────┘
+```
 
 ### Upstream vs Downstream
 
@@ -64,463 +78,232 @@ When syncing, the AI agent updates the version in both files. A mismatch between
 
 ---
 
-## Research Mode (Optional)
-
-An optional **research mode** extends the skillify model with:
-
-- **Affordance schema** — formally separating what's fixed (non-negotiable contract) from what's open (implementation detail free to vary between generations)
-- **Lockfile** (`skill.lock`) — pinning which version of the upstream skill a piece of code was compiled against, so open-layer changes never trigger a rebuild but fixed-layer changes do
-- **Skill tree** — skills reference other skills, the way packages reference packages, with a dependency graph
-- **Conflict resolution** — recording precedence rules when two upstream skills disagree
-- **Codebase decomposition** — for complex projects (>= 5 modules, >= 50k LOC, or >= 3 entry points), automatically generates a multi-skill tree with one skill per high-level module, linked by upstream/downstream sync relationships
-
-Research mode is **off by default**. Activate it per project by setting `research_mode: true` in the skill frontmatter or `research_mode.enabled: true` in `config.yaml`.
-
-See `resources/research-mode.md` for the complete theoretical framework, lockfile format, skill tree traversal rules, conflict resolution authority levels, and activation workflow.
-
-See `resources/module-decomposition.md` for the codebase decomposition workflow — complexity assessment, module discovery, dependency graph extraction, multi-skill generation, and cascading sync across the skill tree.
-
-**AI agent instruction:** When this skill is first loaded, inform the user that research mode is available on request (affordance schemas, lockfile, skill tree, conflict resolution, and module decomposition for complex projects). Do not activate it unless the user asks.
-
----
-
-## Phase 1 — Codebase Analysis
-
-### 1.1 Map the Codebase
-
-Analyze the target codebase to build a functional inventory:
-
-| Artifact | What to extract | Example |
-|----------|----------------|---------|
-| Entry points | Routes, handlers, event listeners | `POST /api/orders`, `OrderPlaced` event |
-| Core domain logic | Business rules, validations, calculations | Tax calculation, eligibility checks |
-| Data models | Schemas, types, interfaces | `Order { id, items, total }` |
-| External integrations | APIs, databases, third-party services | Square POS API, PostgreSQL |
-| Inputs | Request schemas, CLI args, event payloads | `CreateOrderRequest { customerId, items[] }` |
-| Outputs | Response schemas, side effects, return values | `OrderConfirmation { orderId, eta }` |
-| Error modes | Failure states, error types, edge cases | `OutOfStockError`, `ValidationError` |
-| Configuration | Env vars, feature flags, constants | `MAX_ORDER_ITEMS=50`, `TAX_RATE=0.1` |
-| Test files | Unit/integration/E2E tests | `tests/orders.test.ts` |
-
-### 1.2 Extract Functional Boundaries
-
-Group related inputs/outputs into skill capabilities. Each capability maps to one or more code files:
-
-```
-Codebase: Cafe ordering webapp
-
-Capability A: "Browse menu"
-  Inputs:  category filter (optional), search query (optional)
-  Outputs: list of menu items with availability
-  Maps to: src/routes/menu.ts, src/services/menuService.ts
-
-Capability B: "Place order"
-  Inputs:  customer info, items[], payment method
-  Outputs: order confirmation, payment receipt
-  Maps to: src/routes/orders.ts, src/services/orderService.ts, src/payment/
-
-Capability C: "Manage cafe settings"
-  Inputs:  operating hours, menu prices, tax rate
-  Outputs: confirmation, updated config
-  Maps to: src/routes/admin.ts, src/services/configService.ts
-```
-
-### 1.3 Extract Configurable Parameters
-
-For each capability, identify ALL parameters that are currently hardcoded or configurable:
-
-| Category | Examples | Config file destination |
-|----------|----------|------------------------|
-| Thresholds | `max_order_items=50`, `tax_rate=0.1` | `config.yaml` → `thresholds` section |
-| Weights/scoring | `relevance_weight=0.6`, `severity_weight=0.4` | `config.yaml` → `scoring` section |
-| Constants | `default_page_size=20`, `cache_ttl_ms=300000` | `config.yaml` → `constants` section |
-| Enums/lists | `valid_categories=["food","drinks"]`, `blacklisted_ips=[]` | `config.yaml` → `lists` section |
-| External URLs | API endpoints, data source URLs | `config.yaml` → `data_sources` section |
-| Timeouts/limits | `request_timeout_ms=5000`, `max_retries=3` | `config.yaml` → `limits` section |
-
-Every identified parameter MUST be extracted to the config file during skillification.
-
----
-
-## Phase 2 — Skill Generation
-
-### 2.1 Output Structure
-
-Each skillified codebase produces one directory with the config-driven pattern:
-
-```
-.opencode/skill/skillified-{project-name}/
-├── SKILL.md              # The generated skill — inputs, outputs, core logic
-├── config.yaml            # ALL configurable parameters (PRIMARY SYNC TARGET)
-├── mapping.toml           # Granular section-by-section skill-to-code mapping table
-│                         # Also contains conflict_resolution rules (research mode)
-├── skill.lock             # Lockfile — research mode only. Pins upstream versions + hashes.
-├── sync-workflow.md       # Sync process documentation
-└── resources/
-    ├── data-models.md     # Schema definitions
-    ├── api-contract.md    # Input/output contracts
-    └── test-cases.md      # Example invocations + expected outputs
-```
-
-**Content rules:**
-- All files are MD, YAML, TOML, or JSON — never source code (.ts, .js, .py, .rs, .kt, .java, etc.)
-- Lightweight CLI helper scripts (bash/PowerShell) may be added to `resources/` for common operations (e.g. config validation, lockfile verification). These are the only exception.
-
-### 2.2 SKILL.md Template
-
-The generated SKILL.md must mirror the webapp's functional interface:
-
-```markdown
----
-name: skillified-{project-name}
-description: {one-line summary of what the codebase does}
-version: 1.0.0
----
-
-## Overview
-
-{2–3 sentence description of the codebase's purpose and architecture}
-
-## Capabilities
-
-### {Capability A: Verb + noun}
-
-{Description of what this capability does}
-
-**Logic:**
-{Concise description of the core business logic — rules, validations, calculations.
-This section should be precise enough that an AI agent can implement the logic correctly.}
-
-**Config parameters used:**
-| Parameter | Config path | Purpose |
-|-----------|-------------|---------|
-| `{threshold}` | `thresholds.{key}` | {what it controls} |
-
-**Error states:**
-| Condition | Error | Handling |
-|-----------|-------|----------|
-| {condition} | {error type} | {fallback behavior} |
-
-**Affordance schema (optional — see `resources/research-mode.md`):**
-> When research mode is active, add **Fixed contract** and **Open layer** tables here.
-> Fixed contract: inputs, outputs, business rules, error semantics (stable).
-> Open layer: algorithm, structure, framework choices (free to vary between builds).
-
-**Example:**
-```json
-// Input
-{json example}
-// Output
-{json example}
-```
-
-### {Capability B}
-
-...
-
-## Configuration
-
-| Variable | Config path | Default | Description |
-|----------|-------------|---------|-------------|
-| `{var}` | `{section}.{key}` | `{default}` | {description} |
-
-## Dependencies
-
-- Runtime: {language + version}
-- Key libraries: {list}
-- External services: {list}
-
-## Test Cases
-
-See `resources/test-cases.md` for full invocation examples and expected outputs.
-```
-
-### 2.3 Config File Template (`config.yaml`)
-
-```yaml
-# Config for skillified-{project-name}
-# skill_version: 1.0.0  — also recorded in mapping.toml
-
-thresholds:
-  max_order_items: 50
-  tax_rate: 0.1
-  free_shipping_min: 30
-
-scoring:
-  category_weights:
-    relevance: 0.6
-    severity: 0.4
-  pass_threshold: 0.7
-
-lists:
-  valid_categories:
-    - food
-    - drinks
-    - specials
-  blacklisted_ips: []
-
-data_sources:
-  menu_api: "https://api.example.com/menu"
-  order_api: "https://api.example.com/orders"
-
-limits:
-  request_timeout_ms: 5000
-  cache_ttl_ms: 300000
-  max_retries: 3
-
-# Research mode (optional — see resources/research-mode.md)
-research_mode:
-  enabled: false
-```
-
-### 2.4 Generation Rules
-
-- **Inputs and outputs of the skill MUST match the inputs and outputs of the webapp.** Every field the webapp accepts or returns must be represented in the skill's capability definitions.
-- **Core logic must be extracted and documented** at a level where an AI agent could re-implement the feature correctly — rule descriptions, edge cases, business decisions.
-- **Implementation details (frameworks, deployment, infrastructure) are NOT included** in the skill. Those belong in `mapping.toml`.
-- **Error states must be thorough** — document every failure mode the webapp handles, not just the happy path.
-- **All configurable parameters MUST be extracted to `config.yaml`**. The skill markdown describes logic, but parameter values live in config. No hardcoded values in the skill spec.
-- **Every capability's Logic section must list the config parameters it uses**, linking each to its config path. This is what makes the mapping table deterministic.
-
----
-
-## Phase 3 — Skill-to-Code Mapping
-
-### 3.1 Granular Mapping Table (`mapping.toml`)
-
-Unlike a simple capability→file mapping, this table maps every **section of the skill markdown** to its config key and implementation file:
-
-```toml
-# Skill-to-code mapping for {project-name}
-# Generated: {date}
-
-skill_version = "1.0.0"
-codebase_version = "{git-hash}"
-
-# Each capability has a granular section-by-section mapping
-[[capabilities]]
-name = "Browse menu"
-description = "List menu items with optional filtering"
-
-  # Every paragraph/section in the skill's Logic maps to a config key + code location
-  [[capabilities.sections]]
-  skill_section = "Logic — category filtering"
-  config_path = "lists.valid_categories"
-  config_file = "config.yaml"
-  impl_files = [
-    { file = "src/routes/menu.ts", type = "entrypoint", function = "getMenu" },
-    { file = "src/services/menuService.ts", type = "logic", function = "filterByCategory" },
-  ]
-  test_files = ["tests/menu.test.ts"]
-
-  [[capabilities.sections]]
-  skill_section = "Logic — tax calculation"
-  config_path = "thresholds.tax_rate"
-  config_file = "config.yaml"
-  impl_files = [
-    { file = "src/services/orderService.ts", type = "logic", function = "calculateTotal" },
-  ]
-  test_files = ["tests/orders.test.ts"]
-
-  [[capabilities.sections]]
-  skill_section = "Error states — invalid category"
-  config_path = null  # error handling has no config parameter
-  impl_files = [
-    { file = "src/middleware/validation.ts", type = "logic", function = "validateCategory" },
-  ]
-  test_files = ["tests/validation.test.ts"]
-
-# ... more capabilities
-
-[data_models]
-  [[data_models.fields]]
-  model = "Order"
-  field = "total"
-  type = "number"
-  maps_to_skill_param = "orderTotal"
-  config_path = "thresholds.tax_rate"
-  file = "src/models/order.ts"
-
-[config_mapping]
-  skill_var = "tax_rate"
-  code_var = "TAX_RATE_PERCENTAGE"
-  file = ".env"
-
-  skill_var = "max_order_items"
-  code_var = "app-config.maxOrderItems"
-  file = "config/production.yaml"
-
-[external_services]
-  name = "Square POS API"
-  purpose = "Payment processing"
-  api_version = "2026-01-01"
-  config_path = "data_sources.order_api"
-  skill_impact = "API version bumps may change request/response shapes"
-```
-
-### 3.2 Why This Level of Granularity?
-
-| Without it | With it |
-|------------|---------|
-| "Update the menu capability" — vague, risky | "Update `thresholds.tax_rate` in config.yaml and the tax calculation in orderService.ts" — precise |
-| AI agent guesses which config parameter changed | Every config path is linked to its skill section — no guesswork |
-| Hard to verify completeness of a sync | Every section has a `config_path` — null means "no parameter change needed" |
-| Mapping drifts from actual code over time | Each file+function reference is testable — CI can verify they still exist |
-
-### 3.3 Mapping Maintenance
-
-- Update `codebase_version` on every deployment that changes mapped files.
-- When adding a new feature, add it to the skill first, then add a new `[[capabilities]]` section to mapping.toml.
-- When deleting code, verify no mapping points to removed files. Remove stale entries.
-- When a config parameter changes name or location, update ALL references across all sections that use it.
-- `config_path` entries use YAML dot-notation (e.g. `thresholds.max_items`), not programming-language-style (e.g. `THRESHOLDS.MAX_ITEMS`).
-
----
-
-## Phase 4 — Skill-Sync Process
-
-### 4.1 Sync Triggers
-
-| Trigger | Direction | Process |
-|---------|-----------|---------|
-| Business logic change | Skill → Code (forward) | Update skill capability → edit config.yaml → apply file mapping → run tests |
-| Bug fix discovered in code | Code → Skill (reverse) | Fix code → update skill to reflect corrected behavior → bump version |
-| New feature | Skill → Code (forward) | Add capability to skill first → add config keys → implement code |
-| Parameter tuning only | Skill → Code (forward) | Edit config.yaml only — no skill markdown changes needed |
-| Dependency update | Neither | Update mapping.toml dependency versions only |
-| Research mode sync | Lockfile | Verify hashes, check fixed vs open layer change, cascade if needed |
-
-### 4.2 Config-Driven Sync Procedure (Forward)
-
-When business logic changes upstream (skill):
-
-1. **Update the skill capability** — modify Logic, Error states, or Config parameters in SKILL.md
-2. **Edit config.yaml** — update the specific config path(s) that changed. This is the primary action.
-3. **Apply file mapping** — for each changed `impl_file` in the mapping, navigate to that file+function and apply the downstream equivalent change
-4. **Bump version** — update `skill_version` in both `config.yaml` and `mapping.toml`
-5. **Run tests** — verify all mapped test files pass
-6. **Commit** — using the convention below
-
-### 4.3 Reverse Sync (Code → Skill)
-
-When a fix is discovered in code that changes behavior:
-
-1. **Fix the code** as normal
-2. **Update config.yaml** if parameter values changed
-3. **Update the skill** to reflect the corrected behavior in Logic / Error states
-4. **Bump version** — update `skill_version` in `config.yaml` and `mapping.toml`
-5. **Document the divergence** — add a note:
-   ```
-   reverse-sync note: {date} — {description of code fix}
-   Skill updated to match corrected behavior.
-   ```
-6. **Commit** — using the convention below
-
-### 4.4 AI Agent Sync Rules
-
-When an AI agent performs the sync, it MUST follow these hard constraints:
-
-| Rule | Detail |
-|------|--------|
-| **Never change the capability interface** | Inputs, outputs, and capability names are stable. Only the implementation inside each capability changes. |
-| **Never add source code to the skill** | The generated skill is MD, YAML, TOML, JSON only. CLI helper scripts (bash/PowerShell) may live in `resources/`. No `.ts`, `.js`, `.py`, `.rs`, `.kt`, `.java`, or any compiled language files. |
-| **Update config.yaml first** | Config is the primary sync target. Changes to logic descriptions in SKILL.md are secondary. |
-| **Bump version** | Update `skill_version` in both `config.yaml` and `mapping.toml` to the new upstream version. |
-| **Never hardcode a value in the skill markdown** | If the change requires a new constant, add it to `config.yaml` and reference it from the skill by config path. |
-| **Update mapping.toml** | If a new section was added to the skill, add a new `[[capabilities.sections]]` entry. If a mapped file no longer exists, remove the entry. |
-| **Check research mode** (if active) | Compare lockfile hashes before build. Fixed-layer mismatch = full rebuild. Open-layer-only = lightweight re-theme. |
-
-### 4.5 Commit Convention
-
-Use this commit message pattern:
-
-```
-skill-sync({project-name}): v{old} → v{new} — {brief description}
-
-Config changes:
-- {config key}: {old value} → {new value}
-- ...
-
-Mapped files updated:
-- {file}: {function} — {what changed}
-
-Reverse sync: {yes/no}
-```
-
-Examples:
-```
-skill-sync(cafe-ordering): v1.0.0 → v1.1.0 — increased max_order_items to 100
-
-Config changes:
-- thresholds.max_order_items: 50 → 100
-
-Mapped files updated:
-- src/services/orderService.ts: validateOrder — updated max items check
-- src/routes/orders.ts: createOrder — updated error message
-```
-
-### 4.6 Sync Verification Checklist
-
-After every sync:
-
-- [ ] `skill_version` matches between `config.yaml` and `mapping.toml`
-- [ ] Skill capability inputs/outputs still match webapp inputs/outputs
-- [ ] Every changed config key has a corresponding update in the mapped `impl_files`
-- [ ] No stale mappings (all mapped files and functions still exist)
-- [ ] All test files in mapping still pass
-- [ ] No hardcoded values embedded in skill markdown — everything configurable is in `config.yaml`
-- [ ] `mapping.toml` updated if new sections were added or removed
-- [ ] `codebase_version` and/or `skill_version` bumped
-- [ ] Commit message follows convention
-- [ ] No source code files (.ts, .js, .py, .rs, .kt, .java) in the skillified project directory
-
-### 4.7 Detecting Drift
-
-If code and skill diverge (e.g., hotfix in production, AI-generated change that bypassed the skill):
-
-1. **Check version mismatch** — if `skill_version` in `config.yaml` differs from `mapping.toml`, drift has occurred
-2. **Run capability tests** — execute each capability's inputs and compare outputs against actual webapp behavior
-3. **If mismatch found**, decide: is the code correct (reverse-sync) or is the skill correct (forward-sync)?
-4. **Execute the appropriate sync direction**
-5. **Update version** in both `config.yaml` and `mapping.toml`
-
----
-
 ## Workflow
 
-### Initial skillification
+The skillify process has 7 phases. Detailed templates and tables are in the `resources/` directory.
 
 ```
-1. Analyze codebase → build functional inventory (Phase 1)
-2. Extract all configurable parameters → config.yaml (Phase 1.3)
-3. Generate SKILL.md with matching inputs/outputs (Phase 2)
-4. Create mapping.toml with granular section-level map (Phase 3)
-5. Verify: run every capability through the skill → output matches webapp output
-6. Set skill_version = "1.0.0" in both config.yaml and mapping.toml
+1. Discover Architecture → boundary table + handoff points
+2. Identify Major Modules → module definitions per boundary
+3. Design Skill Hierarchy → orchestrator + per-module skills
+4. Define Human/AI Separation → per-boundary ownership contracts
+5. Write Skills → SKILL.md for each skill
+6. Update Documentation → README + SKILL_SYNC.md
+7. Verify Consistency → run structural checks
 ```
 
-### Ongoing maintenance
+---
 
-```
-1. Business change requested
-2. Update skill capability (upstream)
-3. Update config.yaml with new parameter values
-4. Apply file mapping to propagate to code (downstream)
-5. Verify tests pass
-6. Bump version, commit
-```
+## Phase 1 — Discover Architecture
+
+Map the codebase into four canonical boundaries. Do not invent a fifth.
+
+For detailed discovery tables, generation flow diagrams, and handoff-point identification, see `resources/architectural-boundaries.md`.
+
+### A. Human Input
+
+Everything that originates from a human or an external real-world source and is consumed by the system as data. Look for:
+- `content/`, `data/`, `static/`, `assets/` directories containing JSON, YAML, Markdown, images
+- CMS content, site profiles, catalogues, dimension specs, configuration JSON
+- Test fixtures, reference configs, seed data
+- External data sources (APIs, scrapers, importers)
+
+For each item, record: file path and format, schema/contract, whether it is human-editable or machine-fetched.
+
+### B. AI / Skills
+
+Everything that decides *what* to generate or *how* to transform inputs. Look for:
+- `skills/`, `.kilo/`, `mcp.json`, `AGENTS.md`
+- Pipeline orchestrators, LLM call sites, prompt files
+- Agent instructions, workflow definitions
+- Any code whose primary role is decision-making rather than data transformation
+
+For each item, record: what decision it makes, what inputs it reads, what outputs it produces.
+
+### C. Code
+
+Everything that deterministically transforms data or renders output. Look for:
+- `src/`, `lib/`, `app/`, `components/`, `api/`
+- Generators, sequencers, renderers, compilers
+- Schemas, type definitions, validation logic
+- Business logic, API routes, rendering pipelines
+
+For each item, record: module responsibility, inputs consumed, outputs produced, dependencies on other modules.
+
+### D. Config
+
+Everything that controls the environment, build, or runtime behavior without being business data. Look for:
+- `next.config.*`, `tsconfig.*`, `package.json`, `.env*`, `*.config.*`
+- Build scripts, deployment config, CI/CD
+- Theme bundles, dimension specs (if they are environment/build-level rather than content)
+- Env var enforcement, MCP servers, supply-chain config
+
+For each item, record: what it configures, which code modules consume it, whether it is static or dynamic.
+
+### Phase 1 Output
+
+Produce:
+1. A table: `| Module / File | Boundary | Responsibility | Inputs | Outputs |`
+2. A **generation flow diagram**: `Human Input → AI/Skills → Code → Rendered Output`
+3. **Handoff points** — the specific files or data structures where one boundary passes control to another
+
+---
+
+## Phase 2 — Identify Major Modules
+
+Within the Code boundary, identify the major functional modules. A "major module" is a cohesive unit that:
+- Has a single, clear responsibility
+- Produces or consumes a distinct config artifact
+- Could be explained in one paragraph
+
+For each major module, define: name, boundary, input artifact, output artifact, core files (2-5), responsibility.
+
+Group modules by boundary. The goal is to end up with 3-8 major modules per boundary.
+
+---
+
+## Phase 3 — Design Skill Hierarchy
+
+### Orchestrator Skill
+
+Create one top-level skill named `<project>-generator` at `skills/<orchestrator-name>/SKILL.md` that:
+- Describes the full pipeline from user brief to rendered output
+- References every sub-skill by path
+- Contains the iteration loop: interpret → execute pipeline → preview → verify → iterate
+- Is the entry point when a user asks for generation
+
+### Per-Module Skills
+
+For each major module, create a skill at `skills/<module-name>/SKILL.md`. Use the template in `resources/multi-skill-generation.md`.
+
+### Naming Convention
+
+| Module type | Naming rule | Example |
+|-------------|-------------|---------|
+| Orchestrator | `<project>-generator` | `website-generator` |
+| Code module | kebab-case matching module name | `sequencer`, `tuner-system` |
+| AI module | kebab-case matching module name | `layout-selector`, `content-generator` |
+| Human-input module | kebab-case matching data role | `business-profile` |
+| Legacy/old module | `legacy-` prefix | `legacy-theme-dimensions` |
+| External wrapper | tool name | `ticonderoga` |
+
+---
+
+## Phase 4 — Define Human/AI Separation
+
+For each boundary, explicitly state ownership and handoff rules. Use the contracts in `resources/human-ai-separation.md`.
+
+### Human Input Boundary
+- **Human owns:** creation, curation, editing of input files
+- **AI may:** read, analyze, fetch from external sources, suggest edits
+- **AI may NOT:** silently overwrite human-authored content without confirmation
+- **Handoff:** AI reads human inputs, produces config artifacts
+
+### AI / Skills Boundary
+- **AI owns:** pipeline orchestration, decision-making, content generation, archetype selection
+- **Human may:** override AI decisions by editing the produced config artifacts
+- **AI may NOT:** make irreversible changes to production data without human review
+- **Handoff:** AI writes to `content/` or config files; human edits same files via CMS or direct edit
+
+### Code Boundary
+- **Code owns:** deterministic generation, rendering, validation, API routes
+- **AI may:** edit source code when implementing features or fixing bugs (with human oversight)
+- **Human may:** read, review, edit source code
+- **Handoff:** Code reads config artifacts and human inputs, produces rendered output or API responses
+
+### Config Boundary
+- **Human owns:** environment variables, build settings, deployment config
+- **AI may:** suggest config changes, generate dimension specs, modify `next.config.ts`
+- **AI may NOT:** modify `.env.local` with real secrets; use `.env.local.example` for documentation
+- **Handoff:** Config is loaded at startup/build time; code enforces required vars
+
+---
+
+## Phase 5 — Write Skills
+
+For each skill, write the full `SKILL.md` following the template in `resources/multi-skill-generation.md`.
+
+Each per-module skill must contain:
+- YAML frontmatter with `name` and `description`
+- Boundary and input/output artifacts prominently stated
+- Artifact contract (TypeScript interface or JSON schema)
+- Core files table with responsibilities
+- Step-by-step workflow or usage instructions
+- Related skills with relationship descriptions
+- No source code (skills are documentation-only, MD/YAML/JSON)
+
+---
+
+## Phase 6 — Update Documentation
+
+### README.md
+
+Add or update the "Architectural Boundaries" section with:
+- Table of four boundaries with ownership and handoff
+- Generation flow diagram
+- Bullet list of what humans own, AI owns, code owns, config owns
+
+Update the "Generator skills for AI agents" section to reflect the new skill hierarchy.
+
+### SKILL_SYNC.md
+
+Replace with the Architecture-Aligned Skill Map, pipeline diagram, layer tables, and unskilled modules list. Use the template in `resources/multi-skill-generation.md`.
+
+---
+
+## Phase 7 — Verify Consistency
+
+Run these checks (full checklist in `resources/skill-verification.md`):
+
+1. Every major module has a skill
+2. Every skill has a boundary
+3. Every skill has an artifact contract
+4. Orchestrator references all sub-skills
+5. No circular references in related-skills sections
+6. README and SKILL_SYNC.md are consistent
+7. Legacy skills are prefixed
+
+---
+
+## Output Checklist
+
+When skillification is complete, the following must exist:
+- [ ] `skills/<orchestrator>/SKILL.md` — top-level orchestrator
+- [ ] `skills/<module-1>/SKILL.md` through `skills/<module-n>/SKILL.md` — one per major module
+- [ ] `skills/SKILL_SYNC.md` — architecture-aligned skill map, pipeline diagram, layer tables
+- [ ] `README.md` — architectural boundaries section, updated skill tables
+- [ ] All skills have YAML frontmatter, boundary, artifact contracts, core files, workflow, related skills
+- [ ] Legacy skills renamed with `legacy-` prefix
+- [ ] Human/AI separation documented for each boundary
+
+---
+
+## Skill-Sync Process
+
+For the detailed sync procedures (triggers, forward/reverse sync, AI rules, commit convention, verification checklist, drift detection), see `resources/skill-sync-process.md`.
+
+---
+
+## Downstream Skill-Sync File
+
+The `SKILL_SYNC.md` file lives at the root of the downstream repo (the codebase that was skillified). It tells future AI agents how to sync the downstream code with the upstream skill spec when changes occur.
+
+For the full template and creation instructions, see `resources/multi-skill-generation.md`.
 
 ---
 
 ## Output Structure
 
 ```
-.opencode/skill/skillified-{project-name}/
-├── SKILL.md              # Generated skill — executable specification
+<skillified-project>/
+├── skills/
+│   ├── <orchestrator>/SKILL.md
+│   ├── <module-1>/SKILL.md
+│   ├── <module-2>/SKILL.md
+│   ├── ...
+│   └── SKILL_SYNC.md
 ├── config.yaml            # ALL configurable parameters (PRIMARY SYNC TARGET)
 ├── mapping.toml           # Granular section-by-section mapping table
-├── skill.lock             # Lockfile — research mode only. Pins upstream versions + hashes.
-├── sync-workflow.md       # This file (sync process documentation)
 └── resources/
     ├── data-models.md     # Full schema definitions for all data models
     ├── api-contract.md    # Complete input/output contracts

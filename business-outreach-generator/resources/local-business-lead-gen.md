@@ -55,11 +55,43 @@ For Google review signals:
 
 Score each lead on:
 
-1. **Ownership confirmed** (+3 for confirmed sale/article, +1 for "under offer"/broker listing)
+1. **Ownership confirmed** (+5 for confirmed sale/article/new opening with named owners, +2 for "under offer"/broker listing/unconfirmed signals)
 2. **Size** (+2 for micro 1–9, +1 for small 10–39, -3 for 40+)
-3. **Current website quality** (+2 if no website or broken, +1 if outdated, -2 if modern or recent redesign)
+3. **Current website quality** — Use the following tiered scoring:
+   - **+5: No web presence at all** — none of the multi-source sweep checks returned anything usable. This is the strongest possible need signal.
+   - **+5: Broken/404** — a URL exists but returns 404, 500, timeout, or blank page. The business has a site they can't use — strong need signal.
+   - **0: Third-party platform only** — the only web presence is a platform-hosted page (TuckerFox, onlinedining, Uber Eats, Menulog, Mr Yum, etc.). Neutral — they may feel it's sufficient, but it's also an opportunity to upgrade them to something they control. Note the platform name in the lead.
+   - **+1: Outdated standalone site** — has a custom domain and dedicated site, but it's clearly outdated (old copyright, broken features, non-responsive, stale content)
+   - **-2: Modern or recently redesigned** — verified current, well-maintained site
+
 4. **Industry fit** (matches the offering's target sector)
 5. **Recency** (+2 if changed hands <3 months ago, +1 if <6 months)
+
+### Lead Profile Format (Reporting)
+
+When presenting leads, include a **Web Presence Type** field with one of these values:
+
+| Label | Meaning |
+|-------|---------|
+| **None** | No web presence found across all 6 sweep sources |
+| **Broken** | URL exists but doesn't load (404/500/timeout) |
+| **Third-party only** | Only platform-hosted page (TuckerFox, onlinedining, Uber Eats, etc.) — no dedicated domain, no branding control, no SEO value. Flag with ⚠️ in reports. |
+| **Outdated standalone** | Custom domain site that's stale/broken/old |
+| **Modern** | Verified current, well-maintained site |
+
+The Web Presence Type should appear in each lead's summary line, e.g.:
+
+```
+| 4 | Bayside Fish Shack | 10 | Ownership change, ⚠️ third-party only (TuckerFox), phone |
+```
+
+### Outreach Angle — Third-Party Platform Leads
+
+When a lead's only web presence is a third-party platform page (TuckerFox, onlinedining, etc.), use this angle:
+
+> "Right now your only online presence is a [platform name] listing — you can't control the brand, you're stuck with their template, and Google sends customers to your competitors because there's no dedicated site. I can fix that with a simple site you actually own — $500, live in 48 hours."
+
+This is a stronger pitch than "you have no website" (which implies starting from zero) — instead frame it as: "you have a weak presence that you don't control, and you're losing customers because of it."
 
 ### Social Media Verification Step
 
@@ -91,9 +123,51 @@ Follow these steps in order:
    - Look for "verified" badges, posts announcing ownership changes, or comments from named owners
    - If ownership cannot be confirmed → score accordingly but do not invent contacts
 
+### Website Detection — Multi-Source Sweep (Before Verification)
+
+IMPORTANT: Do not score a lead as "no website" until you have performed a multi-source sweep. Single-source misses are the #1 failure mode. A business may have an online presence that is NOT a standalone domain — ordering platform pages, directory listings, and subdomain-hosted sites are common for micro businesses.
+
+Run ALL of the following checks. Only mark "no website" if every check returns nothing.
+
+1. **Standalone domain search (3 query variants):**
+   - `"[business name]" "[suburb]" WA`
+   - `"[business name]" "[suburb]" site:com.au`
+   - `"[business name]" website OR site OR "online ordering"`
+
+2. **Ordering platform check (hospitality businesses only):**
+   Search each of these platforms with the business name and suburb:
+   - `site:tuckerfox.com.au "[business name]" "[suburb]"` — hosted ordering sites on subdomains
+   - `site:onlinedining.com.au "[business name]" "[suburb]"` — directory pages with menus
+   - `site:hungryfoody.com.au "[business name]"` — ordering/menu platform
+   - `site:agfg.com.au "[business name]"` — restaurant directory
+   - `site:menulog.com.au "[business name]" "[suburb]"` — delivery platform
+   - `site:ubereats.com "[business name]" "[suburb]"` — delivery platform
+   - `site:mryum.com "[business name]"` — QR ordering platform
+   - `site:klikit.com.au "[business name]"` — ordering platform
+
+   These platforms serve as de facto websites for many micro hospitality businesses. A business that has a TuckerFox or onlinedining.com.au page with menu, hours, and contact info DOES have a web presence — score as an inherited/third-party site, not "no site."
+
+3. **ABN Lookup cross-reference:**
+   - Search: `"[business name]" "[suburb]" site:abr.business.gov.au`
+   - If an ABN is found, the registered business name and address may help disambiguate from similarly-named businesses in other suburbs.
+
+4. **Google Maps entry check:**
+   - Search: `"[business name]" "[suburb]" site:google.com/maps`
+   - Google Maps entries often have a "Website" field — if a URL is listed, visit and verify
+   - If NO URL is listed in Google Maps BUT steps 1–3 found a presence → note "Google Maps missing website link — opportunity" but do not score as "no site"
+
+5. **Social media as sole presence:**
+   - If the business ONLY has Instagram/Facebook and NONE of steps 1–4 returned anything → score +2 for "no website"
+   - If ANY of steps 1–4 returned a usable page (menu, hours, contact, ordering) → score as inherited/neglected site (+1 for outdated/poor quality)
+
+6. **Cross-reference all findings:**
+   - Compare business name, address, phone across all sources
+   - If multiple sources exist but the business name/owner differs → flag ownership change opportunity
+   - If the only web presence is a third-party platform page (TuckerFox, onlinedining, etc.) with no ability to update branding or content → note as "locked-in third-party site — migration opportunity"
+
 ### Website Verification Step
 
-MANDATORY. Before scoring website quality (+2/+1/-1/-2), you MUST verify any URL found for the business. Never score a site without loading it first.
+MANDATORY. Before scoring website quality (+2/+1/-1/-2), you MUST verify any URL found through the multi-source sweep. Never score a site without loading it first.
 
 Follow these steps in order:
 

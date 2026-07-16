@@ -25,9 +25,13 @@ dist/
 # Outreach drafts (work-in-progress messages, never committed)
 .drafts/
 
+# Active leads tracking (warm responses, follow-ups, never committed)
+.leads/
+
 # Generated slides and infographics (presentation assets, never committed)
 .slides/
 .infographics/
+.flyers/
 
 # Branding assets (stock images, artwork, licensed media — never committed)
 .branding/
@@ -35,3 +39,6 @@ dist/
 # Agent symlinks (created by scripts/setup-agent-links.sh)
 .agents/skills/
 .opencode/skill/
+
+# Node.js dependencies
+node_modules/

@@ -148,7 +148,7 @@ After drafting the AntV Infographic syntax, create a complete standalone HTML fi
 
 Save as `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`
 
-Example: `../.drafts/infographics/next-square-instagram-2026-07-09-infographic.html`
+Example: `../.drafts/infographics/branded-site-instagram-2026-07-09-infographic.html`
 
 Create the directory if it does not exist.
 
@@ -288,7 +288,7 @@ When the output format is Instagram or LinkedIn, after generating the text outre
 
 ## Example: Complete Instagram Infographic File
 
-Generated HTML file `next-square-instagram-2026-07-09-infographic.html`:
+Generated HTML file `branded-site-instagram-2026-07-09-infographic.html`:
 
 ```html
 <!DOCTYPE html>
@@ -335,7 +335,7 @@ data
       try {
         const svgDataUrl = await infographic.toDataURL({ type: 'svg' });
         const link = document.createElement('a');
-        link.download = 'next-square-instagram-2026-07-09-infographic.svg';
+        link.download = 'branded-site-instagram-2026-07-09-infographic.svg';
         link.href = svgDataUrl;
         link.click();
       } catch (e) {

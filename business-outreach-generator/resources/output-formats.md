@@ -30,6 +30,7 @@ After the offering resource is loaded (or a generic template is generated from t
 | `Reddit` | `## Reddit Post Template` |
 | `StackOverflow` | `## StackOverflow Post Template` |
 | `Instagram` | `## Instagram Post Template` |
+| `Flyer` | `## Flyer Template` |
 | `PowerPoint` | `## PowerPoint Slide Deck` |
 | `Airtasker` | `## Airtasker Task Response Template` |
 
@@ -124,6 +125,19 @@ Reddit communities are aggressive toward self-promotion. Posts that read as ads 
 - **CTA:** Soft — "Tag a teammate who needs to see this" or "Drop a comment if you've run into this." No direct sales links in captions. Link in bio or story sticker for deeper funnel.
 - **Rules:** Follow Instagram's community guidelines — no misleading claims, no prohibited content (hacking tools, surveillance tech). Do not mention "audit", "scan", "vulnerability" in a way that implies unauthorized access. Frame as educational content, not a service advertisement. Use relevant hashtags (3–5 max) in the first comment, not the caption.
 
+### Flyer
+- **Dimensions:** A5 — 1748 × 2480 px (300 DPI print resolution). Single-sided, single-page layout.
+- **Length:** 150–400 words of body text. Can include longer paragraphs and multi-sentence bullet points — more text capacity than Instagram.
+- **Tone:** Professional, informative, trustworthy. Direct but friendly.
+- **Style:** Print-optimised. Light/white background (`#ffffff` or `#fafafa`) to save ink. Dark/black body text (`#1a1a1a` or `#222222`) for maximum readability. Colour used sparingly — accent colours reserved for headlines, borders, icons, dividers, and highlight boxes only, not for backgrounds or large areas. Content flows top-to-bottom: logo → headline → body → contact section.
+- **Content requirements:**
+  - **Logo:** Business logo must be included near the top. Source from `.branding/logos/` via `<img>` tag or CSS `background-image`.
+  - **Contact details (print-accessible):** Include a QR code (generated via `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={URL}`) large enough to scan (min 236×236 px) AND a phone number in clear readable text. These are the primary contact methods for print.
+  - **Traditional contact:** Also include the business email or website URL in text form for non-technical users who may not use QR codes.
+  - **QR code placement:** Bottom-right or bottom-center of the flyer, accompanied by "Scan for more info" or similar label.
+- **CTA:** Clear, actionable — "Call [phone number] to get started", "Visit [website] for details", or "Email [address] for a free quote."
+- **Rules:** Do not use hyperlinks as the only contact method (links cannot be typed into a phone dialer from paper). Always include at least one text-based contact (phone, email printed in full, or full URL). QR code must link to a working, relevant page (website, booking page, contact form).
+
 ---
 
 ## Template Sections
@@ -140,21 +154,25 @@ When loading an offering resource file, extract the section matching the selecte
 | Reddit | Title (question/statement format) + body paragraphs (story + details + feedback ask) |
 | StackOverflow | Direct answer to question + 1–2 sentences contextualising + optional mention of related tooling |
 | Instagram | Hook slide (question/stat) + 3–8 evidence slides (data, screenshots, comparisons) + CTA slide (discussion prompt) + caption expanding on the topic |
+| Flyer | A5 single-page layout (1748×2480 px): Logo (top) + Headline (bold, 1–2 lines) + Body text (2–5 paragraphs or bullet sections, can be longer than Instagram) + Highlights / accent boxes (sparingly, with colour) + Contact section (QR code + phone number + email/URL in text) + Footer tagline. See `../../infographic-generator/SKILL.md` → "Flyer-Specific (A5)" for canvas rules, QR code generation, and ink-saving design. |
 | PowerPoint | Title slide + content slides (problem, demo, data, comparison, offer) + CTA/close slide. Each slide is a 1920×1080 HTML file. See `../../infographic-generator/SKILL.md` for slide structure. |
 | Airtasker | Greeting + qualifications + deliverable summary + price + timeline + CTA |
 
 When building a fallback, draw content from the idea file's `## Context` and `## Key Facts` sections.
 
-### Visual Asset Co-generation (Instagram, LinkedIn, PowerPoint)
+### Visual Asset Co-generation (Instagram, LinkedIn, Flyer, PowerPoint)
 
-When the output format is `Instagram` or `LinkedIn`, generate an infographic HTML file alongside the text content. When the output format is `PowerPoint`, generate a series of 1920×1080 slide HTML files. Load `../../infographic-generator/SKILL.md` for canvas dimensions, branding rules, slide structure, and HTML generation.
+When the output format is `Instagram`, `LinkedIn`, or `Flyer`, generate an infographic or flyer HTML file alongside the text content. When the output format is `PowerPoint`, generate a series of 1920×1080 slide HTML files. Load `../../infographic-generator/SKILL.md` for canvas dimensions, branding rules, slide structure, and HTML generation. For `Flyer` format specifically, load `../../infographic-generator/SKILL.md` → "Flyer-Specific (A5)" for ink-saving light-background design rules, QR code placement, and contact section requirements.
 
 For Instagram and LinkedIn, extract 3–5 visual-worthy data points during research (see `Format-Specific Research Behaviour` below), then write a standalone HTML file at the appropriate dimensions. Save to `../.drafts/infographics/{idea-slug}-{format}-{date}-infographic.html`.
+
+For Flyer, write a standalone HTML file at A5 dimensions (1748 × 2480 px). Include the business logo, body content, and contact section with QR code and phone/email. Save to `../.flyers/{idea-slug}-flyer-{date}.html`.
 
 For PowerPoint, save each slide as a numbered HTML file under `../.drafts/slides/{deck-name}/` and generate an index deck file. Note the path in the draft header:
 
 ```markdown
-**Infographic:** ../.drafts/infographics/next-square-instagram-2026-07-09-infographic.html
+**Infographic:** ../.drafts/infographics/branded-site-instagram-2026-07-09-infographic.html
+**Flyer:** ../.flyers/branded-site-flyer-2026-07-09.html
 **Slide Deck:** ../.drafts/slides/free-webinar-slides/index.html
 ```
 
@@ -174,18 +192,27 @@ When presenting the final output to the human:
 | **Reddit** | Title + body as a self-post. Note which subreddit it targets, character count, and whether direct links are allowed per that subreddit's rules. |
 | **StackOverflow** | Question title + answer body. Note: "Verify the question is still open and on-topic before posting." |
 | **Instagram** | Text caption + infographic file path and instructions. |
+| **Flyer** | Flyer HTML file path + PNG file path. Note: "Open the HTML file in a browser to preview the A5 flyer. The PNG is ready for printing at 300 DPI (1748 × 2480 px)." |
 | **PowerPoint** | Slide deck index path. Note: "Open the index.html file in a browser to review all slides. Screenshot each slide for PowerPoint insertion, or present directly from the browser in fullscreen." |
 | **Airtasker** | Task response / bid proposal: short intro, why you're qualified, what you'll deliver, fixed price or price range, and a clear next step. Note: "Include your price and timeline in the response." |
 
 ### Visual Asset File Instructions
 
-For `LinkedIn`, `Instagram`, and `PowerPoint` outputs, include the appropriate note after the text content:
+For `LinkedIn`, `Instagram`, `Flyer`, and `PowerPoint` outputs, include the appropriate note after the text content:
 
 **LinkedIn / Instagram:**
 ```
 **Infographic generated:** {file-path}
 
 Open the HTML file in any browser to preview. Use the "Download SVG" button or right-click to export as SVG. Screenshots also work for quick uploads.
+```
+
+**Flyer:**
+```
+**Flyer generated:** {html-path}
+**Flyer PNG:** {png-path}
+
+Open the HTML file in a browser to preview the A5 flyer. The PNG is at 300 DPI (1748 × 2480 px) — ready for email, upload to a print shop, or direct printing. The light background and dark text are optimised for ink saving.
 ```
 
 **PowerPoint:**
@@ -228,6 +255,35 @@ These formats are **thread-centric**. The skill does **not** search for companie
    - DM thread participants
    - Create new threads (unless the human explicitly requests it and the subreddit allows)
    - Target specific companies from thread discussions
+
+### Flyer
+
+This format is **audience-centric** (like Instagram) but with print-oriented content design. The skill creates a printable A5 flyer suitable for physical distribution, brochures, handouts, or PDF download:
+
+1. **Identifies the target audience** from the selected offering's `## Keywords`, `## Context`, and `## Key Facts`
+2. **Researches the audience's pain points** — what questions or problems are the target audience facing that the offering addresses
+3. **Extracts key content for the flyer layout**:
+   - Headline / hook (1–2 lines, bold)
+   - Body text: 2–5 paragraphs or bullet lists explaining the problem, solution, and value proposition. Longer text is acceptable — flyers accommodate more reading than social media posts.
+   - 1–3 key highlights / data points (for accent-colour highlight boxes)
+   - CTA: clear action with phone number, email, or URL
+4. **Includes required contact elements**:
+   - **Logo** — source from `.branding/logos/` (see `../../infographic-generator/SKILL.md` → "Branding Assets")
+   - **QR code** — generate using `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={ENCODED_URL}` as an `<img>` tag. The QR must link to a relevant, working page (website, booking, contact form). Minimum size: 236×236 px.
+   - **Phone number** — printed in clear text (e.g., "Call us: 0400 000 000") for immediate action
+   - **Website URL or email** — printed in full text for non-technical users who do not use QR codes
+5. **Selects a content angle** from the offering's key facts that works in print:
+   - Problem-solution format (most common for flyers)
+   - Before/after comparison
+   - Service or feature listing
+   - Educational / awareness-building
+6. **Follows ink-saving design** — light background, dark text, colour used for highlights only
+7. **Generates the Flyer HTML file** at A5 dimensions (1748 × 2480 px). Save to `../.flyers/{idea-slug}-flyer-{date}.html`.
+8. **Converts to PNG** for print preview and distribution. See `../../infographic-generator/SKILL.md` → "PNG Generation (Instagram & LinkedIn)" for the `capture-website-cli` command.
+9. **Does NOT:**
+   - Generate multiple pages (flyer is single-sided A5)
+   - Use dark/coloured full-canvas backgrounds (ink-saving requirement)
+   - Rely solely on hyperlinks for contact (must include phone + QR + text URL/email)
 
 ### Instagram
 
@@ -325,6 +381,7 @@ When no specific company or thread is provided, the mode triggered depends on th
 | `LinkedIn` | Company / Developer Social Scanning | Companies and technical staff | AntV Infographic HTML |
 | `Reddit`, `StackOverflow` | Thread / Question Scanning | Relevant discussion threads and questions | None |
 | `Instagram` | Audience / Trend Scanning | Professional pain points, trending discussions, and niche conversations on X/Twitter, Reddit, and LinkedIn that can be repurposed as visual educational content | Pure HTML/CSS Infographic |
+| `Flyer` | Audience / Trend Scanning | Same as Instagram — professional pain points and offering's value proposition, reformatted for A5 print layout with ink-saving design | A5 Pure HTML/CSS Flyer (1748×2480) |
 | `PowerPoint` | No scanning needed | Slides are generated from source material directly (script, outline, or idea file) | 1920×1080 slide HTML files |
 | `Airtasker` | Job / Task Scanning | Open tasks with few offers matching the offering | None |
 

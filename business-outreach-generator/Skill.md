@@ -1,6 +1,17 @@
 ---
 name: business-outreach-generator
 description: Generate targeted outreach emails, LinkedIn messages, phone call scripts, Reddit posts, StackOverflow answers, or Airtasker task responses for any business idea. Offerings are automatically derived from the Business Idea Incubator (../.ideas/ideas/). Supports Auto-Recommend, developer social scanning, website scanning, and geo-localised outreach.
+search_aliases:
+  - todo list
+  - to-do
+  - next steps
+  - next actions
+  - follow-ups
+  - action items
+  - call list
+  - Monday list
+  - leads
+  - outreach
 ---
 
 ## Overview
@@ -8,6 +19,8 @@ description: Generate targeted outreach emails, LinkedIn messages, phone call sc
 This Skill generates personalised outreach messages for selling your business ideas. It is tightly integrated with the **Business Idea Incubator** skill: the list of available offerings is loaded dynamically from `../.ideas/ideas/` at startup, and trend context from `../.ideas/trends/` is folded into messaging when relevant.
 
 Before generating any outreach, the Skill collects targeting parameters from the human, loads the appropriate idea file, and populates the template with localised examples, spelling, and tone matched to the target.
+
+This Skill also maintains a **To-Do Index** at `../.leads/todo-index.md` that aggregates `Next Action` fields from all lead files into a central table grouped by urgency. Query this skill with "todo list", "to-do", "next steps", "next actions", "follow-ups", "action items", "call list", or "Monday list" to view or update your action items.
 
 ---
 
@@ -35,6 +48,25 @@ On every interaction, before collecting parameters:
    - If the human selects "start fresh": proceed with normal onboarding below.
    - If the human selects "archive": prompt them to mark drafts as `Posted` or `Archived` and save the file. Then proceed with normal onboarding.
 
+8. **Check for active leads** — List `../.leads/` for `.md` files. Parse each for `**Status:**` in the header block. Present any with Status `Warm` or `Follow-up`:
+   ```
+   You have [N] active lead(s) requiring follow-up:
+     [1] [business name] — [contact], last contact [date], status: [Warm/Follow-up]
+     [2] [business name] — [contact], last contact [date], status: [Warm/Follow-up]
+   Would you like to update any lead, generate follow-up outreach, or proceed with new outreach?
+   ```
+   - If the human selects a lead: load it, show the conversation history, and ask what action to take.
+   - If the human selects "proceed": continue with normal onboarding below.
+
+9. **Check for next-action todos** — Read `../.leads/todo-index.md` if it exists (it auto-indexes `Next Action` fields from all lead files). If any actions are due today or overdue, alert the human:
+   ```
+   ⏰ You have [N] todo(s) due today:
+     [1] [lead] — [next action]
+     [2] [lead] — [next action]
+   Need help with any of these?
+   ```
+   This step is triggered by queries about "todo list", "to-do", "next steps", "next actions", "follow-ups", "action items", "call list", or "Monday list".
+
 ---
 
 ## User Onboarding (Required Before Generation)
@@ -44,7 +76,7 @@ Do not generate any outreach until the following parameters have been collected.
 | # | Parameter | Options / Format |
 |---|-----------|------------------|
 | 1 | **Offering** | `Trend-Match (default)`, `Auto-Recommend Best Fit`, followed by all active ideas loaded from `../.ideas/ideas/` (see `resources/accessing-idea-files.md`) — determines which idea file to load. If the human is unsure, default to **Trend-Match**. |
-| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, `PowerPoint`, or `Airtasker`. When `LinkedIn` or `Instagram` is selected, an infographic is co-generated alongside the text. When `PowerPoint` is selected, a series of 1920×1080 slide HTML files are generated for use as presentation slides. See `../infographic-generator/Skill.md` for details. |
+| 2 | **Output format** | `Email`, `LinkedIn`, `Phone`, `Reddit`, `StackOverflow`, `Instagram`, `Flyer`, `PowerPoint`, or `Airtasker`. When `LinkedIn`, `Instagram`, or `Flyer` is selected, an infographic / flyer is co-generated alongside the text. When `PowerPoint` is selected, a series of 1920×1080 slide HTML files are generated for use as presentation slides. See `../infographic-generator/Skill.md` for details. |
 | 3 | **Target country** | Free text (e.g., Australia, United States, United Kingdom) — used for spelling localisation and research |
 | 4 | **Target city/region** | Free text (e.g., Adelaide, Manchester, Austin) — used for geo-specific targeting |
 | 5 | **Industry sector** | Derived from the selected idea file if it specifies one; otherwise infer from `## Context` and `## Key Facts` (e.g., tech, software development, SMBs, agencies, e-commerce, hospitality). If ambiguous, present a shortlist of 3–5 prime target industries for that idea and ask the human to pick one. — used for relevant examples |
@@ -301,13 +333,27 @@ Follow the instructions in the loaded resource file to:
    - For **Reddit, StackOverflow** formats: find 1–2 relevant threads or incidents from the trend to reference naturally in the post/answer. Do not force-fit breach examples into technical threads.
    - For **Airtasker** format: no breach research needed; focus on matching the task requirements.
 3. If no linked trends exist, fall back to standard breach research for `{{INDUSTRY}}` in `{{COUNTRY}}` using the same criteria (Email, LinkedIn, Phone only).
-4. **If Output format is `LinkedIn` or `Instagram`:** Generate an infographic alongside the text and convert to PNG. Load `../infographic-generator/Skill.md` for canvas dimensions, branding rules, styling approach, and PNG generation. Save both the `.html` and `.png` files to `../.infographics/` and note the PNG path in the draft metadata.
+4. **If Output format is `LinkedIn`, `Instagram`, or `Flyer`:** Generate a visual asset alongside the text and convert to PNG. Load `../infographic-generator/Skill.md` for canvas dimensions, branding rules, styling approach, target audience, and PNG generation. For `Flyer` format specifically, see `../infographic-generator/Skill.md` → "Flyer-Specific (A5)" for ink-saving light-background design rules, QR code placement, and contact section requirements. Derive the `target_audience` from the onboarding parameters already collected:
 
-5. **If Output format is `PowerPoint`:** Generate a series of 1920×1080 slide HTML files for use as presentation slides. Load `../infographic-generator/Skill.md` → "PowerPoint Slide Generation" for dimensions, slide structure, and deck organization. Save each slide as a numbered HTML file under `../.slides/{deck-name}/` and generate an index deck file. Note the slide directory path in the draft metadata.
+   ```
+   Derive target_audience from Business size + Industry sector:
+   - Micro (1–9 staff) + hospitality/retail/service/healthcare → non-technical
+   - Micro + tech/software/IT → mixed
+   - Small (10–99 staff) + non-technical industry → mixed
+   - Small + tech/software/IT → technical
+   - Medium (100–199 staff) + any industry → technical
+   - Default fallback: non-technical
+   ```
+
+   Pass the derived value to the infographic generator so it governs wording, jargon level, and framing (see `../infographic-generator/Skill.md` → "Target Audience Parameter"). Save both the `.html` and `.png` files to `../.infographics/` and note the PNG path in the draft metadata.
+
+5. **If Output format is `Flyer`:** Generate an A5 flyer alongside the text and convert to PNG. Load `../infographic-generator/Skill.md` → "Flyer-Specific (A5)" for dimensions (1748×2480 px), ink-saving light-background design rules, QR code generation, and contact section layout. See also `../infographic-generator/Skill.md` → "Branding Assets" for logo embedding. Save both the `.html` and `.png` files to `../.flyers/` and note the PNG path in the draft metadata.
+
+6. **If Output format is `PowerPoint`:** Generate a series of 1920×1080 slide HTML files for use as presentation slides. Load `../infographic-generator/Skill.md` → "PowerPoint Slide Generation" for dimensions, slide structure, and deck organization. Save each slide as a numbered HTML file under `../.slides/{deck-name}/` and generate an index deck file. Note the slide directory path in the draft metadata.
 
 ### Branding Assets
 
-When generating infographics or slides, source images from `.branding/`. See `../infographic-generator/Skill.md` → "Branding Assets" for directory structure, theme selection, and embedding rules.
+When generating infographics, slides, or flyers, source images from `.branding/`. See `../infographic-generator/Skill.md` → "Branding Assets" for directory structure, theme selection, and embedding rules.
 
 ---
 
@@ -327,16 +373,27 @@ Consult `resources/output-formats.md` whenever generating any outreach message.
 
 ## Grounding Requirement — No Hallucinated Claims
 
-All outreach messages must be factually grounded in the selected idea file. **Do not invent capabilities, experiments, or metrics that don't exist.**
+All outreach messages must be factually grounded in the selected idea file. **Do not invent capabilities, experiments, metrics, pricing, guarantees, or offer details that don't exist.**
 
 ### Required Pre-Generation Check
 
 Before writing any outreach, load the selected idea file and extract:
 
 1. **`## Current Focus`** — What you are actively building/working on right now. Only claim features listed here.
-2. **`## Positioning` → Elevator Pitch** — The one-sentence description of what your product/service actually does.
-3. **`## Positioning` → USP** — The specific differentiator. Don't invent others.
+2. **`## One-Sentence Pitch`** — The one-sentence description of what your product/service actually does.
+3. **`## USP`** — The specific differentiator. Don't invent others.
 4. **`## Context` and `## Key Facts`** — Any specific research findings, papers, or data points referenced here may be cited. Do not cite research not listed here.
+5. **`## Refined Acquisition Offer`** (if present) — The actual pricing, tiers, and terms. Do not mention, imply, or promise any pricing, discounts, or guarantees not explicitly listed here.
+
+### Strict Rules — No Invented Offer Details
+
+- **Pricing:** Only mention prices or pricing structures explicitly documented in the idea file. Never invent or guess at pricing, payment terms, or discount amounts.
+- **Guarantees:** Never claim satisfaction guarantees, refund policies, warranties, or service-level agreements unless they are explicitly stated in the idea file.
+- **Tiers/features:** Only list tiers, features, and capabilities that are explicitly documented. Do not add extra features to make an offer sound more appealing.
+- **Availability:** Do not claim specific turnaround times, availability, or delivery dates that are not documented (e.g., "live in 24 hours", "unlimited revisions").
+- **Results/promises:** Never promise specific outcomes (e.g., "double your sales", "rank #1 on Google", "get 1000 customers"). Stick to describing what the product/service is and does.
+- **External claims:** Do not cite external statistics, research, or case studies not listed in the idea file's `## Key Facts`.
+- **If the idea file has no offer/pricing section at all:** Do not mention pricing. Frame the outreach as exploratory: *"I'm not sure if this fits your needs, but I'd love to chat about what I'm working on."*
 
 ### Claim Validation Rules
 
@@ -345,17 +402,22 @@ For every specific claim in the draft, verify:
 | Claim type | Must be grounded in | Example violation | Example fix |
 |---|---|---|---|
 | "I built / I've been building / I'm experimenting with X" | `## Current Focus` | "I built a CI gate" (tool runs IDE-only) | "I'm experimenting with IDE-level drift detection" |
-| "X does Y" (product capability) | `## Elevator Pitch` or `## USP` | "SlopGuard runs structural CI checks" (only flags IDE problems) | "SlopGuard flags problems while the agent is coding" |
+| "X does Y" (product capability) | `## One-Sentence Pitch` or `## USP` | "SlopGuard runs structural CI checks" (only flags IDE problems) | "SlopGuard flags problems while the agent is coding" |
 | "Research shows Z" (data/papers) | `## Key Facts` or cited in idea file | Citing a paper not in the idea file | Only cite papers listed in the idea file |
 | "I've been tracking / measuring W" | `## Current Focus` or `## Context` | "Tracking afferent coupling" (no such feature) | "Researching patterns of architectural drift in AI code" |
+| "It costs / starts at / is priced at X" | `## Refined Acquisition Offer` | Quoting $300 for a service priced at $500 | Use the exact price from the offer section |
+| "We guarantee / we promise / your money back" | `## Refined Acquisition Offer` or not present | Claiming a 30-day money-back guarantee not in the idea file | Omit guarantee claims entirely |
+| "Tier X includes Y feature" | `## Refined Acquisition Offer` tier description | Saying "Premium includes 24/7 support" when not listed | Only list features explicitly in the tier description |
 
-### When in Doubt, Vague Up
+### When in Doubt, Omit or Vague Up
 
-If you're unsure whether a claim is accurate for the actual product:
-- Do NOT guess or embellish
-- Use generic framing: *"I've been researching..."*, *"I'm exploring..."*, *"The [paper name] paper found..."*
-- Keep claims at the observation/research level, not the product level
-- When referencing the product, use the exact language from the Positioning section — no more, no less
+If you're unsure whether a claim is accurate for the actual product or offer:
+- Do NOT guess, embellish, or extrapolate
+- Omit the detail entirely if you cannot verify it from the idea file
+- Use generic framing: *"I've been researching..."*, *"I'm exploring..."*, *"I'm working on something in this space"*
+- Keep claims at the observation/research level, not the product or offer level
+- When referencing the product or offer, use the exact language from the idea file — no more, no less
+- **It is better to be vague than to be wrong.** A generic message with accurate claims is more trustworthy than a specific message with invented details.
 
 ### Audit Trail
 
@@ -381,11 +443,12 @@ Draft outreach messages are stored in `../.drafts/` (gitignored — never commit
 # [Human-readable title]
 
 **Target Idea:** [idea-slug]
-**Target Format:** [Email | LinkedIn | Phone | Reddit | StackOverflow | Instagram | PowerPoint | Airtasker]
+**Target Format:** [Email | LinkedIn | Phone | Reddit | StackOverflow | Instagram | Flyer | PowerPoint | Airtasker]
 **Status:** [Draft | Posted | Archived]
 **Created:** [YYYY-MM-DD]
 **Thread:** [URL to thread/post being replied to, if applicable]
 **Infographic:** [Path to generated infographic HTML file, if applicable]
+**Flyer:** [Path to generated flyer PNG file, if applicable]
 **Slide Deck:** [Path to generated slide deck directory, if applicable]
 ```
 
@@ -405,7 +468,71 @@ Draft outreach messages are stored in `../.drafts/` (gitignored — never commit
 
 ---
 
-## MCP Automation Setup
+## Leads System
+
+Active leads (warm responses, follow-ups requested, details asked for) are tracked in `../.leads/` (gitignored — never committed). Each lead is a markdown file with a header block containing metadata:
+
+```markdown
+# [Business Name]
+
+**Target Idea:** [idea-slug]
+**Lead Source:** [Phone call | Email | LinkedIn | Instagram DM | In-person | Referral]
+**Status:** [New | Warm | Follow-up | Meeting booked | Closed won | Closed lost]
+**First Contact:** [YYYY-MM-DD]
+**Last Contact:** [YYYY-MM-DD]
+**Contact Person:** [Name, Role]
+**Contact Method:** [Phone | Email | DM | etc.]
+**Next Action:** [What needs to happen next]
+```
+
+### Lead lifecycle
+
+1. **Created** — When a cold call/email gets a positive response ("interested", "passing to owner", "send more details", "call me next week"), create a lead file in `../.leads/{slug}.md` with Status `Warm`.
+2. **Follow-up** — When the Startup Sequence detects Warm/Follow-up leads, offer to generate follow-up outreach or log a status update.
+3. **Updated** — Each interaction with the lead appends a dated entry to the Conversation Log section.
+4. **Closed** — When the deal is won or lost, update Status to `Closed won` or `Closed lost` and add a closing note.
+
+### Lead file structure
+
+```markdown
+# [Business Name]
+
+**Target Idea:** [idea-slug]
+**Lead Source:** [source]
+**Status:** [Warm]
+**First Contact:** [YYYY-MM-DD]
+**Last Contact:** [YYYY-MM-DD]
+**Contact Person:** [Name, Role]
+**Contact Method:** [Phone | Email | DM]
+**Next Action:** [specific next step]
+
+## Conversation Log
+
+### YYYY-MM-DD — [Type: Cold call / Follow-up / Update]
+- [Key points from the interaction]
+- [Outcome: what the contact said, what was agreed]
+- [Next step agreed]
+```
+
+### Lead directory conventions
+
+- `../.leads/` is gitignored — safe to store contact names, notes, and follow-up dates.
+- Filenames should be descriptive: `{business-slug}.md` (e.g., `kalahari-taste-of-africa.md`).
+- Each file contains the conversation history. The header metadata is the only structured section.
+- Closing a lead: update Status to `Closed won` or `Closed lost`, add a closing note, keep the file for reference.
+
+### To-Do Index
+
+A central `../.leads/todo-index.md` file auto-indexes all `Next Action` fields across lead files. It groups actions by urgency (due today, this week, flexible) and is consumed by the Startup Sequence (step 9) for daily action reminders. After creating, updating, or closing a lead, regenerate this index to keep it in sync. The index's `search_aliases` (todo list, to-do, next steps, next actions, follow-ups, action items, call list, Monday list) ensure queries about task lists route to the right skill.
+
+### Initial leads migration
+
+When the human reports positive responses from cold outreach, the agent should:
+1. Ask: "Should I create a lead file for [business]?"
+2. Extract the key details from the conversation and write the file.
+3. Offer to generate follow-up outreach if next steps are clear.
+
+---
 
 MCP servers can formalize API calls for outreach formats. See `resources/mcp-tools-for-outreach.md` for a catalog of available servers per format, installation instructions, and recommended setup order. Once configured, the agent can use MCP tools to discover leads, post content, and send messages directly from within the session.
 
