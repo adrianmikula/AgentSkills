@@ -253,6 +253,52 @@ else
     warn "WP-CLI or test WordPress path not available, skipping live install test"
 fi
 
+# 12. WordPress.org review checks
+if [ -f "${SVN_TRUNK}/${MAIN_FILE}" ]; then
+    # 12a. No load_plugin_textdomain() — WordPress.org auto-loads translations since WP 4.6
+    if grep -q 'load_plugin_textdomain' "${SVN_TRUNK}/${MAIN_FILE}"; then
+        fail "load_plugin_textdomain() found in ${MAIN_FILE} — not needed for WordPress.org (auto-loaded since WP 4.6)"
+    else
+        pass "No load_plugin_textdomain() call in ${MAIN_FILE}"
+    fi
+
+    # 12b. Plugin URI must not point to a private/non-public URL (common reject: private GitHub repos)
+    PLUGIN_URI=$(grep -i '^\s*\*\s*Plugin URI:' "${SVN_TRUNK}/${MAIN_FILE}" | head -1 | sed 's/.*Plugin URI:\s*//' | tr -d ' *')
+    if [ -n "${PLUGIN_URI}" ]; then
+        if echo "${PLUGIN_URI}" | grep -qiE 'github\.com|gitlab\.com|bitbucket\.org'; then
+            warn "Plugin URI points to a code hosting URL — verify it is publicly accessible (${PLUGIN_URI})"
+        fi
+        # Check if the URL is reachable
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${PLUGIN_URI}" 2>/dev/null || echo "000")
+        if [ "${HTTP_CODE}" -ge 400 ] || [ "${HTTP_CODE}" = "000" ]; then
+            fail "Plugin URI returns HTTP ${HTTP_CODE} — must be publicly accessible (${PLUGIN_URI})"
+        else
+            pass "Plugin URI is accessible (HTTP ${HTTP_CODE}): ${PLUGIN_URI}"
+        fi
+    else
+        warn "No Plugin URI found in ${MAIN_FILE}"
+    fi
+fi
+
+# 12c. External Services section in readme.txt (warn — manual review may still be needed)
+if [ -f "${SVN_TRUNK}/readme.txt" ]; then
+    if grep -q '== External Services ==' "${SVN_TRUNK}/readme.txt"; then
+        pass "readme.txt has == External Services == section"
+        # Check for per-service subsections
+        SERVICE_COUNT=$(grep -c '^=== .* ===$' "${SVN_TRUNK}/readme.txt" || true)
+        if [ "${SERVICE_COUNT}" -lt 1 ]; then
+            warn "External Services section has no per-service subsections (=== Service Name ===)"
+        else
+            pass "External Services section documents ${SERVICE_COUNT} service(s)"
+        fi
+    else
+        # Only warn if the plugin appears to call external APIs
+        if grep -rq 'wp_remote_get\|wp_remote_post\|wp_remote_request' "${SVN_TRUNK}/" 2>/dev/null; then
+            warn "Plugin calls external APIs (wp_remote_*) but readme.txt has no == External Services == section"
+        fi
+    fi
+fi
+
 # Cleanup
 rm -rf "${TEMP_DIR}"
 

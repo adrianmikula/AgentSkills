@@ -85,6 +85,9 @@ If the answer is no, the code does not belong in the free build.
 | Class names | `{PREFIX}_{FeatureName}` |
 | PHP files | ABSPATH guard — `if ( ! defined( 'ABSPATH' ) ) exit;` |
 | Hooks | `register_activation_hook( PREFIX_PLUGIN_FILE, ... )` — never `__FILE__` |
+| Plugin URI | Must be a **publicly accessible URL** — typically the WordPress.org plugin page (`https://wordpress.org/plugins/{slug}/`). Never use private repository URLs; WordPress.org reviewers cannot access them and will flag a 404. |
+| Author URI | Must be a publicly accessible URL — the WordPress.org plugin page or a public profile page. |
+| Domain Path | Include `Domain Path: /languages` in the plugin header. WordPress.org uses this to package translations even though `load_plugin_textdomain()` is not needed (see WordPress.org Compatibility section). |
 
 ---
 
@@ -299,7 +302,28 @@ If the plugin calls a cloud API, enforce these rules:
 1. The API endpoint called by the free plugin must return the same response for all callers — no server-side tier check
 2. The free API request must NOT send: site URL, admin email, licence key, or any site identifier. Only send data needed for the service to function (e.g. versions, package names)
 3. Premium-only API calls (telemetry, premium features) must live exclusively in `premium/` code
-4. `readme.txt` must include an External Services section documenting the API call with Terms/Privacy links
+4. `readme.txt` must include an `== External Services ==` section — one subsection per external service, following the template below. A generic "we call a cloud API" description is not sufficient; WordPress.org reviewers require each service individually named and documented.
+
+**External Services template** (add one `=== Service Name ===` block per service the plugin calls):
+
+```
+== External Services ==
+
+This plugin queries several third-party services to provide its core functionality. No personally identifiable information is transmitted. Each service is described below.
+
+=== Service Name ===
+
+What it is: <short description of the service and its purpose>
+
+Data sent: <what data is transmitted and in what format>
+
+When: <when the call happens — e.g. on every scheduled scan, on page load, on user action>
+
+Terms of Service: <URL>
+Privacy Policy:   <URL>
+```
+
+Both the Terms of Service and Privacy Policy URLs **must be live and accessible** — WordPress.org verifies them. If the service is a US government project with no separate ToS, link to the agency's general policies page. If the service is open-source with no explicit ToS, link to the project's main documentation or GitHub README.
 
 ---
 
@@ -392,6 +416,12 @@ Generic, additive. Does not enumerate what free won't do.
 
 **Rule of thumb:** If the upsell feature name describes *where* or *how broadly* the free version operates (e.g. "custom URLs", "any page", "unlimited"), it's a leak. If it describes *what* it adds (e.g. "export", "priority support", "advanced reporting"), it's additive.
 
+### 8. No `load_plugin_textdomain()` in WordPress.org plugins
+
+Do NOT include `load_plugin_textdomain()` in the main plugin file or any init callback. WordPress.org has auto-loaded translations for plugins hosted on its directory since WordPress 4.6. Including this call triggers a review flag. The `Domain Path` header in the plugin file is sufficient — WordPress.org uses it to locate and package translations automatically.
+
+If the plugin supports WordPress versions below 4.6, keep the call but ensure it is hooked into `init` (not called at file scope). The standard skill output targets WP 5.8+, so this exception should never apply.
+
 ---
 
 ## Free Version Contract
@@ -409,6 +439,24 @@ It DOES:
 - Work identically on every WordPress install
 
 The difference between free and premium is **capability addition**, not **capability restriction**.
+
+---
+
+## WordPress.org Compatibility
+
+These rules apply to all plugins targeting the WordPress.org directory. Violations cause review rejection.
+
+### No `load_plugin_textdomain()`
+
+WordPress.org auto-loads translations since WordPress 4.6. The standard skill output requires WP 5.8+, so this call is never needed. Omit it entirely. Include `Domain Path: /languages` in the plugin header — WordPress.org uses this to locate translation files.
+
+### Public plugin header URLs
+
+`Plugin URI` and `Author URI` must be publicly accessible URLs. WordPress.org reviewers verify these links and reject plugins where they return 404. Use the WordPress.org plugin page URL (`https://wordpress.org/plugins/{slug}/`) or a public profile page. Never use private repository URLs.
+
+### External Services disclosure
+
+If the plugin calls any external API, the `readme.txt` must include an `== External Services ==` section documenting each service individually (see Serviceware Compliance section for the template). A vague "we call a cloud API" description will be rejected. Each service entry must include working ToS and Privacy Policy links — WordPress.org verifies these.
 
 ---
 
@@ -521,6 +569,10 @@ Validates the deployed state in the SVN checkout before/after commit. It reports
 9. `assets/` exists and has files (warns if empty/missing)
 10. Builds a test zip from `trunk/` and verifies `.php` files, `readme.txt`, and the main plugin file are at the zip root
 11. Optionally does a live WP-CLI install/uninstall test against `WP_CLI_PATH`
+12. WordPress.org review checks:
+    - No `load_plugin_textdomain()` in the main plugin file
+    - `Plugin URI` is publicly accessible (HTTP check, warns on code hosting URLs)
+    - `readme.txt` has `== External Services ==` section if the plugin calls external APIs (with per-service subsection count)
 
 ```bash
 scripts/validate-svn.sh
@@ -562,6 +614,9 @@ The preflight script (`scripts/preflight-check.sh`) must check against the extra
     done
     ```
 12. Upsell text does not name features that describe scope ("custom URLs", "any page", "unlimited", "page selection") — only additive capabilities ("export", "priority support", "advanced reporting")
+13. No `load_plugin_textdomain()` call anywhere in free code — WordPress.org auto-translates since WP 4.6
+14. `Plugin URI` and `Author URI` in the main plugin file header point to publicly accessible URLs (not private repos, localhost, or internal network addresses)
+15. If the plugin calls external APIs (`wp_remote_get`, `wp_remote_post`, `wp_remote_request`), `readme.txt` contains an `== External Services ==` section with per-service `=== Service Name ===` subsections documenting: what the service is, what data is sent, when it is called, Terms of Service link, and Privacy Policy link
 
 **Manual verification checklist (performed by the AI during generation):**
 - [ ] For every parameter in every free function: are there at least two different values passed to it across all free callers? If not, does removing the parameter expose a capability named in the upsell?
@@ -581,7 +636,7 @@ When the user describes a plugin idea, follow these steps:
 6. **Write premium files** — additive features only
 7. **Write build scripts** — `.distignore`, `build.sh`, `preflight-check.sh`, and copy `deploy-to-svn.sh` + `validate-svn.sh` from `resources/` into `scripts/` (see WordPress.org SVN Deployment). Add `PLUGIN_SLUG` and `SVN_REPO_PATH` to `.env`/`.env.example`.
 8. **Write test infrastructure** — `phpunit.xml.dist`, `tests/bootstrap.php` (auto-detecting bootstrap), `tests/TestCase.php` (dual-mode base class), `tests/wp-tests-config.php` (template), `bin/install-wp-tests.sh`
-9. **Write readme.txt** — free-only description + External Services section
+9. **Write readme.txt** — free-only description + External Services section (see Serviceware Compliance for template). Follow WordPress.org Compatibility rules for all plugin header fields.
 10. **Run tests in fallback mode** — `composer install && composer test:unit` — all tests pass without any external setup
 11. **Run build** and verify both ZIPs
 12. **Run preflight** against free ZIP — zero non-informational failures
