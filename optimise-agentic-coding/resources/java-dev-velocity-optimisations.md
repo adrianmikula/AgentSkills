@@ -80,3 +80,71 @@ Framework: Quarkus (for new agent-velocity-optimised projects) or Spring Boot (f
 Tests: Kotest (spec-driven) or JUnit 5 with Launcher API
 Build: Gradle (Kotlin DSL)
 ```
+
+## Gradle multi-module configuration overhead
+
+### The problem
+When an agent runs `./gradlew :module:fastTest`, Gradle still configures ALL projects in the build — even modules that aren't needed. In a 5-module project with Spring Boot, IntelliJ, and SpotBugs plugins, this adds 15-25s of configuration time and can fail with configuration cache serialization errors.
+
+### Measured impact (JakartaMigrationMCP, 5 modules)
+
+| Scenario | Time | Notes |
+|----------|------|-------|
+| Single module fast-test (warm) | 0.76s | ✅ Fast |
+| All 5 modules fast-test (cold) | 2.0s | ✅ With `--configure-on-demand` |
+| All 5 modules fast-test (warm) | 1.9s | ✅ With `--configure-on-demand` |
+| All 5 modules fast-test (without fix) | 25s | ❌ Broken transitive deps + no `--configure-on-demand` |
+
+### Root causes
+1. **Gradle configures ALL projects** — even when you only need one module's tests
+2. **Heavy plugins** — Spring Boot, IntelliJ, SpotBugs each add 3-8s of configuration per module
+3. **Broken transitive dependencies** — one module's broken dep (e.g. missing version) cascades to all modules that depend on it
+4. **Configuration cache serialization** — broken deps cause config cache to be discarded, forcing full re-configuration
+
+### Fixes
+
+**1. `--configure-on-demand`** — skips configuring modules not needed for the requested task:
+```bash
+./gradlew :core:fastTest --configure-on-demand  # skips unrelated modules
+```
+Add to `gradle.properties` for permanent effect, or to mise/CI commands.
+
+**2. Explicit module listing** — never use bare `fastTest` in multi-module projects:
+```bash
+# GOOD: only configures the modules you need
+./gradlew :core:fastTest :domain:fastTest --configure-on-demand
+
+# BAD: configures ALL modules including broken ones
+./gradlew fastTest
+```
+
+**3. Disable heavy plugins for inner loop** — SpotBugs, ErrorProne, Checkstyle add 3-8s each:
+```kotlin
+// build.gradle.kts — comment out for agent iteration
+// id("com.github.spotbugs") version "6.0.25"
+// id("net.ltgt.errorprone") version "4.1.0"
+```
+
+**4. Fix version-less dependencies** — causes configuration cache failures:
+```kotlin
+// BAD — version-less, fails with configuration cache
+runtimeOnly("org.springframework.boot:spring-boot-devtools")
+
+// GOOD — explicit version, configuration cache works
+runtimeOnly("org.springframework.boot:spring-boot-devtools:3.2.0")
+```
+
+**5. Document broken modules** — add to COMMANDS.md:
+```markdown
+## Do NOT use
+| Command | Reason |
+|---------|--------|
+| `./gradlew :broken-module:test` | Fails with config cache error |
+```
+
+### Profiling overhead
+Use `--profile` to generate an HTML report showing per-phase and per-module timing:
+```bash
+./gradlew :module:fastTest --profile --no-configuration-cache
+```
+The report shows: startup time, configuration time per project, dependency resolution time, task execution time. This identifies which modules are slow to configure.

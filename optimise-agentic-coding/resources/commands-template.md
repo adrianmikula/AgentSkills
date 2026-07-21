@@ -14,10 +14,9 @@ Copy this into `COMMANDS.md` at the repo root. Fill in the actual commands detec
 
 | Category | Command | Expected time |
 |----------|---------|---------------|
+| Compile check | `---` | <2s |
+| Fast tests | `---` | <2s |
 | Lint | `---` | <2s |
-| Type check | `---` | <2s |
-| Fast tests | `---` | <5s |
-| Dev server | `---` | <2s |
 
 ## Full validation (CI — run before commit/push)
 
@@ -34,6 +33,16 @@ Copy this into `COMMANDS.md` at the repo root. Fill in the actual commands detec
 | View logs | `---` |
 | Run with debug mode | `---` |
 | Inspect DB | `---` |
+| Profile build overhead | `---` |
+
+## Do NOT use
+
+| Command | Reason |
+|---------|--------|
+| `---` | --- |
+
+Document any commands or modules that are broken, slow, or cause cascading failures.
+Agents waste significant time on failed builds — this section prevents that.
 
 ## Common gotchas
 
@@ -54,3 +63,19 @@ When filling the template, detect commands from:
 - `.csproj` configurations (.NET)
 - `Rakefile` tasks (Rails)
 - `Gemfile` scripts (Rails)
+
+## Timing guidance
+
+For each command, measure and record:
+- **Cold time**: first run after `--stop` or clean config cache
+- **Warm time**: subsequent runs with daemon and config cache active
+- Record the warm time as the expected time (that's what agents see most often)
+- For Gradle: cold config cache = `rm -rf .gradle/configuration-cache && ./gradlew ...`
+- For Gradle: warm = running the same command again immediately
+
+## Multi-module projects
+
+For Gradle multi-module projects:
+- List specific module targets, not bare task names (e.g. `:core:fastTest` not `fastTest`)
+- Add `--configure-on-demand` to skip configuring unused modules
+- Document which modules to avoid and why in the "Do NOT use" section

@@ -23,13 +23,16 @@ logging:
 ```
 Enable devtools in `build.gradle.kts`:
 ```kotlin
-runtimeOnly("org.springframework.boot:spring-boot-devtools")
+runtimeOnly("org.springframework.boot:spring-boot-devtools:3.2.0")
 ```
+Note: always specify an explicit version. Version-less dependencies cause configuration cache serialization failures in Gradle.
+
 Or in `pom.xml`:
 ```xml
 <dependency>
   <groupId>org.springframework.boot</groupId>
   <artifactId>spring-boot-devtools</artifactId>
+  <version>3.2.0</version>
   <scope>runtime</scope>
 </dependency>
 ```
@@ -210,20 +213,54 @@ npx @modelcontextprotocol/inspector <command> <args>
 Run lint before compile — catches style/syntax issues without a full build.
 
 ### Fast Tests
-Create a `devFast` test task that runs only unit tests (no Spring context, no integration):
+
+**Single module:**
 ```kotlin
-tasks.register<Test>("devFast") {
-  useJUnitPlatform { includeTags("fast") }
+tasks.register<Test>("fastTest") {
+  useJUnitPlatform { excludeTags("slow") }
+  maxParallelForks = 4
 }
 ```
-Agents run `./gradlew devFast` for <15s feedback. Full suite is CI-only.
+
+**Multi-module Gradle projects** — agents MUST explicitly list modules. Gradle configures ALL projects even when targeting a subset, so list only the modules that work:
+```bash
+# Fast: only modules without broken deps or heavy plugins
+./gradlew :core:fastTest :domain:fastTest --configure-on-demand
+
+# NEVER: Gradle configures all modules including broken ones
+./gradlew fastTest  # BAD — triggers all modules
+```
+
+Why `excludeTags("slow")` instead of `includeTags("fast")`: most tests are untagged and should run in the fast loop. Tagging every fast test is maintenance overhead. Only tag the slow ones.
+
+**Spring Boot test context loading** — tests that use `@SpringBootTest`, `@WebMvcTest`, or `spring-boot-starter-test` load the Spring application context, which adds 2-5s per test class. For the fast loop:
+- Exclude tests that load Spring context: `excludeTags("slow", "spring")`
+- Or separate them into a `springTest` task that runs in CI only
+- Keep the fast loop for pure unit tests with mocks (no Spring)
+- If a test class takes >1s, it probably loads Spring context — move it out of the fast loop
+
+Agents run `./gradlew :core:fastTest` for <2s feedback. Full suite is CI-only.
 
 ### Velocity Hacks
+
+**Gradle multi-module critical settings** — add to `gradle.properties`:
+```properties
+org.gradle.configuration-cache=true
+org.gradle.configuration-cache.problems=warn
+org.gradle.caching=true
+org.gradle.parallel=true
+```
+
+- **`--configure-on-demand`** — skips configuring modules not needed for the requested task. Essential for multi-module projects where some modules have heavy plugins (Spring Boot, IntelliJ, SpotBugs). Saves 100-500ms per invocation.
+- **Disable static analysis plugins for inner loop** — SpotBugs, ErrorProne, and Checkstyle add 3-8s of configuration overhead per module. Comment them out in `build.gradle.kts` for modules where agents iterate frequently. Keep them enabled only in CI.
+- **Profile build overhead** — use `./gradlew :module:fastTest --profile` to generate an HTML report showing per-phase and per-module timing. Use this to identify which modules are slow to configure.
+- **Document broken modules** — if a module has compilation errors or broken transitive dependencies, document it in COMMANDS.md with a "Do NOT use" warning so agents don't waste time on failed builds.
+- **Version all dependencies explicitly** — version-less dependencies (e.g. `spring-boot-devtools` without a version) cause configuration cache serialization failures. Always pin versions.
 - **Disable annotation processors locally** (Lombok, MapStruct, JPA) — often 10x compile speedup
 - **No Spring in inner loop** — use plain constructors + manual wiring in tests; if Spring starts, loop is broken
 - **Freeze generated code** (OpenAPI, Protobuf, DB codegen) into binary modules — never recompile during iteration
-- **Gradle configuration cache** — enable via `gradle.properties`: `org.gradle.configuration-cache=true`
 - **Classpath minimization** — separate "runtime" from "dev/test" deps; smaller classpath = faster everything
+- **`gradle.properties` hygiene** — avoid duplicate entries (same property defined twice). Gradle uses the last value, but duplicates cause confusion and can lead to silent misconfiguration. Check for duplicates: `sort gradle.properties | uniq -d`.
 - **CRaC for near-instant startup** — use CRaC-enabled JDK (Azul Zulu or Ubuntu OpenJDK CRaC) to snapshot JVM and restore in <100ms
 
 ### Reference Documents

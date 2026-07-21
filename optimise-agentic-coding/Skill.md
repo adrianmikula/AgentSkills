@@ -15,6 +15,12 @@ You are a "debugging infrastructure" and "agentic velocity" specialist. Your tas
 
 Read `package.json`, `*.csproj`, `Cargo.toml`, `pyproject.toml`, `Gemfile`, etc. Identify the framework (Next.js, Rails, Django, Express, etc.) and language.
 
+**For Java/Gradle projects**, also detect:
+- Number of modules (count `include()` in `settings.gradle.kts`)
+- Which modules have heavy plugins (Spring Boot, IntelliJ, SpotBugs) — these are configuration time sinks
+- Which modules compile and test successfully vs which are broken
+- Whether `--configure-on-demand` is needed to skip unused modules
+
 ### 2. Check for existing debugging infra
 
 Grep for `console\.log|console\.error|\.log\(|logger\.|mcp|\.mcp\.json|opencode\.jsonc|\.windsurfrules|AGENTS\.md`. Note what exists and what is missing.
@@ -62,7 +68,14 @@ Create or update these agent config files:
 | Command | Description | Expected time |
 |---------|-------------|---------------|
 | `npm run test` | Full test suite | ~2min |
+
+## Do NOT use
+| Command | Reason |
+|---------|--------|
+| `./gradlew :broken-module:test` | Fails with configuration cache error |
 ```
+
+The "Do NOT use" section is critical — it prevents agents from wasting time on commands that fail. Document any command or module that is broken, causes cascading failures, or has unacceptable overhead.
 
 **4c. Known issues** — Create `docs/COMMON_ISSUES.md` cataloguing frequent error patterns and their resolutions. This prevents agents from re-investigating known problems. Structure:
 ```markdown
@@ -102,7 +115,7 @@ After all changes, confirm the repo has:
 - (c) Agent workflow instructions for debugging
 - (d) Fast lint setup configured
 - (e) Fast test subset configured
-- (f) `COMMANDS.md` command catalogue
+- (f) `COMMANDS.md` command catalogue with "Do NOT use" section
 - (g) `docs/COMMON_ISSUES.md` known issues doc
 
 ---
@@ -150,6 +163,8 @@ All stack-specific resources follow the same logger contract:
 - Separate signal from confidence: fast checks in the inner loop, slow checks deferred to CI.
 - A command catalogue prevents wasted agent cycles on CLI guesswork.
 - A known-issues doc prevents re-investigation of recurring errors.
+- A "Do NOT use" section prevents agents from wasting time on broken commands.
+- For multi-module projects, explicitly list working modules — never assume all modules work.
 
 ---
 
