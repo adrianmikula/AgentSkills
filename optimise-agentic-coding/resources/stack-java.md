@@ -239,6 +239,12 @@ Why `excludeTags("slow")` instead of `includeTags("fast")`: most tests are untag
 - Keep the fast loop for pure unit tests with mocks (no Spring)
 - If a test class takes >1s, it probably loads Spring context — move it out of the fast loop
 
+**Kotlin-specific test speedups:**
+- Use `kotlin.test` assertions instead of JUnit — slightly faster startup, no extra deps
+- Avoid `mockk` heavy macros in the fast loop — use manual fakes or Mockito instead; `mockk` adds 200-500ms per test class from bytecode generation
+- Coroutine tests: use `runTest` from `kotlinx-coroutines-test` — it auto-advances virtual time, no `delay()` needed
+- If using Kotest, separate property-based and behavior specs into a `slowTest` task — they add significant overhead
+
 Agents run `./gradlew :core:fastTest` for <2s feedback. Full suite is CI-only.
 
 ### Velocity Hacks
@@ -262,6 +268,51 @@ org.gradle.parallel=true
 - **Classpath minimization** — separate "runtime" from "dev/test" deps; smaller classpath = faster everything
 - **`gradle.properties` hygiene** — avoid duplicate entries (same property defined twice). Gradle uses the last value, but duplicates cause confusion and can lead to silent misconfiguration. Check for duplicates: `sort gradle.properties | uniq -d`.
 - **CRaC for near-instant startup** — use CRaC-enabled JDK (Azul Zulu or Ubuntu OpenJDK CRaC) to snapshot JVM and restore in <100ms
+
+#### Kotlin-specific velocity hacks
+
+- **Kotlin daemon memory** — add to `gradle.properties`: `kotlin.daemon.jvmargs=-Xmx512m`. Default is 2GB; 512MB is sufficient for most inner-loop tasks and frees memory for other processes.
+- **Disable Kotlin compiler assertions locally** — `kotlin.incremental=false` in `gradle.properties` for clean builds; incremental compilation is faster for迭代 but adds overhead on first build after checkout.
+- **KSP over KAPT** — migrate annotation processors from KAPT to KSP where possible (Room, Moshi, Dagger). KSP is 2-10x faster because it runs on Kotlin sources directly, not Java stubs.
+- **Avoid `allOpen` plugin in inner loop** — it adds 500ms+ per module. Enable only for Spring/Quarkus modules that need it.
+- **Kotlinx serialization over Gson/Moshi reflection** — compile-time serialization eliminates runtime reflection overhead in tests and reduces startup time.
+- **Coroutines dispatcher for tests** — use `Dispatchers.setMain(testDispatcher)` in `@BeforeAll` to avoid real IO in unit tests.
+
+#### Auto-installing CRaC-enabled JVMs with mise
+
+When using mise (or asdf) for tool version management, configure the Java tool to auto-install a CRaC-enabled JDK. The version string format is `zulu-crac-{azul_version}` (NOT `zulu-{java_version}-crac`):
+
+```toml
+# .mise.toml
+[tools]
+java = "zulu-crac-21.50.19.0"  # Azul Zulu CRaC 21 — format: zulu-crac-{azul_build}
+gradle = "8.5"
+
+[env]
+# Do NOT hardcode JAVA_HOME — mise sets it automatically
+# Do NOT use zulu-21-crac or zulu-crac-21 — these are invalid version strings
+```
+
+**Finding the correct version string:**
+```bash
+# List all available Zulu CRaC versions (from outside the project to avoid config errors)
+cd /tmp && mise ls-remote java | grep "zulu-crac" | grep -v musl | tail -5
+# Output: zulu-crac-21.48.17.0, zulu-crac-21.50.19.0, etc.
+```
+
+**Common mistakes:**
+- `zulu-21-crac` — invalid, causes "no metadata found for version" error
+- `zulu-crac-21` — may work but unpinned; prefer full version for reproducibility
+- Hardcoding `JAVA_HOME=/usr/lib/jvm/zulu-21-crac-amd64` — breaks on fresh clones where mise installs to `~/.local/share/mise/installs/java/`
+
+**For projects with CRaC tasks** (checkpoint/restore), remove hardcoded JAVA_HOME overrides from task commands — mise shims handle it:
+```toml
+[tasks.crac-start]
+run = "java -XX:CRaCCheckpointTo=/tmp/crac-checkpoint -jar app.jar"
+
+[tasks.crac-restore]
+run = "java -XX:CRaCRestoreFrom=/tmp/crac-checkpoint"
+```
 
 ### Reference Documents
 Load these for deeper context when applicable:
