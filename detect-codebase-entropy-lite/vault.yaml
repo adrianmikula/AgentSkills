@@ -1,0 +1,10 @@
+name: detect-codebase-entropy-lite
+type: skill
+display_name: Detect Codebase Entropy Lite
+tags: [entropy, code-quality, pre-commit, claude-skill, ai-slop]
+version: 1.0.0
+description: Free pre-commit entropy scan for staged and unstaged git changes. Detects code-quality issues from AI-generated code — duplication, dead code, test smells, and slop — without security or performance findings.
+entry: SKILL.md
+author: Adrian Mikula
+license: proprietary
+price: 0

@@ -1,6 +1,6 @@
 # Business Idea Incubator
 
-A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and implement business ideas. Adapts to your experience level across 12 key disciplines — including funding & capital strategy — and tracks progress over time. A core priority is understanding your actual financial resources before making any recommendations.
+A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and implement business ideas using a proven, phase-gated operating system. Adapts to your experience level across 13 disciplines — including funding & capital strategy and zero-to-one frameworks — and tracks progress over time. A core priority is understanding your actual financial resources before making any recommendations.
 
 ## Disciplines Covered
 
@@ -18,6 +18,7 @@ A multidisciplinary Claude Skill that helps entrepreneurs validate, refine, and 
 | 10 | E-commerce & Online Selling | Store setup, CRO, fulfilment, payment processing |
 | 11 | Social Media Presence | Content strategy, platform selection, community building |
 | 12 | Funding & Capital Strategy | Pre-revenue funding, bootstrapping, grants, crowdfunding, angels/VC, revenue-first strategies, funding securement process |
+| 13 | Zero-to-One Frameworks | Phase-gated idea-to-revenue pipeline, named heuristics, go/no-go gates, AARRR, PMF, flywheels, working backwards |
 
 ## How It Works
 
@@ -47,6 +48,10 @@ Load the Skill and interact naturally. On first run, it will ask about your expe
 
 **Example interactions:**
 - "I have an idea for a pet-sitting app. Help me validate it."
+- "Run a pre-mortem on my decision to quit my job."
+- "Score my offer using the Hormozi value equation."
+- "Where is my funnel leaking? Run an AARRR audit."
+- "What's my runway if I go full-time for 6 months?"
 - "Rate my SaaS pricing strategy."
 - "Build a quick prototype for my food truck ordering system."
 - "What social media channels should I focus on for my B2B consulting business?"

@@ -1,0 +1,10 @@
+name: optimise-agentic-coding-lite
+type: skill
+display_name: Optimise Agentic Coding Lite
+tags: [agentic-coding, debugging, tech-stack, claude-skill, velocity]
+version: 1.0.0
+description: Free single-stack agentic-coding readiness scan. Detects the primary tech stack and produces a 5-layer debugging optimization checklist without auto-apply or MCP configuration.
+entry: SKILL.md
+author: Adrian Mikula
+license: proprietary
+price: 0

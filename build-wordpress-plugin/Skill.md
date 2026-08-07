@@ -470,6 +470,7 @@ If the plugin calls any external API, the `readme.txt` must include an `== Exter
 Outputs:
 - `build/{plugin-slug}.zip` — free version
 - `build/{plugin-slug}-premium.zip` — premium version
+- `build/{plugin-slug}/` — extracted free build directory (used by `preflight-check.sh` by default)
 
 ### Free build exclusions (`.distignore`)
 ```
@@ -502,6 +503,39 @@ if ( file_exists( MYPLUGIN_DIR . 'premium/loader.php' ) ) {
 ```
 
 ---
+
+## Plugin Branding & Logo
+
+If the user provides a logo, integrate it in both the plugin UI and the WordPress.org listing assets.
+
+### In-plugin logo
+
+1. Copy the provided logo to `free/assets/logo.png` using a sanitized, URL-safe filename.
+2. Display it in the admin page header:
+   ```php
+   <img src="<?php echo esc_url( plugins_url( 'assets/logo.png', MYPLUGIN_PLUGIN_FILE ) ); ?>" alt="<?php echo esc_attr( __( 'Plugin Name', 'my-plugin' ) ); ?>" class="myplugin-logo">
+   ```
+3. Add matching CSS to `free/admin/css/admin.css`:
+   ```css
+   .myplugin-logo {
+       max-width: 48px;
+       height: auto;
+       vertical-align: middle;
+       margin-right: 12px;
+   }
+   ```
+
+### WordPress.org plugin assets
+
+The WordPress.org directory requires these files in the SVN `assets/` directory:
+
+- `icon-128x128.png`
+- `icon-256x256.png`
+- `banner-772x250.png`
+- `banner-1544x500.png`
+- `screenshot-1.png`
+
+Generate them from `free/assets/logo.png` with ImageMagick. The deploy script can run this automatically when assets are missing.
 
 ## WordPress.org SVN Deployment
 
@@ -541,6 +575,9 @@ Both scripts are slug-agnostic. They read their configuration from `${PLUGIN_SRC
 - Copies the `assets/` directory (banner/icon/screenshots)
 - Creates `/tags/<version>` via `svn copy` unless it already exists
 - Version is taken from the first argument, or falls back to the `Stable tag:` in `readme.txt`
+- Auto-generates missing WordPress.org `assets/` files from `free/assets/logo.png` when `GENERATE_ASSETS` is not disabled
+- Stages `assets/` with `svn add` before `svn status` so the status counts are accurate
+- Supports `DEPLOY_COMMIT` and `DEPLOY_CREATE_TAG` env vars to answer the commit/tag prompts automatically for CI/CD
 - Prints a reminder to `svn commit`
 
 ```bash
@@ -617,6 +654,10 @@ The preflight script (`scripts/preflight-check.sh`) must check against the extra
 13. No `load_plugin_textdomain()` call anywhere in free code — WordPress.org auto-translates since WP 4.6
 14. `Plugin URI` and `Author URI` in the main plugin file header point to publicly accessible URLs (not private repos, localhost, or internal network addresses)
 15. If the plugin calls external APIs (`wp_remote_get`, `wp_remote_post`, `wp_remote_request`), `readme.txt` contains an `== External Services ==` section with per-service `=== Service Name ===` subsections documenting: what the service is, what data is sent, when it is called, Terms of Service link, and Privacy Policy link
+16. PHP syntax lint (`php -l`) passes for every `.php` file in the built free ZIP
+17. `readme.txt` `Stable tag:` matches the `Version:` header in the main plugin file, and `readme.txt` contains `Tested up to:` and `Requires at least:`
+18. In-plugin logo asset `assets/logo.png` exists if a logo was provided
+19. WordPress.org plugin assets (`icon-128x128.png`, `icon-256x256.png`, `banner-772x250.png`, `banner-1544x500.png`, `screenshot-1.png`) are present in the SVN `assets/` directory
 
 **Manual verification checklist (performed by the AI during generation):**
 - [ ] For every parameter in every free function: are there at least two different values passed to it across all free callers? If not, does removing the parameter expose a capability named in the upsell?
@@ -639,7 +680,7 @@ When the user describes a plugin idea, follow these steps:
 9. **Write readme.txt** — free-only description + External Services section (see Serviceware Compliance for template). Follow WordPress.org Compatibility rules for all plugin header fields.
 10. **Run tests in fallback mode** — `composer install && composer test:unit` — all tests pass without any external setup
 11. **Run build** and verify both ZIPs
-12. **Run preflight** against free ZIP — zero non-informational failures
+12. **Run preflight** against the free build — zero non-informational failures. The preflight now covers tiering grep checks, PHP lint, `readme.txt`/plugin version consistency, `Tested up to`/`Requires at least`, the in-plugin logo asset, and WordPress.org asset presence
 13. **Verify deploy scaffolding** — `scripts/deploy-to-svn.sh` and `scripts/validate-svn.sh` are executable, `PLUGIN_SLUG`/`SVN_REPO_PATH` are documented in `.env.example`. If the user has a local SVN checkout, run `scripts/validate-svn.sh` after a dry deploy to confirm trunk structure
 14. **Return the ZIPs** and a summary of what was built, including how to deploy (WordPress.org SVN Deployment section)
 

@@ -1,0 +1,5 @@
+{
+  "name": "deterministic-refactor",
+  "description": "Plan, sandbox, and execute complex refactors deterministically for senior engineers. Builds a refactor impact tree, records containerized test runs, and applies the final change in one low-risk operation.",
+  "version": "1.0.0"
+}
