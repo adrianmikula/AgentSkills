@@ -85,6 +85,7 @@ The skillify process has 7 phases. Detailed templates and tables are in the `res
 ```
 1. Discover Architecture → boundary table + handoff points
 2. Identify Major Modules → module definitions per boundary
+2.5 Detect One-Shot Hazards → classify each module as single or multi-layer
 3. Design Skill Hierarchy → orchestrator + per-module skills
 4. Define Human/AI Separation → per-boundary ownership contracts
 5. Write Skills → SKILL.md for each skill
@@ -158,9 +159,53 @@ Within the Code boundary, identify the major functional modules. A "major module
 
 For each major module, define: name, boundary, input artifact, output artifact, core files (2-5), responsibility.
 
+Also surface the **user-level task** the module answers. A user does not ask for `menu-generator`; they ask to "make the placard uniform" or "generate a weekly menu." Record that task alongside the module — it is the real skill entry point.
+
 Group modules by boundary. The goal is to end up with 3-8 major modules per boundary.
 
 ---
+
+## Phase 2.5 — Detect One-Shot Hazards
+
+Before assigning one skill per module, score it for one-shot reliability. A one-shot hazard is any module where a single LLM generation is likely to violate invariants that are expensive to detect or correct — and the hazard is not limited to geometry.
+
+### Scoring Questions
+
+Ask these for every module, including non-geometric ones:
+
+- Does it have spatial / geometry constraints? (SVGs, layout, illustrations, CSS shapes)
+- Does it have strict visual or numerical invariants across the output? (palette, dimensions, symmetry, stroke widths, totals, ratios)
+- Does it produce an artifact that is hard to verify without inspection? (icons, logos, diagrams, theme mockups, prose tone, structured reports)
+- Does a single wrong sub-region or value ruin the whole output? (corners, borders, alignment, breakpoints, a miscounted total, an invalid state transition)
+- Does it need a deterministic config, state machine, or ordered sequence, not free-form generation? (form flows, checkout, wizards, migrations, builds)
+- Are there hidden cross-cutting constraints that span multiple files or steps? (naming consistency, dependency ordering, global style rules)
+
+If two or more are true, the module is a **one-shot hazard**. It still may not need a multi-layer skill — zonal decomposition is only one possible mitigation. Choose the smallest pattern that makes the output verifiable.
+
+### One-Shot Hazard Mitigation Patterns
+
+| Pattern | When to use | Example |
+|---|---|---|
+| **Single skill + automated oracle** | Invariants are checkable programmatically after one generation | A JSON schema with a validator; a math/geometry assertion suite |
+| **Deterministic config / state machine** | Output is a sequence of known states with guard conditions | A checkout flow, a migration script, a build pipeline |
+| **Template fill + verification** | Output shape is fixed, only content varies | A report from a template, a form letter, a dashboard card |
+| **Iterative preview → fix → verify** | Errors are easy to spot, so fast iteration beats a perfect first shot | A color palette, a menu layout, an ad headline |
+| **Multi-layer / zonal generation** | Output has local sub-regions, duplicates, mirrors, or invariants that are easier to verify per-zone than whole | SVGs, icons, diagrams, theme mockups |
+| **Human-in-the-loop checkpoint** | One wrong choice has high cost and no cheap oracle | Content approval, legal copy, sensitive config |
+| **Decompose into sub-skills** | Hazard comes from multiple independent concerns mixed together | Separate "content" from "layout" skills |
+
+### Decision Guide
+
+| If the task is... | Single skill is enough? | Mitigation if not |
+|---|---|---|
+| A stable data contract or API boundary | Yes | None |
+| A pure text or JSON schema with validator | Usually yes | Single skill + oracle |
+| A visual/spatial asset with local sub-regions | No | Multi-layer / zonal generation |
+| A form or flow with ordered steps | No | Deterministic config / state machine |
+| A theme with color/texture/structural invariants | Maybe | Iterative preview + oracle, or multi-layer if it has sub-regions |
+| A complex multi-concern output | No | Decompose into sub-skills |
+
+Only use `resources/multi-layer-skill-template.md` when the chosen mitigation is multi-layer / zonal.
 
 ## Phase 3 — Design Skill Hierarchy
 
@@ -175,6 +220,8 @@ Create one top-level skill named `<project>-generator` at `skills/<orchestrator-
 ### Per-Module Skills
 
 For each major module, create a skill at `skills/<module-name>/SKILL.md`. Use the template in `resources/multi-skill-generation.md`.
+
+For each multi-layer module, create a skill at `skills/<module-name>-layers/SKILL.md` using `resources/multi-layer-skill-template.md`.
 
 ### Naming Convention
 
@@ -275,6 +322,10 @@ When skillification is complete, the following must exist:
 - [ ] All skills have YAML frontmatter, boundary, artifact contracts, core files, workflow, related skills
 - [ ] Legacy skills renamed with `legacy-` prefix
 - [ ] Human/AI separation documented for each boundary
+- [ ] List of one-shot-hazard modules
+- [ ] Chosen mitigation pattern for each flagged module
+- [ ] Any module converted to a multi-layer skill
+- [ ] Reason for the multi-layer split (e.g. "placard geometry + uniform stroke")
 
 ---
 
@@ -287,6 +338,8 @@ For the detailed sync procedures (triggers, forward/reverse sync, AI rules, comm
 ## Downstream Skill-Sync File
 
 The `SKILL_SYNC.md` file lives at the root of the downstream repo (the codebase that was skillified). It tells future AI agents how to sync the downstream code with the upstream skill spec when changes occur.
+
+When a skill is multi-layer, `SKILL_SYNC.md` must record whether each skill is `single-layer` or `multi-layer` and where each layer output lives. This prevents downstream agents from collapsing the skill back into a one-shot call.
 
 For the full template and creation instructions, see `resources/multi-skill-generation.md`.
 

@@ -167,7 +167,7 @@ When the user wants to move to a new phase or asks for help, run this protocol:
 2. **Check the previous gate.** If any required outputs are missing, do not proceed. Instead, run the missing tool/prompt and produce the gate artifact.
 3. **Run the relevant prompt/tool** for the target phase (see list above and `resources/zero-to-one-tool-playbooks.md` for step-by-step playbooks).
 4. **Produce a concrete artifact:** a markdown file, checklist, model, or decision log saved to `.ideas/ideas/{slug}.md` or a phase-specific file.
-5. **Update the idea status** in the idea file.
+5. **Update the idea status and `## Zero-to-One Status` section** in the idea file. Record the current phase, completed gate outputs, missing gates, and immediate next action.
 6. **End with the next action** — the single most important thing the founder should do before the next session.
 
 ---

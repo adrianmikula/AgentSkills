@@ -166,6 +166,21 @@ Each `.ideas/ideas/{slug}.md` follows this structure:
 ## Current Focus
 [Optional. If this idea is currently being actively built, outreached for, or delivered to customers, describe the current focus here. Ideas with a Current Focus section are prioritised and suggested first by the Business Outreach Generator.]
 
+## Zero-to-One Status
+
+**Reviewed:** [Date]
+**Current Phase:** [DISCOVER / VALIDATE / ARCHITECT / MODEL / OFFER / BUILD / LAUNCH / ITERATE / SUSTAIN / GROW]
+**Completed Gate Outputs:**
+- [Output required for the current phase]
+- [Additional completed gate output]
+
+**Missing / Next Gate:**
+- [Missing gate output]
+- [Next missing item]
+
+**Immediate Next Action:**
+- [Single most important next step]
+
 ## Progress Log
 
 ### [Date] — [Session Title]

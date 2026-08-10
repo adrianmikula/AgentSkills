@@ -8,6 +8,7 @@ Within the Code boundary, identify the major functional modules. A "major module
 - Has a single, clear responsibility
 - Produces or consumes a distinct config artifact (a typed object, JSON file, rendered output)
 - Could be explained in one paragraph
+- Can be tied to a user-level task ("make the placard uniform", "generate the weekly menu")
 
 For each major module, define:
 - **Name** (noun phrase, e.g. "Sequencer", "Renderer", "Tuner System")
@@ -16,8 +17,53 @@ For each major module, define:
 - **Output artifact** (the data structure it produces)
 - **Core files** (2-5 key source files)
 - **Responsibility** (one sentence)
+- **User task** (the command or request a human would actually say)
 
 Group modules by boundary. The goal is to end up with 3-8 major modules per boundary.
+
+---
+
+## Phase 2.5 — Detect One-Shot Hazards
+
+Before writing any skills, score each module for one-shot reliability. A one-shot hazard is any module where a single LLM generation is likely to violate invariants that are expensive to detect or correct — and the hazard is not limited to geometry.
+
+### Scoring Questions
+
+Ask these for every module, including non-geometric ones:
+
+- Does it have spatial / geometry constraints? (SVGs, layout, illustrations, CSS shapes)
+- Does it have strict visual or numerical invariants across the output? (palette, dimensions, symmetry, stroke widths, totals, ratios)
+- Does it produce an artifact that is hard to verify without inspection? (icons, logos, diagrams, theme mockups, prose tone, structured reports)
+- Does a single wrong sub-region or value ruin the whole output? (corners, borders, alignment, breakpoints, a miscounted total, an invalid state transition)
+- Does it need a deterministic config, state machine, or ordered sequence, not free-form generation? (form flows, checkout, wizards, migrations, builds)
+- Are there hidden cross-cutting constraints that span multiple files or steps? (naming consistency, dependency ordering, global style rules)
+
+If two or more are true, the module is a **one-shot hazard**. It still may not need a multi-layer skill — zonal decomposition is only one possible mitigation. Choose the smallest pattern that makes the output verifiable.
+
+### One-Shot Hazard Mitigation Patterns
+
+| Pattern | When to use | Example |
+|---|---|---|
+| **Single skill + automated oracle** | Invariants are checkable programmatically after one generation | A JSON schema with a validator; a math/geometry assertion suite |
+| **Deterministic config / state machine** | Output is a sequence of known states with guard conditions | A checkout flow, a migration script, a build pipeline |
+| **Template fill + verification** | Output shape is fixed, only content varies | A report from a template, a form letter, a dashboard card |
+| **Iterative preview → fix → verify** | Errors are easy to spot, so fast iteration beats a perfect first shot | A color palette, a menu layout, an ad headline |
+| **Multi-layer / zonal generation** | Output has local sub-regions, duplicates, mirrors, or invariants that are easier to verify per-zone than whole | SVGs, icons, diagrams, theme mockups |
+| **Human-in-the-loop checkpoint** | One wrong choice has high cost and no cheap oracle | Content approval, legal copy, sensitive config |
+| **Decompose into sub-skills** | Hazard comes from multiple independent concerns mixed together | Separate "content" from "layout" skills |
+
+### Decision Guide
+
+| If the task is... | Single skill is enough? | Mitigation if not |
+|---|---|---|
+| A stable data contract or API boundary | Yes | None |
+| A pure text or JSON schema with validator | Usually yes | Single skill + oracle |
+| A visual/spatial asset with local sub-regions | No | Multi-layer / zonal generation |
+| A form or flow with ordered steps | No | Deterministic config / state machine |
+| A theme with color/texture/structural invariants | Maybe | Iterative preview + oracle, or multi-layer if it has sub-regions |
+| A complex multi-concern output | No | Decompose into sub-skills |
+
+Only use `resources/multi-layer-skill-template.md` when the chosen mitigation is multi-layer / zonal.
 
 ---
 
@@ -36,6 +82,8 @@ Create one top-level skill that:
 ### 3b. Per-Module Skills
 
 For each major module, create a skill at `skills/<module-name>/SKILL.md`.
+
+For each multi-layer module, create a skill at `skills/<module-name>-layers/SKILL.md` using `resources/multi-layer-skill-template.md`.
 
 Each per-module skill must contain:
 
@@ -99,12 +147,14 @@ JSON schema. If there is no formal schema, describe the shape in prose.>
 
 Create or update `skills/SKILL_SYNC.md` with:
 
-1. **Architecture-Aligned Skill Map** — table of all skills with path, boundary, artifact produced
-2. **Pipeline diagram** — ASCII flow showing Human Input → AI/Skills → Code → Output
-3. **Active Skills by layer** — four tables (Human Input, AI/Skills, Code, Config)
-4. **Unskilled Modules** — table of codebase modules that still need skills
-5. **How to Add a New Skill** — instructions
-6. **Sync workflow** — how to keep skills aligned with code changes
+1. **Architecture-Aligned Skill Map** — table of all skills with path, boundary, artifact produced, and whether each is `single-layer` or `multi-layer`
+2. **Skill Layering** — for every multi-layer skill, a table of each layer's output file/artifact and where it lives
+3. **Pipeline diagram** — ASCII flow showing Human Input → AI/Skills → Code → Output
+4. **Active Skills by layer** — four tables (Human Input, AI/Skills, Code, Config)
+5. **Unskilled Modules** — table of codebase modules that still need skills
+6. **One-Shot Hazard List** — modules that were flagged and why
+7. **How to Add a New Skill** — instructions
+8. **Sync workflow** — how to keep skills aligned with code changes
 
 ---
 
@@ -125,6 +175,22 @@ Create or update `skills/SKILL_SYNC.md` with:
     ├── api-contract.md    # Complete input/output contracts
     └── test-cases.md      # Example invocations with expected outputs
 ```
+
+## Output Checklist
+
+When skillification is complete, the following must exist:
+
+- [ ] `skills/<orchestrator>/SKILL.md` — top-level orchestrator
+- [ ] `skills/<module-1>/SKILL.md` through `skills/<module-n>/SKILL.md` — one per major module
+- [ ] `skills/SKILL_SYNC.md` — architecture-aligned skill map, pipeline diagram, layer tables
+- [ ] `README.md` — architectural boundaries section, updated skill tables
+- [ ] All skills have YAML frontmatter, boundary, artifact contracts, core files, workflow, related skills
+- [ ] Legacy skills renamed with `legacy-` prefix
+- [ ] Human/AI separation documented for each boundary
+- [ ] List of one-shot-hazard modules
+- [ ] Chosen mitigation pattern for each flagged module
+- [ ] Any module converted to a multi-layer skill
+- [ ] Reason for the multi-layer split (e.g. "placard geometry + uniform stroke")
 
 **Content rules:**
 - All files are MD, YAML, TOML, or JSON — never source code (.ts, .js, .py, .rs, .kt, .java, etc.)

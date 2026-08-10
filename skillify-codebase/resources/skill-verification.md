@@ -27,6 +27,10 @@ When skillification is complete, the following must exist:
 - [ ] All skills have YAML frontmatter, boundary, artifact contracts, core files, workflow, related skills
 - [ ] Legacy skills renamed with `legacy-` prefix
 - [ ] Human/AI separation documented for each boundary
+- [ ] List of one-shot-hazard modules
+- [ ] Chosen mitigation pattern for each flagged module
+- [ ] Any module converted to a multi-layer skill
+- [ ] Reason for the multi-layer split (e.g. "placard geometry + uniform stroke")
 
 ---
 
