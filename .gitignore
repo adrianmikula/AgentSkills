@@ -42,3 +42,6 @@ dist/
 
 # Node.js dependencies
 node_modules/
+
+# code-conventions-aligner state folder (actual business preferences, never commit)
+.conventions/

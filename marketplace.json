@@ -75,6 +75,12 @@
       "source": "./ai-era-vulnerability-scanner-lite",
       "description": "Free passive scan of one public-facing website or single repo, surfacing the top 3 AI-era security risks and one-sentence remediations.",
       "version": "1.0.0"
+    },
+    {
+      "name": "progress-unblocker",
+      "source": "./progress-unblocker",
+      "description": "Create visual progress snapshots for a dev task across requirements, design, implementation, configuration, dev testing, and production deployment. Breaks stuck work into smaller parts and prioritises blockers, actions, and completion with unblocking alternatives.",
+      "version": "1.0.0"
     }
   ]
 }
