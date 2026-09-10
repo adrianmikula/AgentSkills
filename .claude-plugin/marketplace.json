@@ -79,7 +79,7 @@
     {
       "name": "code-conventions-aligner",
       "source": "./code-conventions-aligner",
-      "description": "Maintain and enforce cross-project naming, URL, schema, credential, CI/CD, telemetry, and release conventions using an external .conventions state folder.",
+      "description": "Maintain and enforce cross-project naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, AI autonomy, documentation, and release conventions using an external .conventions state folder.",
       "version": "1.0.0"
     },
     {

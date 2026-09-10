@@ -1,5 +1,5 @@
 {
   "name": "code-conventions-aligner",
-  "description": "Maintain and enforce cross-project conventions for naming, URLs, schemas, credentials, CI/CD, git workflow, telemetry, error routing, error handling, configuration, testing, security, and releases using an external .conventions state folder.",
+  "description": "Maintain and enforce cross-project conventions for naming, URLs, schemas, credentials, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, AI autonomy, documentation, and releases using an external .conventions state folder.",
   "version": "1.0.0"
 }

@@ -30,6 +30,9 @@ test_command = "<FILL>"
 main_branch = "<FILL>"
 prod_deploy_service = "<FILL>"
 pr_staging_deploy = "<FILL>"
+require_human_approval_for_commits = "<FILL>"
+allowed_auto_commit_conditions = ["<FILL>"]
+prompt_for_commit_after_major_work = "<FILL>"
 
 [telemetry]
 service = "<FILL>"
@@ -68,6 +71,14 @@ input_validation = "<FILL>"
 auth_pattern = "<FILL>"
 least_privilege = "<FILL>"
 
+[ai_autonomy]
+require_human_verification_for_major = "<FILL>"
+allow_unambiguous_minor_decisions = "<FILL>"
+plan_and_verify_when_unsure = "<FILL>"
+agent_roles = ["<FILL>"]
+warn_on_over_reliance = "<FILL>"
+cognitive_sustainability_reference = "<FILL>"
+
 [database]
 backend = "<FILL>"
 schema_name = "<FILL>"
@@ -79,6 +90,12 @@ example = "<FILL>"
 name = "<FILL>"
 url = "<FILL>"
 project_types = ["<FILL>"]
+
+[documentation]
+agents_readme_path = "<FILL>"
+common_conventions_path = "<FILL>"
+index_path = "<FILL>"
+skill_reference_url = "<FILL>"
 ```
 
 ## `.conventions/logins.toml`
@@ -108,7 +125,7 @@ required: ["id"]
 [[project]]
 name = "<FILL>"
 path = "<FILL>"
-modules = ["naming", "urls", "schemas", "cicd", "git", "telemetry", "release", "logins", "error_routing", "error_handling", "config", "testing", "security"]
+modules = ["naming", "urls", "schemas", "cicd", "git", "telemetry", "release", "logins", "error_routing", "error_handling", "config", "testing", "security", "ai_autonomy", "documentation"]
 env_template = ".conventions/env.template"
 ```
 

@@ -86,6 +86,12 @@ Use this as a menu when populating `.conventions/conventions.toml`. Only one cho
 - Main branch auto-deploys to production via Vercel, Netlify, Railway, or another modern cloud deployment service.
 - Pull requests auto-deploy to a staging environment for review.
 - Use branch protection and required status checks before merging.
+- AI agents must never run `git commit`, `git push`, or any other source-control write command without explicit human approval.
+- Any exceptions must be explicitly listed in `allowed_auto_commit_conditions`.
+- After completing a major task or body of work, the agent should ask the human if they are ready to commit. If yes, the agent should draft a commit message organized under roadmap, architecture, features, bugfixes, and skills, but the human must perform the actual `git commit`.
+- Commit messages avoid duplication: each change is summarized once under its single most relevant category, not repeated across categories.
+- Commit message summaries describe changes in high-level, plain-English conceptual terms — avoid low-level references to filenames, classes, or method names.
+- Commit messages describe only the uncommitted changes currently in the workspace; do not summarize historical changes that have already been committed.
 
 ## Testing
 
@@ -104,3 +110,21 @@ Use this as a menu when populating `.conventions/conventions.toml`. Only one cho
 - Use parameterized queries or ORM to prevent injection.
 - Require MFA for admin and production accounts where feasible.
 - Apply standard security headers and TLS for web applications.
+
+## AI Autonomy
+
+- The agent must obtain explicit human verification before making major decisions or assumptions.
+- Minor, obvious, or trivial decisions may be made by the agent when there is no ambiguity the human might want to clarify.
+- If unsure, the agent must plan the decision with the human and verify the final plan before implementation.
+- The AI acts as an expert researcher, adviser, coder, and tester — not as a decision-maker.
+- Only the human makes major decisions and clarifies assumptions.
+- The agent should warn the human when it detects over-reliance on AI for major decisions that could reduce cognitive engagement.
+- Reference the `cognitive-sustainability` skill (`.agents/skills/cognitive-sustainability/SKILL.md`) for decision-boundary and escalation guidance.
+
+## Documentation
+
+- Create `AGENTS.md` at the repository root and make it reference `docs/INDEX.md` and `docs/conventions/common-conventions.md` so AI agents can locate both.
+- Maintain `docs/conventions/common-conventions.md` with a link to the canonical common-coding-conventions source (e.g., this `code-conventions-aligner` skill repository).
+- Maintain `docs/INDEX.md` with a concise, one-line-per-file index of every Markdown file under `docs/`.
+- Group `docs/INDEX.md` by folder, using a heading for each directory.
+- List all folder names at the top of `docs/INDEX.md` and include the line numbers where each folder's items appear.

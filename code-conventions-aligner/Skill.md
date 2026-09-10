@@ -1,6 +1,6 @@
 ---
 name: code-conventions-aligner
-description: Maintain and enforce a shared set of naming, URL, schema, credential, CI/CD, git workflow, telemetry, error routing, error handling, configuration, testing, security, and release conventions across multiple projects owned by the same business. Convention preferences and project-specific configuration are treated as external state in `.conventions/` and are never hardcoded in the skill.
+description: Maintain and enforce a shared set of naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, release, AI autonomy, and documentation conventions across multiple projects owned by the same business. Convention preferences and project-specific configuration are treated as external state in `.conventions/` and are never hardcoded in the skill.
 ---
 
 ## Overview
@@ -21,7 +21,7 @@ Everything inside `.conventions/` is state. This skill never invents, stores, or
 ```
 <target-repo-root>/
 ├── .conventions/
-│   ├── conventions.toml      # canonical rules for naming, URLs, schemas, CI/CD, git workflow, telemetry, error routing, error handling, configuration, testing, security, and releases
+│   ├── conventions.toml      # canonical rules for naming, URLs, schemas, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, AI autonomy, documentation, and releases
 │   ├── logins.toml           # required services and their env var / secret manager keys (no values)
 │   ├── projects.toml         # projects to align and enabled convention modules
 │   ├── env.template          # env var names and sources (no values)
@@ -58,6 +58,9 @@ test_command = "<state>"
 main_branch = "<state>"
 prod_deploy_service = "<state>"
 pr_staging_deploy = "<state>"
+require_human_approval_for_commits = "<state>"
+allowed_auto_commit_conditions = ["<state>"]
+prompt_for_commit_after_major_work = "<state>"
 
 [telemetry]
 service = "<state>"
@@ -96,6 +99,14 @@ input_validation = "<state>"
 auth_pattern = "<state>"
 least_privilege = "<state>"
 
+[ai_autonomy]
+require_human_verification_for_major = "<state>"
+allow_unambiguous_minor_decisions = "<state>"
+plan_and_verify_when_unsure = "<state>"
+agent_roles = ["<state>"]
+warn_on_over_reliance = "<state>"
+cognitive_sustainability_reference = "<state>"
+
 [database]
 backend = "<state>"
 schema_name = "<state>"
@@ -107,6 +118,12 @@ example = "<state>"
 name = "<state>"
 url = "<state>"
 project_types = ["<state>"]
+
+[documentation]
+agents_readme_path = "<state>"
+common_conventions_path = "<state>"
+index_path = "<state>"
+skill_reference_url = "<state>"
 ```
 
 ### `.conventions/logins.toml`
@@ -127,7 +144,7 @@ No values are stored here. Only the variable name and the secret manager referen
 [[project]]
 name = "<state>"
 path = "<state>"
-modules = ["naming", "urls", "schemas", "cicd", "git", "telemetry", "release", "logins", "error_routing", "error_handling", "config", "testing", "security"]
+modules = ["naming", "urls", "schemas", "cicd", "git", "telemetry", "release", "logins", "error_routing", "error_handling", "config", "testing", "security", "ai_autonomy", "documentation"]
 env_template = ".conventions/env.template"
 ```
 
@@ -149,7 +166,7 @@ env_template = ".conventions/env.template"
    - **Schemas** — validate or update data models, serializers, DB schemas against `.conventions/schemas/`.
    - **Logins** — replace scattered credentials with env var references and `env.template` entries.
    - **CI/CD** — align workflow files, shared actions, branch protection, deployment gates, and run all test suites only for commits pushed to open pull requests.
-   - **Git** — auto-deploy the configured main branch to production via the chosen cloud deployment service and auto-deploy pull requests to a staging environment.
+   - **Git** — auto-deploy the configured main branch to production via the chosen cloud deployment service, auto-deploy pull requests to a staging environment, require explicit human approval before the agent runs any `git commit` or `git push` command, and after completing a major task or body of work ask the human if they are ready to commit; if yes, draft a commit message describing only the current uncommitted changes in the workspace — organized under roadmap, architecture, features, bugfixes, and skills, with each change summarized once under its single most relevant category and in high-level plain-English terms — and let the human run the actual `git commit`.
    - **Telemetry** — standardize error reporting and usage instrumentation hooks.
    - **Release** — align version bumping, changelogs, tags, and protected branches.
    - **Error routing** — send production and development errors to their respective Slack channels.
@@ -157,6 +174,8 @@ env_template = ".conventions/env.template"
    - **Config** — load all constants from YAML/JSON/PROPERTIES or env vars, fail fast on missing mandatory settings, and report the failure to the configured error channel.
    - **Testing** — enforce test-driven development, the configured minimum mocked unit-test coverage, and unmocked integration tests for mission-critical paths.
    - **Security** — apply the configured secret, dependency, static-analysis, input-validation, and least-privilege policies.
+   - **AI Autonomy** — require human verification for major decisions and assumptions, allow the agent to decide only unambiguous minor/trivial matters, and warn the human when over-reliance on AI would reduce cognitive engagement. Reference the configured skill for decision-boundary guidance.
+   - **Documentation** — ensure `AGENTS.md` at the repository root references the docs index and common conventions, ensure `docs/conventions/common-conventions.md` exists and links to the configured skill reference, and ensure `docs/INDEX.md` indexes every Markdown file under `docs/` with folder headings and a top folder list with line numbers.
 5. **Produce a plan.** Output a diff list with file paths and the convention source that justifies each change.
 6. **Apply with approval.** Make the edits. Do not commit.
 7. **Verify.** Run `git diff`, a secret grep, and any available schema tests.
@@ -176,9 +195,11 @@ See `resources/convention-catalog.md` for a menu of common patterns. This catalo
 - [ ] Error handling defines approved fallback conditions and forbids hidden fallbacks.
 - [ ] Config loading uses YAML/JSON/PROPERTIES or env vars, with mandatory values failing fast and reporting to the error channel.
 - [ ] CI/CD runs the full test suite only for commits pushed to open pull requests.
-- [ ] Git workflow auto-deploys the configured main branch to production and PRs to staging.
+- [ ] Git workflow auto-deploys the configured main branch to production and PRs to staging, the agent never commits or pushes without explicit human approval, and after major work the agent prompts the human to commit and drafts a non-duplicated, high-level commit message describing only the current uncommitted changes (roadmap, architecture, features, bugfixes, skills) on request, leaving the actual commit to the human.
 - [ ] Testing enforces TDD, the configured minimum unit-test coverage, and mission-critical integration tests.
 - [ ] Security policies for secrets, dependencies, static analysis, and input validation are configured.
+- [ ] AI autonomy rules require human verification for major decisions, restrict the agent to unambiguous minor decisions, and warn the human on over-reliance.
+- [ ] Documentation includes `AGENTS.md` at the repository root referencing the docs index and common conventions, `docs/conventions/common-conventions.md` linked to the configured skill, and an up-to-date `docs/INDEX.md` with folder headings and line numbers.
 - [ ] No real secrets, tokens, or passwords appear in source files.
 - [ ] Alignment diff is reviewed before any commit.
 
