@@ -1,6 +1,21 @@
 # Evaluation Rubric
 
-Score every finding across 5 axes on a 1–5 scale. Use the descriptions below to anchor scores consistently.
+`dev-level-up` evaluates candidates in two stages: admission gates first, then a 7-axis score for survivors. The goal is to surface recent improvements that are relevant to the user's `.tech-stack/` scope and selected objectives, not merely interesting technology news.
+
+---
+
+## Admission Gates
+
+Apply these gates before scoring. A candidate that fails a hard gate is excluded; a candidate that is weak but plausible may be downgraded to `Watch` or `Deep Dive`.
+
+| Gate | Requirement | Failure Handling |
+|------|-------------|------------------|
+| **Freshness** | Published within the last 30 days, verified by API/feed/date evidence. | Exclude. |
+| **Scope relevance** | Affects a `.tech-stack/` domain, manual/custom domain, or clearly selected objective. | Exclude unless it is a broadly applicable AI/dev breakthrough explicitly requested by the user. |
+| **Objective relevance** | Advances at least one selected improvement objective. | Exclude or reclassify under a better objective if one exists. |
+| **Evidence quality** | Has official release/docs/repo/paper/benchmark or credible corroboration. | Downgrade to `Watch` if promising but unverifiable. |
+| **Actionability** | Offers a tool, version, pattern, config, workflow, migration path, or concrete research direction. | Downgrade to `Watch` if only conceptual. |
+| **Duplication** | Same underlying release/tool/technique is merged into one candidate. | Merge and keep the strongest source set. |
 
 ---
 
@@ -15,9 +30,10 @@ Score every finding across 5 axes on a 1–5 scale. Use the descriptions below t
 | 5 | Near-instant adoption; cuts task time by 50%+ or eliminates entire manual steps |
 
 **Examples:**
-- 5: A new IDE extension that auto-generates boilerplate with a single keystroke
-- 3: A linter update that catches errors slightly faster than before
-- 1: A tool requiring heavy manual setup with no clear time savings
+
+- 5: An agentic coding tool that generates a tested CRUD module from a schema in one pass.
+- 3: A faster test runner that shaves seconds off the inner loop.
+- 1: A conceptual technique requiring extensive manual setup with no clear time savings.
 
 ---
 
@@ -28,13 +44,14 @@ Score every finding across 5 axes on a 1–5 scale. Use the descriptions below t
 | 1 | Increases risk of errors or introduces new failure modes |
 | 2 | No impact on correctness; purely cosmetic or convenience |
 | 3 | Catches some common errors or reduces simple bugs |
-| 4 | Eliminates a class of bugs or enforces correctness at compile/build time |
-| 5 | Eliminates entire error categories automatically (e.g., type-safe codegen, formal verification integration) |
+| 4 | Eliminates a class of bugs or enforces correctness at compile/build/test time |
+| 5 | Eliminates entire error categories automatically, such as type-safe codegen, formal verification, or enforced invariants |
 
 **Examples:**
-- 5: A React compiler that eliminates useMemo misuse entirely
-- 4: A Python type checker update that catches previously missed None errors
-- 1: An AI tool known to hallucinate APIs or generate insecure code
+
+- 5: A compiler/runtime feature that makes an entire bug class impossible.
+- 4: A type-system or contract-test upgrade that catches previously missed integration errors.
+- 1: An AI tool known to hallucinate APIs or generate insecure code.
 
 ---
 
@@ -42,16 +59,17 @@ Score every finding across 5 axes on a 1–5 scale. Use the descriptions below t
 
 | Score | Description |
 |-------|-------------|
-| 1 | Reduces what you can deliver or introduces blocking constraints |
+| 1 | Reduces what the team can deliver or introduces blocking constraints |
 | 2 | No change in deliverable scope |
-| 3 | Unlocks modest new capabilities (new library, new pattern) |
-| 4 | Unlocks significant new workflows (multi-file codegen, test auto-generation) |
-| 5 | Enables previously impossible tasks or unlocks 10x throughput (e.g., agentic full-stack generation, autonomous refactoring) |
+| 3 | Unlocks modest new capabilities, such as a new library or pattern |
+| 4 | Unlocks significant new workflows, such as multi-file codegen or test auto-generation |
+| 5 | Enables previously impossible tasks or unlocks 10x throughput |
 
 **Examples:**
-- 5: An AI agent that can scaffold an entire CRUD API from a schema definition
-- 3: A new Python library that simplifies one common ML pipeline step
-- 1: A tool that requires so much manual correction it slows overall output
+
+- 5: An agent that can scaffold, test, and document an entire service from a spec.
+- 3: A new framework feature that simplifies one complex domain.
+- 1: A tool that requires so much correction it slows overall output.
 
 ---
 
@@ -62,13 +80,14 @@ Score every finding across 5 axes on a 1–5 scale. Use the descriptions below t
 | 1 | No concrete tool; vague concept or speculative research only |
 | 2 | Experimental tool with no install path or heavy custom build |
 | 3 | Installable tool but with rough edges or limited integration |
-| 4 | Polished tool with clear install instructions and IDE/editor integration |
-| 5 | Immediately installable; integrates seamlessly with existing toolchain (IDE plugin, CLI, npm/pip/Maven package) |
+| 4 | Polished tool with clear install instructions and IDE/editor/CI integration |
+| 5 | Immediately installable; integrates seamlessly with the detected toolchain |
 
 **Examples:**
-- 5: A VS Code extension available on the marketplace with one-click install
-- 4: A CLI tool distributed via Homebrew / npm / pip with clear docs
-- 1: A research paper describing a technique with no implementation
+
+- 5: A package or extension already compatible with the repo's package manager, IDE, and CI.
+- 4: A CLI distributed through the ecosystem's standard registry with clear docs.
+- 1: A research paper describing a technique with no implementation.
 
 ---
 
@@ -83,24 +102,67 @@ Score every finding across 5 axes on a 1–5 scale. Use the descriptions below t
 | 5 | Drop-in replacement or zero-config addition; fully reversible with no side effects |
 
 **Examples:**
-- 5: Adding a new VS Code extension that can be disabled instantly
-- 3: Adopting a new build tool that requires updating CI pipelines
-- 1: A framework that requires rewriting existing components to adopt
+
+- 5: Adding an IDE extension or lint rule that can be disabled instantly.
+- 3: Adopting a build/test tool that requires CI pipeline changes.
+- 1: Replacing a core framework or datastore with no migration path.
+
+---
+
+## Axis 6: Objective Fit
+
+Score how directly the finding advances the selected improvement objective or best-matching objective when `All objectives` was selected.
+
+| Score | Description |
+|-------|-------------|
+| 1 | Does not meaningfully advance the objective |
+| 2 | Tangentially related; benefit depends on broader changes |
+| 3 | Partially advances the objective or applies to an adjacent domain |
+| 4 | Strongly advances the objective with minor adaptation or setup |
+| 5 | Directly advances the objective for the detected stack; adoption path is clear |
+
+**Examples:**
+
+- 5: A Terraform/OpenTofu feature that directly enables a selected capability-expansion goal.
+- 4: An AI code-review tool that directly supports correctness verification but needs repo-specific rule tuning.
+- 2: A generic productivity article that mentions the domain but offers no objective-specific mechanism.
+
+---
+
+## Axis 7: Stack Relevance
+
+Score how directly the finding applies to the `.tech-stack/` domains in scope.
+
+| Score | Description |
+|-------|-------------|
+| 1 | Unrelated to the detected/manual scope |
+| 2 | Generic developer practice with indirect relevance |
+| 3 | Adjacent domain or ecosystem; likely useful after adaptation |
+| 4 | Applies to the detected ecosystem with minor assumptions or configuration |
+| 5 | Directly upgrades, replaces, extends, or improves a detected/manual domain |
+
+**Examples:**
+
+- 5: A Next.js release-note item for a repo whose `.tech-stack/frameworks.md` lists Next.js 15.
+- 4: A React ecosystem tool for a repo using React through Next.js.
+- 2: A generic AI coding tip that could apply anywhere but has no stack-specific mechanism.
 
 ---
 
 ## Classification Thresholds
 
-After scoring all 5 axes, compute the total (range 5–25) and classify:
+After scoring all 7 axes, compute the total (range 7–35) and classify:
 
 | Classification | Total Score | Additional Condition |
 |----------------|-------------|----------------------|
-| **Quick Win** | >= 20 | Agility >= 4 |
-| **Deep Dive** | >= 18 | Agility <= 3 |
-| **Watch** | 12–17 | None |
-| **Skip** | < 12 | Or unverifiable claim |
+| **Quick Win** | >= 28 | Agility >= 4 |
+| **Deep Dive** | >= 25 | Agility <= 3 |
+| **Watch** | 18–24 | None |
+| **Skip** | < 18 | Or failed an admission gate |
 
-**Tiebreaker rule:** If a finding scores exactly 20 but Agility = 3, classify as **Deep Dive**.
+**Ordering rule:** Check Quick Win first, then Deep Dive, then Watch, then Skip.
+
+**Tiebreaker rule:** If a finding scores exactly 28 but Agility = 3, classify as **Deep Dive**.
 
 ---
 
@@ -110,10 +172,10 @@ Estimate the concrete wall-clock time a competent developer needs to adopt the f
 
 | Time Bucket | Label | Examples |
 |-------------|-------|----------|
-| < 15 min | **Immediate** | Install a VS Code extension, toggle a setting, copy a snippet |
-| 15–60 min | **Quick** | Configure a new linter rule, set up a simple CLI alias, read a short tutorial |
-| 1–4 hrs | **Half day** | Integrate a new library, migrate a small module, set up a new GitHub Action |
-| 4–8 hrs | **Day** | Adopt a new framework feature across a codebase, set up a complex multi-agent pipeline |
+| < 15 min | **Immediate** | Install an extension, toggle a setting, copy a snippet |
+| 15–60 min | **Quick** | Configure a lint rule, set up a CLI alias, read a short tutorial |
+| 1–4 hrs | **Half day** | Integrate a library, migrate a small module, add a GitHub Action |
+| 4–8 hrs | **Day** | Adopt a framework feature across a codebase, set up a multi-agent pipeline |
 | 1+ days | **Major** | Full migration, replace a build system, adopt a new architectural pattern |
 
 When estimating, assume the developer has the finding's documentation open and is working in a familiar codebase. Do not include "learning the concept" time unless the concept is genuinely novel and complex.
@@ -124,25 +186,26 @@ When estimating, assume the developer has the finding's documentation open and i
 
 For every finding that passes classification, compute:
 
-```
+```text
 Bang for Buck = Total Score / Adoption Time (in hours)
 ```
 
 Use the midpoint of each time bucket:
-- Immediate (0.25 hrs)
-- Quick (0.6 hrs)
-- Half day (2.5 hrs)
-- Day (6 hrs)
-- Major (use 16 hrs as baseline, or note if estimated longer)
+
+- Immediate: 0.25 hrs
+- Quick: 0.6 hrs
+- Half day: 2.5 hrs
+- Day: 6 hrs
+- Major: 16 hrs baseline, or note if estimated longer
 
 ### Interpretation
 
 | Bang for Buck | Meaning |
 |---------------|---------|
 | > 15 | Exceptional — massive impact for tiny time investment |
-| 8–15 | Strong — high ROI, prioritize |
+| 8–15 | Strong — high ROI, prioritise |
 | 4–8 | Good — solid value, adopt if time permits |
 | 2–4 | Moderate — worthwhile only if it solves a specific pain point |
 | < 2 | Low — consider only with abundant time or high strategic need |
 
-This score is the primary sort key when making the 80/20 Recommendation.
+This score is the primary sort key for the 80/20 recommendation. Use Stack Relevance and Objective Fit as tie-breakers when Bang for Buck values are close.

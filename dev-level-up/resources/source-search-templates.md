@@ -1,32 +1,34 @@
 # Source Search Templates
 
-This file provides both **API call templates** (preferred) and **web search fallback templates** for each source. Substitute `YYYY-MM-DD` with 30 days before today. Substitute `{{LANG}}` with `Java`, `React`, `Python`, or omit for language-agnostic searches. Substitute `{{FOCUS_KEYWORDS}}` with the keyword set from the relevant focus area below.
+This file provides API call templates (preferred), feed patterns, and web-search fallback templates for `dev-level-up`. It is language-agnostic: substitute placeholders from the user's `.tech-stack/` state and selected objectives.
 
-**Execution order:** Use API templates first. Fall back to web search only if APIs are unavailable for a given source.
+## Placeholders
 
-Run multiple queries per focus area to maximise coverage, then deduplicate results by URL before evaluation.
+| Placeholder | Meaning | Example |
+|-------------|---------|---------|
+| `{{DOMAIN}}` | Canonical domain name | `Next.js`, `Terraform`, `MCP security` |
+| `{{DOMAIN_ALIASES}}` | Aliases, package names, short names | `nextjs`, `npm:next`, `terraform` |
+| `{{DOMAIN_KEYWORDS}}` | Concise keywords for the domain | `Next.js React Server Components` |
+| `{{OBJECTIVE_KEYWORDS}}` | Keywords for the selected objective | `AI code review generated tests` |
+| `{{ECOSYSTEM}}` | Package manager/platform/ecosystem | `npm`, `PyPI`, `crates.io`, `Maven`, `GitHub` |
+| `{{PACKAGE_NAME}}` | Exact package/module/crate name | `next`, `pydantic`, `tokio` |
+| `{{CURRENT_VERSION}}` | Detected current version, if known | `15.3.x`, `2.8` |
+| `{{SOURCE_DOMAIN}}` | Domain being searched | `nextjs.org`, `cursor.com`, `modelcontextprotocol.io` |
+| `{{TOPIC}}` | GitHub topic or ecosystem topic | `developer-tools`, `ai-agents` |
+| `{{GITHUB_ORG}}` | GitHub organisation/user, when known | `vercel`, `modelcontextprotocol` |
+| `{{LANGUAGE}}` | GitHub language qualifier, only when known | `TypeScript`, `Python`, `Go` |
+| `{{START}}` / `{{END}}` | 30-day date window | `2026-10-10` / `2026-11-09` |
+| `{{TIMESTAMP}}` | Unix timestamp for 30 days ago | `1767225600` |
 
----
+Load `resources/improvement-objectives.md` for objective keyword sets and `resources/source-registry.md` for source classes and seed domains.
 
-## Focus Area Keyword Sets
+**Execution order:** Use API/feed templates first. Fall back to web search only if APIs or feeds are unavailable for a given source.
 
-Use these keyword sets to populate `{{FOCUS_KEYWORDS}}` in the source-specific templates below.
-
-| Focus Area | Primary Keywords | Secondary Keywords |
-|------------|------------------|-------------------|
-| **Vibe coding speed** | `vibe coding`, `AI pair programming`, `10x developer`, `AI codegen speed`, `cursor rules`, `windsurf rules` | `AI autocomplete`, `real-time AI suggestions`, `zero-shot codegen`, `prompt-to-code` |
-| **Code quality assurance** | `AI code review`, `LLM-generated tests`, `AI test coverage`, `contract-based AI codegen`, `type-safe AI`, `AI linting` | `self-healing code`, `AI bug detection`, `generated unit tests`, `AI static analysis` |
-| **AI-era security** | `AI-generated vulnerabilities`, `LLM supply chain`, `AI code injection`, `prompt injection defence`, `AI SAST`, `MCP security` | `AI secrets leakage`, `autonomous agent security`, `AI CWE`, `generated code audit` |
-| **AI workflow orchestration** | `multi-agent AI`, `AI workflow orchestration`, `MCP server`, `agentic coding pipeline`, `AI devops automation`, `LangChain coding` | `AI CI/CD`, `agent swarm`, `orchestrated AI codegen`, `sequential AI tasks` |
-| **MVP acceleration** | `AI MVP builder`, `vibe coding startup`, `AI full-stack scaffold`, `monetisable AI product`, `no-code AI`, `AI SaaS boilerplate` | `AI landing page generator`, `AI backend scaffold`, `rapid AI prototype`, `ship fast AI` |
-| **Tech debt modernisation** | `AI code migration`, `automated refactoring`, `AI legacy modernisation`, `AI dependency upgrade`, `AI Jakarta migration`, `AI React migration` | `AI dead code elimination`, `AI architecture migration`, `safe AI refactoring`, `AI codemod` |
-| **Bleeding-edge tools & integrations** | `new AI IDE`, `AI coding assistant launch`, `AI CLI tool`, `AI dev tool integration`, `cutting-edge AI codegen`, `AI plugin ecosystem` | `experimental AI tool`, `beta AI developer tool`, `AI toolchain innovation`, `next-gen AI coding` |
+Run multiple targeted queries per objective-domain pair, then deduplicate by URL and underlying announcement before evaluation.
 
 ---
 
 ## API Templates (Preferred)
-
-Load `resources/search-api-guide.md` for full authentication, rate limit, and parameter details.
 
 ### Hacker News Algolia API
 
@@ -34,19 +36,17 @@ Load `resources/search-api-guide.md` for full authentication, rate limit, and pa
 
 **Date math:** Convert `YYYY-MM-DD` to Unix timestamp: `date -d "YYYY-MM-DD" +%s`
 
-| Focus Area | Template |
-|------------|----------|
-| Vibe coding speed | `?query={{FOCUS_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| Code quality assurance | `?query={{FOCUS_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| AI-era security | `?query={{FOCUS_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| AI workflow orchestration | `?query={{FOCUS_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| MVP acceleration | `?query={{FOCUS_KEYWORDS}}&tags=show_hn&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| Tech debt modernisation | `?query={{FOCUS_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
-| Bleeding-edge tools | `?query={{FOCUS_KEYWORDS}}&tags=show_hn&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=50` |
+| Query Pattern | Template |
+|---------------|----------|
+| Domain + objective stories | `?query={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=30` |
+| Domain launches | `?query={{DOMAIN_KEYWORDS}}+launch&tags=show_hn&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=30` |
+| AI/tooling validation | `?query={{OBJECTIVE_KEYWORDS}}+AI+coding&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=30` |
+| Custom/manual domain | `?query={{DOMAIN}}+{{OBJECTIVE_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=30` |
 
-**Example (Vibe coding speed, 30 days):**
-```
-https://hn.algolia.com/api/v1/search?query=vibe+coding&tags=story&numericFilters=created_at_i>1714464000&hitsPerPage=50
+**Example:**
+
+```text
+https://hn.algolia.com/api/v1/search?query=MCP+server+security&tags=story&numericFilters=created_at_i>1767225600&hitsPerPage=30
 ```
 
 ---
@@ -55,108 +55,173 @@ https://hn.algolia.com/api/v1/search?query=vibe+coding&tags=story&numericFilters
 
 **Base:** `https://api.github.com/search/repositories`
 
-| Language | Template |
-|----------|----------|
-| Java | `?q={{FOCUS_KEYWORDS}}+language:Java+pushed:>YYYY-MM-DD&sort=updated&order=desc&per_page=30` |
-| React | `?q={{FOCUS_KEYWORDS}}+language:TypeScript+pushed:>YYYY-MM-DD&sort=updated&order=desc&per_page=30` |
-| Python | `?q={{FOCUS_KEYWORDS}}+language:Python+pushed:>YYYY-MM-DD&sort=updated&order=desc&per_page=30` |
-| All | `?q={{FOCUS_KEYWORDS}}+pushed:>YYYY-MM-DD&sort=updated&order=desc&per_page=30` |
+| Query Pattern | Template |
+|---------------|----------|
+| Domain + objective repos | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+pushed:>{{START}}&sort=updated&order=desc&per_page=30` |
+| Topic-constrained | `?q={{DOMAIN_KEYWORDS}}+topic:{{TOPIC}}+pushed:>{{START}}&sort=updated&order=desc&per_page=30` |
+| Language-constrained | `?q={{DOMAIN_KEYWORDS}}+language:{{LANGUAGE}}+pushed:>{{START}}&sort=updated&order=desc&per_page=30` |
+| Org-constrained | `?q={{DOMAIN_KEYWORDS}}+org:{{GITHUB_ORG}}+pushed:>{{START}}&sort=updated&order=desc&per_page=30` |
+| AI tooling | `?q={{OBJECTIVE_KEYWORDS}}+AI+agent+pushed:>{{START}}&sort=updated&order=desc&per_page=30` |
 
-**Example (Bleeding-edge tools, Java, 30 days):**
-```
-https://api.github.com/search/repositories?q=new+AI+IDE+language:Java+pushed:>2026-04-30&sort=updated&order=desc&per_page=30
+**Example:**
+
+```text
+https://api.github.com/search/repositories?q=AI+code+review+topic:developer-tools+pushed:>2026-10-10&sort=updated&order=desc&per_page=30
 ```
 
 ---
 
-### Brave Search API
+### GitHub Releases API
+
+**Base:** `https://api.github.com/repos/{owner}/{repo}/releases?per_page=30`
+
+Use when `.tech-stack/` or source derivation identifies a specific repository. Keep only releases whose `published_at` falls inside the 30-day window.
+
+---
+
+### arXiv API
+
+**Base:** `https://export.arxiv.org/api/query`
+
+| Query Pattern | Template |
+|---------------|----------|
+| AI/coding research | `?search_query=all:{{DOMAIN_KEYWORDS}}+AND+all:{{OBJECTIVE_KEYWORDS}}&sortBy=submittedDate&sortOrder=descending&max_results=10` |
+| Verification/security research | `?search_query=cat:cs.SE+AND+all:{{OBJECTIVE_KEYWORDS}}&sortBy=submittedDate&sortOrder=descending&max_results=10` |
+
+Verify submission/published dates before inclusion.
+
+---
+
+## Brave Search API Templates
 
 **Base:** `https://api.search.brave.com/res/v1/web/search`
-
 **Headers:** `X-Subscription-Token: $BRAVE_API_KEY`
+**Parameters:** `q`, `freshness={{START}}to{{END}}`, `result_filter`, `count=20`, `offset=0`
 
-**Parameters:** `q`, `freshness=YYYY-MM-DDtoYYYY-MM-DD`, `result_filter`, `count=20`, `offset=0`
+### Official / Primary Sources
 
-| Source | `result_filter` | Template |
-|--------|-----------------|----------|
-| TechRadar | `news,web` | `?q={{FOCUS_KEYWORDS}}+{{LANG}}+site:techradar.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| Dev.to | `discussions,web` | `?q={{FOCUS_KEYWORDS}}+{{LANG}}+site:dev.to&freshness={{START}}to{{END}}&result_filter=discussions,web&count=20` |
-| Ars Technica | `news,web` | `?q={{FOCUS_KEYWORDS}}+site:arstechnica.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| The Verge | `news,web` | `?q={{FOCUS_KEYWORDS}}+site:theverge.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| GitHub Blog | `news,web` | `?q={{FOCUS_KEYWORDS}}+{{LANG}}+site:github.blog&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| OpenJDK | `web` | `?q=AI+codegen+site:openjdk.org&freshness={{START}}to{{END}}&result_filter=web&count=20` |
-| React Blog | `web` | `?q=AI+site:react.dev/blog&freshness={{START}}to{{END}}&result_filter=web&count=20` |
-| Python Insider | `web` | `?q=developer+productivity+site:blog.python.org&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Source Type | Template |
+|-------------|----------|
+| Official domain | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+site:{{SOURCE_DOMAIN}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Changelog/release notes | `?q={{DOMAIN}}+changelog+OR+release+notes+{{OBJECTIVE_KEYWORDS}}+site:{{SOURCE_DOMAIN}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Docs/migration | `?q={{DOMAIN}}+migration+OR+upgrade+guide+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Package ecosystem | `?q={{PACKAGE_NAME}}+{{ECOSYSTEM}}+release+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
 
-**Hacker News Goggle (alternative to Algolia):**
+### AI Vendor Feeds
+
+| Source Type | Template |
+|-------------|----------|
+| Vendor domain | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+site:{{SOURCE_DOMAIN}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| AI coding tools | `?q=AI+coding+tool+{{DOMAIN_KEYWORDS}}+changelog&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| MCP ecosystem | `?q=MCP+server+{{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Agent frameworks | `?q=multi-agent+{{DOMAIN_KEYWORDS}}+framework+release&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+
+### High-Authority Community / Research
+
+| Source Type | Template |
+|-------------|----------|
+| Hacker News via Brave | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=discussions&count=20&goggles_id=https://raw.githubusercontent.com/brave/goggles-quickstart/main/goggles/hacker_news.goggle` |
+| Lobsters | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+site:lobste.rs&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Practitioner blogs | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+engineering+blog&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Conference talks | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+conference+talk&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+| Papers/whitepapers | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+paper+OR+whitepaper&freshness={{START}}to{{END}}&result_filter=web&count=20` |
+
+### General Tech Media
+
+| Source Type | Template |
+|-------------|----------|
+| Media domain | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+site:{{SOURCE_DOMAIN}}&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
+| Broad discovery | `?q={{DOMAIN}}+AI+developer+tool+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
+
+---
+
+## RSS / Atom / Feed Patterns
+
+Try these paths on official domains before web-search fallback:
+
+```text
+{{SOURCE_DOMAIN}}/feed
+{{SOURCE_DOMAIN}}/feed.xml
+{{SOURCE_DOMAIN}}/rss.xml
+{{SOURCE_DOMAIN}}/atom.xml
+{{SOURCE_DOMAIN}}/blog/feed
+{{SOURCE_DOMAIN}}/changelog.xml
+{{SOURCE_DOMAIN}}/releases.atom
 ```
-?q={{FOCUS_KEYWORDS}}&freshness={{START}}to{{END}}&result_filter=discussions&count=20&goggles_id=https://raw.githubusercontent.com/brave/goggles-quickstart/main/goggles/hacker_news.goggle
+
+Keep only feed items with `pubDate`, `published`, `updated`, or equivalent inside the 30-day window. If dates are absent, verify the item page manually.
+
+---
+
+## News API Template
+
+**Endpoint:** `https://newsapi.org/v2/everything`
+
+Use only for mainstream media gaps:
+
+```text
+?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&from={{START}}&to={{END}}&domains=techcrunch.com,thenewstack.io,theverge.com&sortBy=publishedAt&pageSize=50&apiKey=$NEWSAPI_KEY
 ```
 
 ---
 
 ## Web Search Fallback Templates
 
-Only use these if the APIs above are unavailable.
+Only use these if APIs and feeds are unavailable. Always verify publish dates manually.
 
-### TechRadar
-- `site:techradar.com {{FOCUS_KEYWORDS}} {{LANG}} after:YYYY-MM-DD`
-- `site:techradar.com "AI" "developer tool" {{LANG}} after:YYYY-MM-DD`
+### Official / Primary
 
-### Hacker News
-- `site:news.ycombinator.com {{FOCUS_KEYWORDS}} {{LANG}} after:YYYY-MM-DD`
-- `site:news.ycombinator.com "Show HN" {{LANG}} AI after:YYYY-MM-DD`
-- `site:news.ycombinator.com "Ask HN" AI coding after:YYYY-MM-DD`
+```text
+site:{{SOURCE_DOMAIN}} {{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} after:{{START}}
+site:{{SOURCE_DOMAIN}} {{DOMAIN}} changelog release notes after:{{START}}
+{{PACKAGE_NAME}} {{ECOSYSTEM}} release notes after:{{START}}
+```
 
-### Dev.to
-- `site:dev.to {{FOCUS_KEYWORDS}} {{LANG}} after:YYYY-MM-DD`
-- `site:dev.to "tutorial" AI {{LANG}} after:YYYY-MM-DD`
+### AI Vendor / MCP
 
-### Ars Technica
-- `site:arstechnica.com {{FOCUS_KEYWORDS}} after:YYYY-MM-DD`
-- `site:arstechnica.com "AI" "software development" after:YYYY-MM-DD`
+```text
+site:{{SOURCE_DOMAIN}} {{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} after:{{START}}
+AI coding tool {{DOMAIN_KEYWORDS}} changelog after:{{START}}
+MCP server {{DOMAIN_KEYWORDS}} security after:{{START}}
+```
 
-### The Verge
-- `site:theverge.com {{FOCUS_KEYWORDS}} after:YYYY-MM-DD`
-- `site:theverge.com "AI" "developer" after:YYYY-MM-DD`
+### Community / Research
 
-### GitHub Blog
-- `site:github.blog {{FOCUS_KEYWORDS}} after:YYYY-MM-DD`
-- `site:github.blog Copilot {{LANG}} after:YYYY-MM-DD`
+```text
+site:news.ycombinator.com {{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} after:{{START}}
+site:lobste.rs {{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} after:{{START}}
+{{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} conference talk after:{{START}}
+{{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} paper whitepaper after:{{START}}
+```
 
-### GitHub Search (Repos & Releases)
-- `site:github.com {{FOCUS_KEYWORDS}} {{LANG}} after:YYYY-MM-DD`
-- `site:github.com {{LANG}} "AI" "released" OR "launch" after:YYYY-MM-DD`
+### General Media
 
-### OpenJDK Blog (Java only)
-- `site:openjdk.org AI codegen after:YYYY-MM-DD`
-- `site:openjdk.org "JEP" developer productivity after:YYYY-MM-DD`
-
-### React Blog (React only)
-- `site:react.dev/blog AI after:YYYY-MM-DD`
-- `site:react.dev "React Compiler" AI after:YYYY-MM-DD`
-
-### Python Insider (Python only)
-- `site:blog.python.org developer productivity after:YYYY-MM-DD`
-- `site:blog.python.org "PEP" AI after:YYYY-MM-DD`
+```text
+site:{{SOURCE_DOMAIN}} {{DOMAIN_KEYWORDS}} {{OBJECTIVE_KEYWORDS}} after:{{START}}
+{{DOMAIN}} AI developer tool {{OBJECTIVE_KEYWORDS}} after:{{START}}
+```
 
 ---
 
-## All-Focus-Area Sweep (When Focus Area = "All")
+## All-Objective / All-Domain Sweep
 
-When the human selects `All focus areas`, run one representative query from each focus area using the primary keyword set. Combine results and rank by total 5-axis score. Do not exceed 12 total queries to manage response time.
+When the user selects broad scope, do not try to cover everything. Build a prioritised sweep:
 
-**Recommended sweep using APIs:**
+1. Rank `.tech-stack/` domains by user priority, recency of version evidence, and likely upgrade impact.
+2. Rank objectives by whether the user selected them explicitly or accepted `All objectives`.
+3. Allocate queries to the highest-value domain-objective pairs first.
+4. Use one representative query per pair across the most relevant source class.
+5. Fill remaining budget with official changelog/release-note searches for top versioned domains.
 
-| # | Focus Area | Mechanism | Query |
-|---|-----------|-----------|-------|
-| 1 | Vibe coding speed | HN Algolia | `?query=vibe+coding&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}&hitsPerPage=30` |
-| 2 | Code quality assurance | Brave Search | `?q=AI+code+review+site:dev.to&freshness={{START}}to{{END}}&result_filter=discussions,web&count=20` |
-| 3 | AI-era security | Brave Search | `?q=prompt+injection+AI+security+site:arstechnica.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| 4 | AI workflow orchestration | Brave Search | `?q=MCP+server+multi-agent+site:github.blog&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| 5 | MVP acceleration | Brave Search | `?q=AI+MVP+builder+site:theverge.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| 6 | Tech debt modernisation | Brave Search | `?q=AI+code+migration+site:dev.to&freshness={{START}}to{{END}}&result_filter=discussions,web&count=20` |
-| 7 | Bleeding-edge tools | Brave Search | `?q=new+AI+IDE+site:techradar.com&freshness={{START}}to{{END}}&result_filter=news,web&count=20` |
-| 8 | GitHub repos | GitHub Search | `?q=AI+coding+assistant+pushed:>YYYY-MM-DD&sort=updated&order=desc&per_page=20` |
+**Recommended sweep pattern:**
 
-**Note:** If `All` languages is selected, add the language qualifier to the GitHub Search queries and append `{{LANG}}` to Brave Search `q` parameters where relevant. Do not duplicate identical queries.
+| # | Purpose | Mechanism | Query |
+|---|---------|-----------|-------|
+| 1 | Top domain official updates | Brave `site:` | `?q={{DOMAIN_KEYWORDS}}+changelog+release+{{OBJECTIVE_KEYWORDS}}+site:{{SOURCE_DOMAIN}}&freshness={{START}}to{{END}}` |
+| 2 | Top domain community signal | HN Algolia | `?query={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&tags=story&numericFilters=created_at_i>{{TIMESTAMP}}` |
+| 3 | AI/tooling advances | Brave vendor | `?q=AI+coding+{{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}&freshness={{START}}to{{END}}` |
+| 4 | GitHub ecosystem | GitHub Search | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+pushed:>{{START}}&sort=updated` |
+| 5 | Research/practitioner signal | Brave/arXiv | `?q={{DOMAIN_KEYWORDS}}+{{OBJECTIVE_KEYWORDS}}+paper+OR+conference+talk` |
+| 6 | Package/version evidence | Registry API | `{{PACKAGE_NAME}}` metadata endpoint from `search-api-guide.md` |
+
+**Budget rule:** Do not exceed 18 total API calls + web searches by default. If the scope is broad, report deferred domains/objectives in the executive summary.

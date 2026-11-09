@@ -1,5 +1,5 @@
 {
   "name": "dev-level-up",
-  "description": "Scan high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting Java, React, and Python. Filters to the last month, evaluates findings for impact, estimates adoption effort, and applies the 80/20 rule to recommend the highest-ROI level-ups for your available time.",
-  "version": "1.1.0"
+  "description": "Repo-aware, language-agnostic scout for cutting-edge developer improvements. Auto-detects or accepts manual tech domains, stores scope in gitignored .tech-stack state, searches primary/community/AI-vendor sources, and scores findings for objective fit, stack relevance, speed, accuracy, capacity, tools, and agility.",
+  "version": "1.2.0"
 }

@@ -21,9 +21,7 @@ mkdir -p "${STAGING_DIR}/resources"
 cp "${SCRIPT_DIR}/Skill.md" "${STAGING_DIR}/Skill.md"
 
 # Copy resource files into resources/ folder
-cp "${SCRIPT_DIR}/resources/source-search-templates.md" "${STAGING_DIR}/resources/"
-cp "${SCRIPT_DIR}/resources/evaluation-rubric.md" "${STAGING_DIR}/resources/"
-cp "${SCRIPT_DIR}/resources/search-api-guide.md" "${STAGING_DIR}/resources/"
+cp "${SCRIPT_DIR}/resources/"*.md "${STAGING_DIR}/resources/"
 
 # Package: ZIP must have the skill folder as its root (not files at root)
 cd "${SCRIPT_DIR}"

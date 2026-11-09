@@ -1,15 +1,15 @@
 # Search API Guide
 
-This guide documents the preferred search mechanisms for the dev-level-up skill, organized by reliability of date filtering and source coverage.
+This guide documents the preferred search mechanisms for `dev-level-up`. The skill is language-agnostic: use the detected `.tech-stack/` domains, selected objectives, and `resources/source-registry.md` to choose queries and endpoints.
 
 ## Search Strategy Tiers
 
 | Tier | Mechanism | Date Filtering | Best For |
 |------|-----------|----------------|----------|
-| 1 | **Direct APIs** | Native, precise | Hacker News (Algolia), GitHub Search |
-| 2 | **Brave Search API** | Native, custom ranges | General web, news, discussions |
-| 3 | **News APIs** | Native, publish date | Mainstream tech news |
-| 4 | **Web Search Fallback** | Operator-based (`after:`) | Sources without APIs |
+| 1 | **Direct APIs** | Native, precise | Hacker News, GitHub repos/releases, package registries, arXiv |
+| 2 | **Brave Search API** | Native, custom ranges | General web, official sites, vendor feeds, community sources, news |
+| 3 | **News APIs / RSS / Atom** | Publish-date fields or feed dates | Mainstream tech news and official blogs with feeds |
+| 4 | **Web Search Fallback** | Operator-based (`after:`) | Sources without APIs or feeds; requires manual date verification |
 
 ---
 
@@ -25,31 +25,31 @@ Free, no authentication required. Provides precise Unix-timestamp filtering.
 
 | Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `query` | string | Search terms | `"vibe coding"` |
+| `query` | string | Search terms | `"MCP server security"` |
 | `tags` | string | Filter by tag | `story`, `show_hn`, `ask_hn` |
-| `numericFilters` | string | Timestamp range | `created_at_i>1714464000` |
+| `numericFilters` | string | Timestamp range | `created_at_i>1767225600` |
 | `hitsPerPage` | integer | Results per page (max 100) | `50` |
 | `page` | integer | Zero-based pagination | `0` |
 
-**Date math:** Convert `YYYY-MM-DD` to Unix timestamp: `date -d "YYYY-MM-DD" +%s` -> `1714464000`
+**Date math:** Convert `YYYY-MM-DD` to Unix timestamp: `date -d "YYYY-MM-DD" +%s`
 
 **Example calls:**
 
 ```bash
-# HN stories about vibe coding from last 30 days
-curl -s "https://hn.algolia.com/api/v1/search?query=vibe+coding&tags=story&numericFilters=created_at_i>1714464000&hitsPerPage=50"
+# HN stories about MCP security from last 30 days
+curl -s "https://hn.algolia.com/api/v1/search?query=MCP+server+security&tags=story&numericFilters=created_at_i>1767225600&hitsPerPage=50"
 
-# Show HN AI tools from last 30 days
-curl -s "https://hn.algolia.com/api/v1/search?query=AI&tags=show_hn&numericFilters=created_at_i>1714464000&hitsPerPage=50"
+# Show HN launches for a detected domain
+curl -s "https://hn.algolia.com/api/v1/search?query=Next.js+AI&tags=show_hn&numericFilters=created_at_i>1767225600&hitsPerPage=50"
 ```
 
-**Why this works:** Algolia indexes HN with exact `created_at_i` timestamps. Results are guaranteed to be within the date range.
+**Why this works:** Algolia indexes HN with exact `created_at_i` timestamps.
 
 ---
 
 ### GitHub Search API
 
-Free for public repos, no auth needed for low-volume searches. Supports `created:>` and `pushed:>` qualifiers.
+Free for public repos at low volume. Supports `created:`, `pushed:`, `topic:`, and `language:` qualifiers.
 
 **Endpoint:** `https://api.github.com/search/repositories`
 
@@ -57,31 +57,70 @@ Free for public repos, no auth needed for low-volume searches. Supports `created
 
 | Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `q` | string | Query with qualifiers | `AI codegen language:Java created:>2026-04-30` |
+| `q` | string | Query with qualifiers | `"AI code review" topic:developer-tools pushed:>2026-10-10` |
 | `sort` | string | Sort order | `updated`, `stars` |
 | `order` | string | Direction | `desc` |
 | `per_page` | integer | Results per page (max 100) | `30` |
 
-**Date qualifiers:**
+**Useful qualifiers:**
+
 - `created:>YYYY-MM-DD` — repo created after date
 - `pushed:>YYYY-MM-DD` — last push after date
-- `language:java` / `language:python` / `language:typescript`
+- `topic:<topic>` — repository topic
+- `language:<language>` — primary language, when known
+- `user:<org>` or `org:<org>` — restrict to an organisation
+- `filename:`/`path:` — only for code search, which normally requires authentication; prefer repo search for unauthenticated use
 
 **Example calls:**
 
 ```bash
-# AI repos in Java updated recently
-curl -s "https://api.github.com/search/repositories?q=AI+coding+assistant+language:Java+pushed:>2026-04-30&sort=updated&order=desc&per_page=30"
+# Recent AI tooling repos related to a detected domain
+curl -s "https://api.github.com/search/repositories?q=AI+coding+assistant+topic:developer-tools+pushed:>2026-10-10&sort=updated&order=desc&per_page=30"
 
-# React AI tools released recently
-curl -s "https://api.github.com/search/repositories?q=AI+react+component+generator+pushed:>2026-04-30&sort=updated&order=desc&per_page=30"
+# Recent releases-adjacent repos for an ecosystem
+curl -s "https://api.github.com/search/repositories?q=Terraform+AI+automation+pushed:>2026-10-10&sort=updated&order=desc&per_page=30"
 ```
+
+---
+
+### GitHub Releases API
+
+Use when `.tech-stack/` identifies a specific GitHub repo or org.
+
+**Endpoint:** `https://api.github.com/repos/{owner}/{repo}/releases?per_page=30`
+
+Check `published_at` for each release and keep only releases within the 30-day window. For organisations, use GitHub Search or the organisation's release feed/blog when a single repo is not enough.
+
+---
+
+### arXiv API
+
+Useful for AI/ML research relevant to coding tools, agents, verification, and security.
+
+**Endpoint:** `https://export.arxiv.org/api/query`
+
+**Parameters:**
+
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `search_query` | string | arXiv query | `all:"AI code generation"` or `cat:cs.SE AND all:"large language models"` |
+| `sortBy` | string | Sort field | `submittedDate` |
+| `sortOrder` | string | Direction | `descending` |
+| `max_results` | integer | Result count | `10` |
+
+**Example:**
+
+```bash
+curl -s "https://export.arxiv.org/api/query?search_query=all:%22AI%20code%20generation%22&sortBy=submittedDate&sortOrder=descending&max_results=10"
+```
+
+Verify the paper's submission/published date before inclusion.
 
 ---
 
 ## Tier 2: Brave Search API
 
-Requires free API key from `https://api-dashboard.search.brave.com/`. Best general-purpose search with robust native date filtering.
+Requires a free API key from `https://api-dashboard.search.brave.com/`. Best general-purpose search with robust native date filtering.
 
 **Endpoint:** `https://api.search.brave.com/res/v1/web/search`
 
@@ -89,43 +128,41 @@ Requires free API key from `https://api-dashboard.search.brave.com/`. Best gener
 
 | Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
-| `q` | string | Search query | `"new AI IDE Java"` |
-| `freshness` | string | Date filter | `pm` (31 days) or `2022-04-01to2022-07-30` |
+| `q` | string | Search query | `"Next.js 16" release migration` |
+| `freshness` | string | Date filter | `pm` or `YYYY-MM-DDtoYYYY-MM-DD` |
 | `result_filter` | string | Result types | `news`, `discussions`, `web` |
 | `count` | integer | Results (max 20) | `20` |
 | `offset` | integer | Pagination (max 9) | `0` |
 
 **Freshness values:**
+
 - `pd` — past 24 hours
 - `pw` — past 7 days
 - `pm` — past 31 days
 - `py` — past 365 days
-- `YYYY-MM-DDtoYYYY-MM-DD` — custom range (most reliable for exact 30-day windows)
-
-**Goggles (domain prioritization):**
-- Hacker News: `https://raw.githubusercontent.com/brave/goggles-quickstart/main/goggles/hacker_news.goggle`
+- `YYYY-MM-DDtoYYYY-MM-DD` — custom range; most reliable for exact 30-day windows
 
 **Example calls:**
 
 ```bash
-# News about AI coding tools in last 31 days
+# Official-domain search for a detected framework
 curl -s -H "X-Subscription-Token: $BRAVE_API_KEY" \
-  "https://api.search.brave.com/res/v1/web/search?q=new+AI+coding+tool&freshness=pm&result_filter=news&count=20"
+  "https://api.search.brave.com/res/v1/web/search?q=Next.js+release+site:nextjs.org&freshness=2026-10-10to2026-11-09&result_filter=web&count=20"
 
-# Discussions about vibe coding with custom date range
+# AI vendor feed search
 curl -s -H "X-Subscription-Token: $BRAVE_API_KEY" \
-  "https://api.search.brave.com/res/v1/web/search?q=vibe+coding&freshness=2026-04-30to2026-05-30&result_filter=discussions&count=20"
+  "https://api.search.brave.com/res/v1/web/search?q=MCP+security+site:modelcontextprotocol.io&freshness=2026-10-10to2026-11-09&result_filter=web&count=20"
 ```
 
-**Why this works:** Brave's `freshness` uses the page's most relevant reported date (published or modified), not crawl date. Custom ranges are exact.
+**Why this works:** Brave's `freshness` uses the page's most relevant reported date, and custom ranges are exact.
 
 ---
 
-## Tier 3: News APIs
+## Tier 3: News APIs, RSS, and Atom Feeds
 
-### News API (newsapi.org)
+### News API
 
-Free developer tier (100 requests/day). Good for mainstream tech news sources.
+Free developer tier. Useful for mainstream tech news, but limited for deep technical sources.
 
 **Endpoint:** `https://newsapi.org/v2/everything`
 
@@ -134,84 +171,108 @@ Free developer tier (100 requests/day). Good for mainstream tech news sources.
 | Parameter | Type | Description | Example |
 |-----------|------|-------------|---------|
 | `q` | string | Search query | `"AI coding assistant"` |
-| `from` | date | Start date (ISO 8601) | `2026-04-30` |
-| `to` | date | End date | `2026-05-30` |
-| `domains` | string | Comma-separated domains | `techcrunch.com,techradar.com` |
+| `from` | date | Start date | `2026-10-10` |
+| `to` | date | End date | `2026-11-09` |
+| `domains` | string | Comma-separated domains | `techcrunch.com,thenewstack.io` |
 | `language` | string | ISO 639-1 code | `en` |
 | `sortBy` | string | Order | `publishedAt`, `relevancy` |
-| `pageSize` | integer | Results per page (max 100) | `50` |
+| `pageSize` | integer | Results per page | `50` |
 
-**Example calls:**
+Use News API only when Brave coverage is insufficient or when targeting known media domains.
 
-```bash
-# Tech news about AI coding from last 30 days
-curl -s "https://newsapi.org/v2/everything?q=AI+coding+assistant&from=2026-04-30&to=2026-05-30&domains=techcrunch.com,techradar.com,theverge.com&sortBy=publishedAt&pageSize=50&apiKey=$NEWSAPI_KEY"
-```
+### RSS/Atom and Changelog Feeds
 
-**Limitations:**
-- No Hacker News, Dev.to, or GitHub Blog in source list
-- 1-month historical limit on free tier for some endpoints
-- Better for mainstream news than deep technical content
+Many official blogs and changelogs publish RSS/Atom feeds. Common paths to try:
+
+- `/feed`
+- `/feed.xml`
+- `/rss.xml`
+- `/atom.xml`
+- `/blog/feed`
+- `/changelog.xml`
+- `/releases.atom`
+
+Fetch candidate feeds with `curl` or web fetch, parse `pubDate`/`published`/`updated`, and keep only items inside the 30-day window. If a feed lacks dates, verify the item page manually.
 
 ---
 
 ## Tier 4: Web Search Fallback
 
-Use when APIs are unavailable or for sources without API access (Ars Technica blog, OpenJDK, React Blog, Python Insider).
+Use when APIs and feeds are unavailable or for sources without API access.
 
-### Google Search Operators
-
-| Operator | Purpose | Reliability |
-|----------|---------|-------------|
-| `site:domain.com` | Restrict to source | High |
-| `after:YYYY-MM-DD` | Date filter | **Low** — uses crawl date, not publish date |
-| `before:YYYY-MM-DD` | Date filter | **Low** — uses crawl date, not publish date |
-
-### Bing Search Operators
+### Search Operators
 
 | Operator | Purpose | Reliability |
 |----------|---------|-------------|
 | `site:domain.com` | Restrict to source | High |
-| `sortby:date` | Sort by date | Medium |
-| `daterange:start-end` | Custom range | Medium — Julian date format required |
+| `after:YYYY-MM-DD` | Date filter | Low — can reflect crawl/index date |
+| `before:YYYY-MM-DD` | Date filter | Low — can reflect crawl/index date |
+| `intitle:` / `inurl:` | Narrow titles/URLs | Medium |
 
-**Recommendation:** Only use web search fallback for sources that have no API. Always verify publish dates manually when using web search fallback.
-
----
-
-## Source-to-Mechanism Mapping
-
-| Source | Preferred Mechanism | Fallback |
-|--------|---------------------|----------|
-| Hacker News | HN Algolia API | Brave Search (goggles) |
-| GitHub (repos/releases) | GitHub Search API | Brave Search |
-| TechRadar | Brave Search API | Web search |
-| Dev.to | Brave Search API | Web search |
-| Ars Technica | Brave Search API (news filter) | Web search |
-| The Verge | Brave Search API (news filter) | Web search |
-| GitHub Blog | Brave Search API | Web search |
-| OpenJDK Blog | Brave Search API | Web search |
-| React Blog | Brave Search API | Web search |
-| Python Insider | Brave Search API | Web search |
+**Recommendation:** Always verify publish dates manually for web-search-only results.
 
 ---
 
-## Rate Limits & Cost
+## Package Registry and Version Checks
+
+Use package registries to identify current versions, release recency, package identity, and official project links. They are evidence sources, not replacements for dated release notes.
+
+| Ecosystem | Metadata endpoint pattern | Notes |
+|-----------|---------------------------|-------|
+| npm | `https://registry.npmjs.org/{package}` | Check `dist-tags`, `time`, `repository`, `homepage` |
+| npm search | `https://registry.npmjs.org/-/v1/search?text={query}&size=20` | Discovery only; no reliable date filter |
+| PyPI | `https://pypi.org/pypi/{package}/json` | Check `releases` upload times and project URLs |
+| PyPI updates RSS | `https://pypi.org/rss/updates.xml` | Broad recent package updates; noisy |
+| crates.io | `https://crates.io/api/v1/crates/{crate}` | Check versions and `created_at`/`updated_at` |
+| crates.io search | `https://crates.io/api/v1/crates?q={query}&per_page=20` | Discovery only |
+| Go modules | `https://proxy.golang.org/{module}/@latest` and `/@v/{version}.info` | Check latest version and timestamp |
+| Maven Central | `https://search.maven.org/solrsearch/select?q={query}&rows=20&wt=json` | Use for discovery/version evidence; verify dates via POM/release notes |
+| NuGet | `https://api.nuget.org/v3-flatcontainer/{id-lower}/index.json` | Version list; verify release dates through NuGet registration or release notes |
+| RubyGems | `https://rubygems.org/api/v1/versions/{gem}/latest.json` | Latest version evidence |
+| RubyGems search | `https://rubygems.org/api/v1/search.json?query={query}` | Discovery only |
+| Packagist | `https://repo.packagist.org/p2/{vendor}/{package}.json` | Package metadata; verify dates via VCS/release notes |
+
+**Rule:** If a registry shows a new version but no clear publish date, use the project's changelog, GitHub release, tag, or announcement to establish freshness.
+
+---
+
+## Dynamic Mechanism Selection
+
+Use `resources/source-registry.md` to map each domain/objective pair to source classes, then choose mechanisms as follows:
+
+| Source class | Preferred mechanism |
+|--------------|---------------------|
+| Official changelog/release notes | RSS/Atom, official API, GitHub releases, Brave `site:` search |
+| Package registry | Registry metadata/search endpoints above |
+| AI vendor feed | Brave `site:` search, vendor RSS/docs, GitHub releases |
+| Hacker News | HN Algolia API |
+| GitHub repos/tools | GitHub Search API or releases API |
+| Research papers | arXiv API or targeted web search |
+| General media | Brave Search API or News API |
+| Unknown source | Web search fallback with manual date verification |
+
+---
+
+## Rate Limits and Cost
 
 | API | Free Tier | Auth Required | Rate Limit |
 |-----|-----------|---------------|------------|
-| HN Algolia | Unlimited | No | ~10 req/min (be polite) |
-| GitHub Search | 10 req/min | No (public) | 10 req/min unauthenticated |
-| Brave Search API | 2,000 queries/month | Yes (free key) | ~1 req/sec |
-| News API | 100 req/day | Yes (free key) | ~1 req/sec |
+| HN Algolia | Unlimited | No | ~10 req/min; be polite |
+| GitHub Search | 10 req/min | No for basic repo search | 10 req/min unauthenticated |
+| GitHub Releases | 60 req/hr | No for public repos | 60 req/hr unauthenticated |
+| Brave Search API | 2,000 queries/month | Yes | ~1 req/sec |
+| News API | 100 req/day | Yes | ~1 req/sec |
+| arXiv API | Generous | No | Respectful delay between calls |
+| Package registries | Varies | Usually no | Varies; cache results |
 
 ---
 
 ## Recommended Execution Order
 
-1. **Run Tier 1 APIs first** — they have the most reliable date filtering and are free
-2. **Run Brave Search API** for sources not covered by Tier 1, using custom `freshness` range
-3. **Run News API** only if you need mainstream news coverage beyond what Brave provides
-4. **Run web search fallback** only for gaps, with strict manual date verification
+1. **Derive scope and sources** from `.tech-stack/` and `resources/source-registry.md`.
+2. **Run direct APIs first** for HN, GitHub repos/releases, arXiv, and package registries where applicable.
+3. **Run Brave Search API** for official domains, AI vendor feeds, community sources, standards bodies, and general web coverage.
+4. **Run News API or RSS/Atom** only for gaps or media-specific coverage.
+5. **Run web search fallback** only for remaining gaps, with strict manual date verification.
 
-**Query budget:** Do not exceed 12 total API calls + web searches combined to manage response time.
+**Query budget:** Do not exceed 18 total API calls + web searches by default. If scope is broad, prioritise manual/custom domains, selected objectives, and domains with current versions or clear upgrade paths. Report deferred domains/objectives in the executive summary.

@@ -1,47 +1,66 @@
-# AI Dev News Scout
+# Dev Level-Up
 
-A Claude Skill that actively scans high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting **Java**, **React**, and **Python**. It filters to the last 30 days, evaluates every finding for impact on AI-powered coding velocity, and delivers a ranked, actionable report.
+A repo-aware Claude Skill that finds recent, actionable developer improvements for the current codebase or user-selected technology domains. It auto-detects languages, frameworks, libraries, infrastructure, dev tooling, coding patterns, AI tooling, and risk domains, stores that scope in gitignored `.tech-stack/` Markdown state, then searches primary sources, high-authority community sources, AI vendor feeds, and general tech media for upgrades worth adopting.
 
 ## How It Works
 
-1. **Collect preferences** — Ask for focus area and language focus, then output depth.
-2. **Search** — Use a tiered API-first strategy (HN Algolia, Brave Search, GitHub Search) with native date filtering; fall back to web search only for sources without APIs.
-3. **Filter** — Enforce a strict 30-day freshness cutoff using API-native date filters; discard stale content with minimal manual verification for API results.
-4. **Evaluate** — Score each finding across 5 axes: Speed, Accuracy, Capacity, Tools, Agility, and estimate Adoption Time.
-5. **Deliver** — Produce a structured report with Quick Wins, Deep Dives, and a Watch List.
-6. **Prioritize** — Ask how much time the human has, then apply the 80/20 rule to recommend the highest-ROI items that fit the budget.
+1. **Choose scope** — auto-detect the current repo, enter manual/custom domains, use both, or reuse saved `.tech-stack` state.
+2. **Persist scope** — create or update `.tech-stack/` category files in the target repository and ensure the folder is gitignored.
+3. **Select objectives** — choose targeted improvement objectives such as agentic velocity, correctness, AI-era security, orchestration, modernization, capability expansion, toolchain DX, or MVP speed.
+4. **Search broadly** — query official changelogs/docs/release notes, package registries, standards bodies, AI vendor feeds, Hacker News/Lobsters/practitioner sources, conferences/papers, and general tech media.
+5. **Filter and narrow** — enforce a strict 30-day freshness window, then apply scope relevance, objective relevance, evidence, actionability, and duplicate gates.
+6. **Score and recommend** — evaluate survivors across Speed, Accuracy, Capacity, Tools, Agility, Objective Fit, and Stack Relevance, then provide Quick Wins, Deep Dives, a Watch List, and time-budgeted 80/20 picks.
 
 ## Usage
 
-Load the Skill and optionally specify your preferences:
+Load the Skill and answer the onboarding questions:
 
-- **Focus area:** `All focus areas` (default), or one of: `Vibe coding speed`, `Code quality assurance`, `AI-era security`, `AI workflow orchestration`, `MVP acceleration`, `Tech debt modernisation`, `Bleeding-edge tools & integrations`
-- **Language focus:** `All` (default), `Java`, `React`, or `Python`
-- **Output depth:** `Headlines` (concise ranked list) or `Full details` (complete report with adoption steps)
+- **Scope mode:** `Auto-detect current repo`, `Manual/custom domains`, `Both: detect + manual`, or `Use saved .tech-stack state`
+- **Domains:** required for manual/custom scope; accepts tech stack, patterns/practices, risk domains, and AI/tooling entries
+- **Improvement objective(s):** `All objectives` or selected objectives from the catalog
+- **Output depth:** `Headlines` or `Full details`
 
-The Skill will search, filter, score, and present findings with direct links and concrete adoption steps.
+Manual/custom domains are organised into `.tech-stack/` category files such as `languages.md`, `frameworks.md`, `libraries.md`, `infrastructure.md`, `developer-tooling.md`, `ai-tooling.md`, `patterns-practices.md`, `risk-domains.md`, and `custom-domains.md`.
+
+## `.tech-stack` State
+
+`.tech-stack/` is local state for the target repository, not part of the skill package. It records the domains used for search and scoring so repeated runs can build on prior scope without committing repo-specific state.
+
+The skill will:
+
+- Create the folder only after the user chooses a scope mode.
+- Add `.tech-stack/` to `.gitignore` if missing.
+- Preserve manual/custom rows while refreshing detected rows during auto-detection.
+- Store evidence paths, search hints, source hints, confidence, and last-updated dates.
 
 ## Example Output
 
-The report includes:
+The report can include:
 
-- **Executive Summary** — total scanned, total passing, top recommendation
-- **Quick Wins** — high-score, high-agility items with install commands, adoption time, and bang-for-buck score
-- **Deep Dives** — high-potential items that need further investigation before adoption
-- **Watch List** — promising but early or narrow findings with revisit conditions
-- **80/20 Recommendation** — time-budget-aware picks that maximize impact for minimal effort
+- **Executive Summary** — scope mode, domains evaluated, objectives, source classes, candidate funnel, and top recommendation.
+- **Quick Wins** — high-score, high-agility findings with direct stack/objective fit and concrete adoption steps.
+- **Deep Dives** — high-potential findings that need investigation before adoption.
+- **Watch List** — promising but early, narrow, or costly findings with revisit conditions.
+- **`.tech-stack` State Summary** — what was created, refreshed, or reused.
+- **80/20 Recommendation** — time-budget-aware picks that maximize impact for the selected scope.
 
 ## Extending the Skill
 
-### Add a New Language
+### Add an Objective
 
-1. Add language-specific search queries to `resources/source-search-templates.md`.
-2. Update the User Onboarding table in `Skill.md`.
+1. Add the objective to `resources/improvement-objectives.md`.
+2. Add it to the onboarding options in `Skill.md`.
 
-### Add a New Source
+### Add a `.tech-stack` Category
 
-1. Add the source to the High-Authority Sources table in `Skill.md`.
-2. Add corresponding query templates to `resources/source-search-templates.md`.
+1. Add the category file to `resources/tech-stack-state-template.md`.
+2. Add detection guidance to `resources/tech-stack-detection.md`.
+
+### Add a Source
+
+1. Add it to `resources/source-registry.md`.
+2. Add API/feed templates to `resources/search-api-guide.md` if it has a reliable mechanism.
+3. Add generic query templates to `resources/source-search-templates.md`.
 
 ## Building the Skill
 
@@ -51,4 +70,4 @@ Run the build script to package the Skill into a `.zip` file for import into Cla
 ./build-skill.sh
 ```
 
-This produces `ai-dev-news-scout-skill.zip` containing the Skill definition and all resource files.
+This produces `dist/dev-level-up-skill.zip` containing the Skill definition and all resource files, then refreshes multi-agent symlinks.
