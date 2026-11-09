@@ -25,8 +25,8 @@
     {
       "name": "dev-level-up",
       "source": "./dev-level-up",
-      "description": "Scan high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting Java, React, and Python. Filters to the last month and evaluates findings for impact on AI-powered coding speed, accuracy, capacity, tools, and agility.",
-      "version": "1.0.0"
+      "description": "Repo-aware, language-agnostic scout for cutting-edge developer improvements. Auto-detects or accepts manual tech domains, stores scope in gitignored .tech-stack state, searches primary/community/AI-vendor sources, and scores findings for objective fit, stack relevance, speed, accuracy, capacity, tools, and agility.",
+      "version": "1.2.0"
     },
     {
       "name": "city-risk-landscape",
@@ -80,6 +80,18 @@
       "name": "progress-unblocker",
       "source": "./progress-unblocker",
       "description": "Create visual progress snapshots for a dev task across requirements, design, implementation, configuration, dev testing, and production deployment. Breaks stuck work into smaller parts and prioritises blockers, actions, and completion with unblocking alternatives.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "focus-optimiser",
+      "source": "./focus-optimiser",
+      "description": "Track large sets of related and unrelated tasks, projects, and deadlines as a dependency graph, then prioritise the highest-impact work using the 4 quadrants and other leadership task-management frameworks. Supports a daily focus mode and imports tasks from the Business Idea Incubator and Business Outreach Generator. Visualises status trees and projected timelines.",
+      "version": "1.0.0"
+    },
+    {
+      "name": "agent-orchestrator",
+      "source": "./agent-orchestrator",
+      "description": "Prescribe how orchestrator agents should manage tasks and delegate work to local subagents and/or cloud agents using GitHub repos, issues, branches, worktrees, and pull requests with Slack integration for 2-way communication. Subagents run asynchronously in the background by default. Orchestrators manage resources (disk space, RAM, cloud credits), permissions (pre-approved commands, inline scripting forbidden, destructive system commands forbidden, risky git commands forbidden, reusable .sh scripts), state tracking (prevent duplicates, monitor status), helper scripts (poll GitHub issues, check subagent status, cleanup worktrees, long-running orchestration), real-world patterns (worktree isolation, worktree reuse, auth recipes, failure-state propagation, prompt discipline), cloud agent rationing (default to local agents), cost optimization (free Devin models by default), and handle task dependencies and production impact.",
       "version": "1.0.0"
     }
   ]

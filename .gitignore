@@ -28,6 +28,9 @@ dist/
 # Active leads tracking (warm responses, follow-ups, never committed)
 .leads/
 
+# Focus Optimiser state (personal task graphs and daily focus snapshots)
+.focus/
+
 # Generated slides and infographics (presentation assets, never committed)
 .slides/
 .infographics/
@@ -45,3 +48,6 @@ node_modules/
 
 # code-conventions-aligner state folder (actual business preferences, never commit)
 .conventions/
+
+# dev-level-up local tech-stack scope state (never commit)
+.tech-stack/

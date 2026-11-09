@@ -1,6 +1,6 @@
 # `.conventions` state skeleton
 
-Create a `.conventions/` folder in the target repository root, copy these files into it, then replace every `<FILL>` placeholder with the agreed convention. Do not commit the folder once populated.
+Use this skeleton only in **operational mode**, when setting up a new convention library in a repository that will own its own `.conventions/` state. Create a `.conventions/` folder in the target repository root, copy these files into it, then replace every `<FILL>` placeholder with the agreed convention. Do not commit the folder once populated. In **reference mode**, do not create `.conventions/` in the target repository; apply the conventions directly from `resources/convention-catalog.md` and `Skill.md` instead.
 
 ## `.conventions/conventions.toml`
 

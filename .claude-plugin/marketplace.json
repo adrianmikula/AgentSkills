@@ -25,8 +25,8 @@
     {
       "name": "dev-level-up",
       "source": "./dev-level-up",
-      "description": "Scan high-authority tech news sources for cutting-edge AI coding tools, tricks, methods, and techniques targeting Java, React, and Python. Filters to the last month and evaluates findings for impact on AI-powered coding speed, accuracy, capacity, tools, and agility.",
-      "version": "1.0.0"
+      "description": "Repo-aware, language-agnostic scout for cutting-edge developer improvements. Auto-detects or accepts manual tech domains, stores scope in gitignored .tech-stack state, searches primary/community/AI-vendor sources, and scores findings for objective fit, stack relevance, speed, accuracy, capacity, tools, and agility.",
+      "version": "1.2.0"
     },
     {
       "name": "city-risk-landscape",
@@ -79,7 +79,7 @@
     {
       "name": "code-conventions-aligner",
       "source": "./code-conventions-aligner",
-      "description": "Maintain and enforce cross-project naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, AI autonomy, documentation, and release conventions using an external .conventions state folder.",
+      "description": "Maintain and enforce cross-project naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, AI autonomy, documentation, and release conventions. Reference mode applies conventions directly from the built-in catalog; operational mode uses an external .conventions state folder.",
       "version": "1.0.0"
     },
     {

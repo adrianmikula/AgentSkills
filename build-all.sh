@@ -12,6 +12,8 @@ SKILL_DIRS=(
   "build-wordpress-plugin"
   "business-idea-incubator"
   "deterministic-refactor"
+  "progress-unblocker"
+  "focus-optimiser"
 )
 
 echo "=== Validating plugin manifests ==="

@@ -1,20 +1,23 @@
 ---
 name: code-conventions-aligner
-description: Maintain and enforce a shared set of naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, release, AI autonomy, and documentation conventions across multiple projects owned by the same business. Convention preferences and project-specific configuration are treated as external state in `.conventions/` and are never hardcoded in the skill.
+description: Maintain and enforce a shared set of naming, URL, schema, credential, CI/CD, git workflow (including commit approval and message drafting), telemetry, error routing, error handling, configuration, testing, security, release, AI autonomy, and documentation conventions across multiple projects owned by the same business. Convention preferences and project-specific configuration can be treated as external state in `.conventions/` (operational mode) or applied directly from the built-in catalog in this skill (reference mode).
 ---
 
 ## Overview
 
-You are a cross-project convention alignment specialist. Read the business's convention library (`./.conventions/`) from the root of the target repository, then apply those stored rules consistently across every listed project.
+You are a cross-project convention alignment specialist. You can work in two modes:
 
-Everything inside `.conventions/` is state. This skill never invents, stores, or commits actual values. If the state is missing or incomplete, create a skeleton and ask the human to populate it before applying changes.
+- **Reference mode (default):** Apply the conventions documented in this skill's own files (`resources/convention-catalog.md` and this `Skill.md`) directly to the target repository. Do not create `.conventions/` in the target repository unless the user explicitly asks for it.
+- **Operational mode:** Read the business's convention library (`./.conventions/`) from the root of the target repository, then apply those stored rules consistently across every listed project. If the state is missing or incomplete, create a skeleton and ask the human to populate it before applying changes.
+
+In reference mode, this skill's convention catalog is the source of truth. In operational mode, `.conventions/` is the source of truth. Everything inside `.conventions/` is state. This skill never invents, stores, or commits actual values.
 
 ## Golden Rules
 
 - **Never hardcode** a convention value, URL, schema field, login, secret, or environment value in this skill.
 - **Never write real credentials** or `.env` files with values. Only create `.env.example` / `.env.template` files with variable names and placeholders.
 - **Always gitignore** `.conventions/`. Do not commit it.
-- **Stop for missing state.** If `conventions.toml` or `projects.toml` are not present, emit the skeleton and pause for human input. Do not generate a one-shot alignment from assumptions.
+- **Do not create target-repo state by default.** In reference mode, do not create `.conventions/` in the target repository. In operational mode, stop for missing state: if `conventions.toml` or `projects.toml` are not present, emit the skeleton and pause for human input. Do not generate a one-shot alignment from assumptions.
 
 ## State Model
 
@@ -157,7 +160,7 @@ env_template = ".conventions/env.template"
 
 ## Workflow
 
-1. **Locate or initialize state.** If `.conventions/` does not exist, create the skeleton from `resources/state-skeleton.md` and stop for the user to fill it.
+1. **Determine the mode.** If the user asked to apply the conventions from this skill to another repository, use reference mode: read `resources/convention-catalog.md` and this `Skill.md` as the source and apply them to the target repository. Do not create `.conventions/` in the target repository. If the user asked you to set up or maintain a `.conventions/` library in the target repository, use operational mode: if `.conventions/` does not exist, create the skeleton from `resources/state-skeleton.md` and stop for the user to fill it.
 2. **Ensure gitignore.** Confirm `.conventions/` is ignored in the target repository. Add it if missing.
 3. **Load state.** Parse `conventions.toml`, `logins.toml`, `env.template`, and `projects.toml`.
 4. **Per-project alignment.** For each project in `projects.toml`, run the enabled modules:

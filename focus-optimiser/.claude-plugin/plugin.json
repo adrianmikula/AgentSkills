@@ -1,0 +1,5 @@
+{
+  "name": "focus-optimiser",
+  "description": "Track large sets of related and unrelated tasks, projects, and deadlines as a dependency graph, then prioritise the highest-impact work using the 4 quadrants and other leadership task-management frameworks. Supports a daily focus mode and imports tasks from the Business Idea Incubator and Business Outreach Generator. Visualises status trees and projected timelines.",
+  "version": "1.0.0"
+}

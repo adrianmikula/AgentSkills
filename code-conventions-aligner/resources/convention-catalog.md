@@ -1,6 +1,6 @@
 # Generic Convention Options
 
-Use this as a menu when populating `.conventions/conventions.toml`. Only one chosen pattern per domain should end up in the state file.
+These conventions are the source of truth in **reference mode** — apply them directly to the target repository without creating `.conventions/` there. In **operational mode**, use this as a menu when populating `.conventions/conventions.toml`. Only one chosen pattern per domain should end up in the state file.
 
 ## Naming
 
