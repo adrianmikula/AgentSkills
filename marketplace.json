@@ -93,6 +93,12 @@
       "source": "./agent-orchestrator",
       "description": "Prescribe how orchestrator agents should manage tasks and delegate work to local subagents and/or cloud agents using GitHub repos, issues, branches, worktrees, and pull requests with Slack integration for 2-way communication. Subagents run asynchronously in the background by default. Orchestrators manage resources (disk space, RAM, cloud credits), permissions (pre-approved commands, inline scripting forbidden, destructive system commands forbidden, risky git commands forbidden, reusable .sh scripts), state tracking (prevent duplicates, monitor status), helper scripts (poll GitHub issues, check subagent status, cleanup worktrees, long-running orchestration), real-world patterns (worktree isolation, worktree reuse, auth recipes, failure-state propagation, prompt discipline), cloud agent rationing (default to local agents), cost optimization (free Devin models by default), and handle task dependencies and production impact.",
       "version": "1.0.0"
+    },
+    {
+      "name": "upstream-reference",
+      "source": "./upstream-reference",
+      "description": "Before designing or auditing critical logic flows (payments, state machines, auth, scheduling, webhooks, sync, retries, idempotency), find mature upstream implementations and align design and tests with their documented contract. Includes a verify mode that audits existing code against an upstream contract.",
+      "version": "1.0.0"
     }
   ]
 }

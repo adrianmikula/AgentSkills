@@ -14,6 +14,7 @@ SKILL_DIRS=(
   "deterministic-refactor"
   "progress-unblocker"
   "focus-optimiser"
+  "upstream-reference"
 )
 
 echo "=== Validating plugin manifests ==="

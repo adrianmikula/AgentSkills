@@ -1,0 +1,5 @@
+{
+  "name": "upstream-reference",
+  "description": "Before designing or auditing critical logic flows (payments, state machines, auth, scheduling, webhooks, sync, retries, idempotency), find mature upstream implementations and align design and tests with their documented contract. Includes a verify mode that audits existing code against an upstream contract.",
+  "version": "1.0.0"
+}
