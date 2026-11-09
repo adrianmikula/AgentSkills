@@ -121,6 +121,56 @@ Orchestrators should use reusable helper scripts for common operations:
 - **Git operations**: Use scripts for common git workflows (branch creation, worktree management)
 - **Documentation**: All helper scripts must be documented and stored in the `resources/` folder for reuse
 
+### 11. Real-World Orchestration Patterns
+
+Based on proven orchestration runs, follow these patterns:
+
+#### Worktree Isolation
+- **Use `.worktrees/` directory**: Create worktrees inside the repo at `.worktrees/<slug>`
+- **Use `info/exclude`**: Add `.worktrees/` to `.git/info/exclude` (not `.gitignore`) to keep `git status` clean without committing the exclude rule
+- **Never share main checkout**: The main checkout may be on a feature branch with uncommitted work; always isolate agents in worktrees
+- **Pre-flight environment**: Verify `origin/main`, `package-lock.json`, and exclude rules before spawning agents
+
+#### Worktree Reuse for Multi-PR Issues
+- **Reuse one worktree**: For issues requiring multiple PRs, reuse the same worktree
+- **Switch branches**: Use `git checkout -b <branch> origin/main` between PRs to keep `node_modules` warm
+- **Save install time**: This avoids repeated `npm ci`/`yarn install` runs
+
+#### Concurrency and Resource Management
+- **Cap by disk, not compute**: Each worktree needs its own `node_modules` (hundreds of MB)
+- **Safe default**: 2 concurrent agents is proven safe on consumer hardware
+- **Optimize installs**: Use `npm ci --prefer-offline` to share the npm cache
+- **Monitor disk**: Check available disk space before spawning new agents
+
+#### Authentication Pattern
+- **Solve auth once**: Verify authentication works before spawning agents
+- **Embed recipe, not secret**: Include the exact auth command in prompts, never the token itself
+- **GitHub CLI alternative**: If `gh` CLI is not installed or lacks scopes, use REST API via `~/.git-credentials`
+- **Test auth**: Verify auth works with a test API call before spawning agents
+
+#### Failure-State Propagation
+- **Learn from early agents**: If an early agent discovers broken state (e.g., lint errors on main), propagate this to later prompts
+- **Update prompts**: Add "only lint changed files" or similar constraints to subsequent agent prompts
+- **Document caveats**: Record known-broken verification steps in the state file for future reference
+
+#### File-Tool Staleness
+- **Verify after checkout**: File read/edit tools can hold stale buffers across `git checkout`
+- **Use git status**: After switching branches in a worktree, verify with `git status` or `git show`
+- **Prefer shell edits**: At branch-switch boundaries, prefer shell-based edits over file tools
+
+#### Prompt Discipline for Stateless Subagents
+- **Embed full context**: Include the complete issue body, constraints, and known state in every prompt
+- **Constrain open-ended issues**: Bound scope explicitly ("one small PR", "N sequential branches")
+- **Flag shared files**: Warn about files that other in-flight PRs also touch; instruct agents to keep diffs minimal
+- **Require uniform report**: Every agent must report: branch name, PR URL, files changed, verification results
+- **Include auth recipe**: Embed the exact commands needed for git push and PR creation
+
+#### Long-Running Orchestrator
+- **Poll continuously**: Run as a long-running thread, polling every 5 minutes for new issues
+- **Auto-spawn agents**: When new issues appear, automatically create worktree agents
+- **Follow AGENTS.md**: Adhere to repository-specific orchestration guidelines
+- **Stay responsive**: Continue polling even while subagents are running
+
 ---
 
 ## Orchestrator Workflow
@@ -249,23 +299,7 @@ For tasks with production impact:
 
 ### Active Subagent Tracking
 
-Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active subagents:
-
-```json
-{
-  "active_subagents": [
-    {
-      "issue_number": 123,
-      "branch_name": "feature/issue-123-description",
-      "worktree_path": "/path/to/worktree",
-      "start_time": "2026-11-09T12:00:00Z",
-      "status": "running",
-      "last_check": "2026-11-09T12:05:00Z"
-    }
-  ],
-  "last_poll": "2026-11-09T12:00:00Z"
-}
-```
+Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active subagents. See `resources/state-file-example.json` for the format.
 
 ### Deduplication Rules
 
@@ -284,68 +318,19 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 
 ## Subagent Prompt Template
 
-When delegating to a subagent, use this refined prompt structure:
+When delegating to a subagent, use the template in `resources/subagent-prompt-template.md`. Replace all `<placeholder>` values with actual content.
 
-```
-You are a subagent working on GitHub issue #<issue-number>: "<issue-title>"
+---
 
-## Context
-- Repository: <repo-name>
-- Branch: <branch-name>
-- Work directory: <work-directory>
-- Issue URL: <issue-url>
+## Slack Communication Patterns
 
-## Task Description
-<Copy the full issue description here, including acceptance criteria>
+Use the templates in `resources/slack-templates.md` for all Slack notifications.
 
-## Constraints
-- Work must be done in your isolated branch/worktree
-- Do not modify main branch directly
-- If you need clarification, ask via the orchestrator (I will relay to human via Slack)
-- Follow the code conventions in this repository (check for AGENTS.md or similar)
-- Run tests if they exist
-- If your work has production impact (DB migration, env var change, service restart), explicitly state it in your summary
+---
 
-## Approved Commands
-The following commands are pre-approved and should be run without asking for permission:
-- git: git status, git add, git commit, git push, git checkout, git branch, git worktree
-- Package managers: npm install, npm run, yarn install, yarn run, pnpm install, pnpm run
-- Build tools: [task-specific build commands]
-- Test runners: [task-specific test commands]
+## Example Orchestrator Session
 
-If you need to run a command NOT in this list:
-1. Stop and ask the orchestrator for approval
-2. The orchestrator will inform the human via Slack
-3. The human will decide whether to approve it
-4. The human will manually add the command to the approved list if approved
-5. Once added by the human, you can retry the command
-
-## Command Restrictions
-- **Inline scripting is forbidden**: Do NOT use inline bash, powershell, python, or cmd commands
-- **Destructive system commands are forbidden**: Do NOT use `rm -rf`, `rm -fr`, `rm -r`, `rm -f` with wildcards, `dd`, `mkfs`, `fdisk`, `parted`, or any command that could cause data loss or system damage
-- **Risky git commands are forbidden**: Do NOT use `git push --force`, `git push -f`, `git rebase`, `git branch -d`, `git branch -D`, `git reset --hard`, `git clean -fd`, `git clean -fdx` without explicit human approval
-- **Script files only**: If you need system scripting, create a dedicated Linux .sh script file
-- **Document scripts**: When you create a reusable script, document its name, purpose, and usage so future agents can reuse it
-- **Commit scripts**: Include reusable scripts in your PR so they persist in the repository
-
-## Failure Conditions
-Stop and report back to the orchestrator if any of these occur:
-- Out of disk space or RAM
-- Agent ends up in an infinite loop
-- Output is gibberish or nonsensical
-- Bug/issue is unsolvable after repeated attempts
-- Task scope is bigger than expected and needs complete re-design/re-scoping
-- Dev environment is broken and project cannot be compiled/built/committed
-
-## Expected Output
-1. Code changes that resolve the issue
-2. Test results (if tests exist)
-3. A summary of what was changed
-4. Any production impact notes
-5. Any questions for the human (I will relay via Slack)
-
-Begin work. Ask questions if anything is unclear.
-```
+See `resources/example-session.md` for a complete example of an orchestrator session.
 
 ---
 
@@ -414,76 +399,6 @@ For Medium/High impact tasks:
 
 ---
 
-## Slack Communication Patterns
-
-### Orchestrator → Human Notifications
-
-Use these templates:
-
-**Work started:**
-```
-🚀 Started work on issue #<number>: <title>
-Branch: <branch-name>
-Estimated completion: <time estimate>
-```
-
-**Work completed:**
-```
-✅ Completed work on issue #<number>: <title>
-PR: <pr-url>
-Ready for review
-```
-
-**Work blocked:**
-```
-⚠️ Blocked on issue #<number>: <title>
-Reason: <why blocked>
-Needs: <what is needed from human>
-```
-
-**Work failed:**
-```
-❌ Failed on issue #<number>: <title>
-Reason: <failure reason>
-```
-
-**Permission request:**
-```
-🔐 Permission request for issue #<number>: <title>
-Command: <command that needs approval>
-Reason: <why this command is needed>
-```
-
-The human should respond with either:
-- "Approved" - then manually add the command to the approved list
-- "Denied" - then provide guidance on how to proceed
-
-**Production change scheduled:**
-```
-📅 Production change scheduled for <datetime>
-Issue: #<number> <title>
-Impact: <impact description>
-Expected downtime: <duration>
-```
-
-**Production change complete:**
-```
-✅ Production change complete
-Issue: #<number> <title>
-Result: <success/failure and details>
-```
-
-### Human → Subagent Questions
-
-When human answers a question via Slack:
-
-1. Orchestrator relays the answer to the subagent
-2. Subagent continues work
-3. Subagent may ask follow-up questions
-4. Loop until subagent completes
-
----
-
 ## Error Handling and Recovery
 
 ### Subagent Failure
@@ -534,59 +449,6 @@ If production change fails:
 3. **Investigate root cause**
 4. **Fix issue** in separate branch
 5. **Schedule retry** with human approval
-
----
-
-## Example Orchestrator Session
-
-**User prompt:**
-```
-I want you to act as an orchestrator agent. Iterate through the list of GitHub issues for this repo, and create a subagent for each issue. Each subagent should raise a new PR which fixes the issue.
-```
-
-**Orchestrator response:**
-```
-I'll act as an orchestrator agent. Let me start by fetching the GitHub issues for this repository.
-
-[Fetching issues...]
-
-Found 5 open issues:
-1. #42: Fix login bug on mobile devices (Priority: High, No dependencies)
-2. #43: Add user profile page (Priority: Medium, Depends on #42)
-3. #44: Migrate user sessions to new DB schema (Priority: High, Production impact: Medium)
-4. #45: Update API rate limits (Priority: Low, No dependencies)
-5. #46: Add dark mode (Priority: Low, No dependencies)
-
-Building dependency graph:
-- #42 (no deps) → #43 (depends on #42)
-- #44 (no deps, but requires outage window)
-- #45 (no deps)
-- #46 (no deps)
-
-Resource check:
-- Disk space: 50GB available
-- RAM: 8GB available
-- Cloud credits: Sufficient
-
-Execution plan:
-Batch 1 (parallel, 3 subagents max):
-- #42: Fix login bug (local subagent)
-- #44: Migrate sessions (local subagent, will ask for outage window approval)
-- #45: Update rate limits (local subagent)
-
-Batch 2 (after #42 merges):
-- #43: Add user profile (local subagent)
-
-Batch 3 (anytime):
-- #46: Add dark mode (local subagent, free model)
-
-Starting Batch 1...
-[Creating branches/worktrees for #42, #44, #45]
-[Launching 3 subagents]
-[Notifying via Slack]
-
-Monitoring progress...
-```
 
 ---
 

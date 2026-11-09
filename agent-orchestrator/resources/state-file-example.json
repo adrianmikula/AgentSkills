@@ -1,0 +1,13 @@
+{
+  "active_subagents": [
+    {
+      "issue_number": 123,
+      "branch_name": "feature/issue-123-description",
+      "worktree_path": "/path/to/worktree",
+      "start_time": "2026-11-09T12:00:00Z",
+      "status": "running",
+      "last_check": "2026-11-09T12:05:00Z"
+    }
+  ],
+  "last_poll": "2026-11-09T12:00:00Z"
+}

@@ -11,7 +11,8 @@ A Claude skill that defines the standard process for orchestrator agents to mana
 - **Permission management**: Pre-approve commands to prevent subagents from getting blocked; human maintains the approved command list. Inline scripting, destructive system commands (rm -rf, dd, mkfs, etc.), and risky git commands (force push, rebase, branch deletion, etc.) are forbidden
 - **Script management**: Inline scripting is forbidden; reusable .sh scripts are created and documented for complex operations
 - **State tracking**: Track active subagents, prevent duplicates, and monitor status
-- **Helper scripts**: Reusable scripts for polling GitHub issues, checking subagent status, and cleaning up worktrees
+- **Helper scripts**: Reusable scripts for polling GitHub issues, checking subagent status, cleaning up worktrees, and long-running orchestration
+- **Real-world patterns**: Proven orchestration patterns including worktree isolation, worktree reuse, auth recipes, failure-state propagation, and prompt discipline
 - **Cloud agent rationing**: Default to local agents, use cloud agents only for urgent tasks or when local agents aren't available
 - **Cost optimization**: Free Devin models by default, paid models only for high-value tasks
 - **Dependency handling**: Respects task dependencies and production impact windows
