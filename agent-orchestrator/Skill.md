@@ -11,6 +11,7 @@ This skill defines the standard process for orchestrator agents to manage softwa
 - Creating GitHub branches or local worktrees (or cloud agents) to isolate work
 - Running subagents asynchronously in the background by default
 - Raising pull requests for human review before merging
+- Polling open pull requests for merge conflicts and CI/deployment failures and fixing or escalating them via a dedicated subagent
 - Using Slack for 2-way communication (status updates and clarifying questions)
 - Managing resource constraints (disk space, RAM, cloud credits)
 - Optimizing for cost over speed (free Devin models by default)
@@ -111,12 +112,13 @@ Orchestrators must track subagent state and prevent duplicate work:
 - **Status monitoring**: Check subagent status periodically to detect completion, failure, or blocking issues
 - **Cleanup**: Remove completed subagents from the active list to free resources
 - **Idempotency**: If a subagent fails and is retried, ensure it doesn't duplicate work already done
+- **PR-maintenance deduplication**: Never run more than one PR-maintenance subagent (merge conflicts + CI/deploy failures) at a time, and never assign the same PR item to it twice while it is still active
 
 ### 10. Helper Scripts
 
 Orchestrators should use reusable helper scripts for common operations:
 
-- **Polling**: Use a polling script to check for new GitHub issues every minute
+- **Polling**: Use a polling script to check for new GitHub issues every minute and open PRs for merge conflicts and CI/deployment failures every 5 minutes
 - **Status checks**: Use scripts to check subagent status, resource usage, and system health
 - **Git operations**: Use scripts for common git workflows (branch creation, worktree management)
 - **Documentation**: All helper scripts must be documented and stored in the `resources/` folder for reuse
@@ -293,6 +295,29 @@ For tasks with production impact:
 
 **Output**: Production change executed safely within approved window
 
+### Phase 6: Maintain PR Health (Merge Conflicts and CI/Deploy Failures)
+
+Orchestrators must keep open pull requests healthy and mergeable. PR health is polled less frequently than issues (every 5 minutes by default) using `resources/check-pr-health.sh`, which detects three categories of problems:
+
+- **Merge conflicts**: `mergeable: CONFLICTING` or `mergeStateStatus: DIRTY` (treat `UNKNOWN` as "GitHub is still computing" and re-check next poll)
+- **Failing checks/CI**: status check rollup entries with failing conclusions (build, test, lint, deploy-preview jobs, etc.); in-progress/pending checks are ignored
+- **Failed deployments**: GitHub deployments whose latest status is `failure` or `error`, matched back to PRs by head branch or head SHA where possible
+
+Workflow:
+
+1. **Poll for issues**: Run `resources/check-pr-health.sh` every 5 minutes and collect all detected items.
+2. **Deduplicate**: Skip items already assigned to the PR-maintenance subagent, items a human is actively resolving, and drafts if the repository policy excludes them. Never spawn more than one PR-maintenance subagent at a time.
+3. **Spawn a single subagent** when one or more items are found. The subagent processes items **sequentially, one PR at a time** (multiple items on the same PR are grouped), using the template in `resources/pr-maintenance-prompt-template.md`.
+4. **Resolution policy**:
+   - Fix automatically **only when the correct resolution/fix is obvious/unambiguous** (e.g., non-overlapping conflict hunks, generated files or lockfiles that can be regenerated, lint/type errors with a clear fix, transient deploy failures that can be retried)
+   - If the correct fix is **not clear**, do NOT guess: leave the branch untouched, record the diagnosis (conflicted files, check logs, deployment logs), and ask the human for clarification or manual resolution via Slack
+   - For merge conflicts, prefer merging the base branch into the PR branch (`git merge origin/main`) over rebasing; never force-push or rewrite PR history
+   - The subagent may push fix commits to PR branches, but must verify (build/test/lint) before pushing; if verification fails and the cause is unclear, treat it as ambiguous and escalate
+5. **Push and report**: Push fixes with a regular `git push` (no force) and report per-item results: resolved, escalated, failed, or skipped.
+6. **Notify via Slack**: Announce when PR health issues are detected and the subagent starts; report each item outcome; escalate ambiguous items immediately rather than batching them silently.
+
+**Output**: PR health issues either fixed with verified commits or escalated to the human with enough context (diagnosis + logs) to decide
+
 ---
 
 ## State Management
@@ -311,6 +336,7 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 ### Polling Strategy
 
 - Poll GitHub issues every 60 seconds using `resources/poll-issues.sh`
+- Poll open PRs for merge conflicts and CI/deployment failures every 5 minutes using `resources/check-pr-health.sh` (less frequent than issue polling)
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
@@ -440,6 +466,16 @@ If human rejects a PR:
 4. **Raise new PR** or update existing PR
 5. **Loop** until approved
 
+### Ambiguous PR Health Issues
+
+If the PR-maintenance subagent reports an issue it cannot fix unambiguously (merge conflict, failing check, or failed deployment):
+
+1. **Do not retry blindly**: Do not re-dispatch the same item to the subagent until the human responds
+2. **Escalate via Slack**: Send the diagnosis (PR number, conflicted files or failing check/deployment logs, and the subagent's analysis) using the "PR Issue Needs Human Decision" template
+3. **Wait for human**: The human either fixes manually, provides guidance, or approves a suggested fix
+4. **Relay guidance**: Pass the human's answer back to the subagent (or a new PR-maintenance subagent) to continue
+5. **Resume polling**: Other PR health items may still be processed; only the ambiguous item is paused
+
 ### Production Rollback
 
 If production change fails:
@@ -460,6 +496,7 @@ When orchestrator completes a session:
 - [ ] Each issue has a corresponding branch/worktree
 - [ ] Each issue has a subagent working on it (or completed)
 - [ ] Pull requests are raised for completed work
+- [ ] Open PRs were checked for merge conflicts and CI/deployment failures (every 5 minutes)
 - [ ] Human has been notified via Slack at key milestones
 - [ ] Production impact tasks have outage window approval
 - [ ] Resources (disk, RAM, credits) were not exhausted

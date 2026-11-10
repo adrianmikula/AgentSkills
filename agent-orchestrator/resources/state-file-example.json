@@ -9,5 +9,19 @@
       "last_check": "2026-11-09T12:05:00Z"
     }
   ],
-  "last_poll": "2026-11-09T12:00:00Z"
+  "pr_maintenance_agent": {
+    "items": [
+      {"type": "merge-conflict", "pr_number": 456},
+      {"type": "failing-check", "pr_number": 456, "check": "build"},
+      {"type": "failed-deployment", "pr_number": 789, "environment": "preview"}
+    ],
+    "blocked_items": [
+      {"type": "merge-conflict", "pr_number": 789, "reason": "awaiting-human"}
+    ],
+    "start_time": "2026-11-09T12:10:00Z",
+    "status": "running",
+    "last_check": "2026-11-09T12:15:00Z"
+  },
+  "last_poll": "2026-11-09T12:00:00Z",
+  "last_pr_health_poll": "2026-11-09T12:10:00Z"
 }

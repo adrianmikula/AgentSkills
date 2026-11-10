@@ -57,6 +57,33 @@ Issue: #<number> <title>
 Result: <success/failure and details>
 ```
 
+### PR Health Issues Detected
+```
+🚧 PR health issues detected:
+- Conflicts: PR #<number> <title> (<branch> -> <base>)
+- Failing checks: PR #<number> "<check-name>" (<conclusion>)
+- Failed deployments: PR #<number> environment "<env>" (deployment <id>)
+PR-maintenance subagent started - processing items sequentially.
+```
+
+### PR Issue Resolved
+```
+✅ PR health issue resolved
+PR: #<number> <title>
+Item: <merge conflict / failing check "<name>" / failed deployment "<env>">
+Resolution: <summary of fix>
+Commit: <sha> pushed to <branch>
+```
+
+### PR Issue Needs Human Decision
+```
+❓ PR #<number> <title> needs a human decision
+Item: <merge conflict / failing check "<name>" / failed deployment "<env>">
+Diagnosis: <what the subagent found - conflicted files, check logs, deployment logs>
+Subagent analysis: <why the fix is ambiguous>
+Please resolve manually or reply with guidance.
+```
+
 ## Human → Subagent Questions
 
 When human answers a question via Slack:

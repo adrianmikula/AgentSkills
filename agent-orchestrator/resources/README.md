@@ -20,6 +20,30 @@ Poll GitHub issues for a repository every 60 seconds.
 **Requirements:**
 - GitHub CLI (`gh`) installed and authenticated
 
+### check-pr-health.sh
+Check open pull requests for health issues: merge conflicts, failing checks/CI, and failed deployments. Poll on a slower cadence than issues (every 5 minutes by default).
+
+**Usage:**
+```bash
+./check-pr-health.sh <owner> <repo>
+```
+
+**Example:**
+```bash
+./check-pr-health.sh adrianmikula AgentSkills
+```
+
+**Output:** JSON object with three arrays: `conflicts`, `failing_checks`, `failed_deployments` (all empty when healthy).
+
+**Requirements:**
+- GitHub CLI (`gh`) installed and authenticated
+- `jq` installed
+
+**Notes:**
+- `mergeable=UNKNOWN` is treated as "still computing", not a conflict
+- In-progress/pending checks are not reported as failures
+- Failed deployments are matched back to open PRs by head branch or head SHA where possible
+
 ### check-subagent-status.sh
 Check the status of active subagents and detect stale ones.
 
@@ -54,28 +78,29 @@ Clean up old git worktrees to free disk space.
 - Run from within a git repository or specify the repo path
 
 ### long-running-orchestrator.sh
-Long-running orchestrator that polls for new GitHub issues every 5 minutes (configurable).
+Long-running orchestrator that polls for new GitHub issues and PR health issues (merge conflicts, failing checks, failed deployments) at configurable intervals.
 
 **Usage:**
 ```bash
-./long-running-orchestrator.sh <owner> <repo> [interval-seconds]
+./long-running-orchestrator.sh <owner> <repo> [issue-interval-seconds] [pr-interval-seconds]
 ```
 
 **Example:**
 ```bash
-./long-running-orchestrator.sh adrianmikula AgentSkills 300
+./long-running-orchestrator.sh adrianmikula AgentSkills 60 300
 ```
 
 **Requirements:**
 - GitHub CLI (`gh`) installed and authenticated
 - `jq` installed
-- State files will be created: `.orchestrator-state.json` and `.processed-issues.txt`
+- State files will be created: `.orchestrator-state.json`, `.processed-issues.txt`, and `.pr-health.json`
 
 **Features:**
 - Polls for new issues at configurable intervals (default: 5 minutes)
+- Polls PR health (conflicts, failing checks, failed deployments) on a separate interval (default: 5 minutes)
 - Tracks processed issues to avoid duplicates
-- Maintains state file for active subagents
-- Detects new issues and prepares for subagent spawning
+- Maintains state file for active subagents and the PR-maintenance agent
+- Detects new issues and PR health problems and prepares for subagent spawning
 - Graceful shutdown on Ctrl+C
 
 ## Templates and Examples
@@ -90,11 +115,21 @@ Template for creating subagent prompts with all required sections:
 - Failure conditions
 - Expected output format
 
+### pr-maintenance-prompt-template.md
+Template for the single PR-maintenance subagent that handles merge conflicts, failing checks/CI, and failed deployments sequentially:
+- Work item list grouped by PR
+- Auto-fix only when obvious/unambiguous; escalate ambiguous items with diagnosis
+- Git rules (merge base into branch, never rebase/force-push)
+- Worktree rules, approved commands, authentication recipe
+- Command restrictions and failure conditions
+- Uniform per-item report format (resolved / needs-human / failed / skipped)
+
 ### slack-templates.md
 Slack notification templates for:
 - Work started/completed/blocked/failed
 - Permission requests
 - Production change notifications
+- PR health issues detected/resolved/needs-human-decision
 - Human-to-subagent question relay
 
 ### example-session.md
@@ -109,7 +144,8 @@ Complete example of an orchestrator session showing:
 Example state file format for tracking active subagents:
 - Issue number, branch name, worktree path
 - Start time, status, last check timestamp
-- Last poll timestamp
+- PR-maintenance agent items and blocked items
+- Last poll and last PR-health-poll timestamps
 
 ## State File Format
 
@@ -118,9 +154,10 @@ The orchestrator should maintain a state file (default: `.orchestrator-state.jso
 ## Polling Strategy
 
 - **GitHub issues**: Poll every 60 seconds using `poll-issues.sh`
+- **PR health**: Poll every 5 minutes using `check-pr-health.sh` (merge conflicts, failing checks, failed deployments)
 - **Subagent status**: Check every 60 seconds using `check-subagent-status.sh`
 - **Worktree cleanup**: Run `cleanup-worktrees.sh` periodically (e.g., daily) to free disk space
-- **Long-running orchestration**: Use `long-running-orchestrator.sh` for continuous polling (default: 5 minutes)
+- **Long-running orchestration**: Use `long-running-orchestrator.sh` for continuous polling (issues and PR health on separate intervals, both defaulting to 5 minutes)
 
 ## Adding New Scripts and Resources
 
