@@ -5,20 +5,26 @@ This folder contains reusable helper scripts, templates, and examples for the ag
 ## Scripts
 
 ### poll-issues.sh
-Poll GitHub issues for a repository every 60 seconds.
+Poll GitHub issues for a repository on an interval and report deltas (new / changed / closed) against a persisted baseline snapshot. Prints a `[heartbeat]` line every cycle.
 
 **Usage:**
 ```bash
-./poll-issues.sh <owner> <repo> [state]
+./poll-issues.sh <owner> <repo> [state] [interval-seconds]
 ```
 
 **Example:**
 ```bash
-./poll-issues.sh adrianmikula AgentSkills open
+./poll-issues.sh adrianmikula AgentSkills open 60
 ```
 
+**Delta tracking:**
+- The first run establishes a baseline snapshot in `.poll-issues-state.json` (override with `POLL_STATE_FILE`) and reports no deltas.
+- Each later poll diffs the live API response against the snapshot and prints `delta:` lines for new issues, updated issues (`updatedAt` changed: new comments, labels, edits), and closed/disappeared issues.
+- Failed API calls or non-JSON responses are logged as warnings and skipped; they never overwrite the snapshot, so outages or machine sleep cannot be mistaken for "no issues".
+
 **Requirements:**
-- GitHub CLI (`gh`) installed and authenticated
+- GitHub CLI (`gh`) installed and authenticated (`gh auth login` or `GH_TOKEN` env var)
+- `jq` installed
 
 ### check-pr-health.sh
 Check open pull requests for health issues: merge conflicts, failing checks/CI, and failed deployments. Poll on a slower cadence than issues (every 5 minutes by default).
@@ -77,6 +83,32 @@ Clean up old git worktrees to free disk space. Before removing an old worktree i
 **Requirements:**
 - Run from within a git repository or specify the repo path
 
+### log-event.sh
+Append a timestamped event to the append-only orchestrator event log (JSON Lines).
+
+**Usage:**
+```bash
+./log-event.sh <type> <message> [details-json]
+```
+
+**Example:**
+```bash
+./log-event.sh detection "new issue detected" '{"issue": 42, "title": "Add feature"}'
+./log-event.sh action "subagent spawned" '{"issue": 42, "branch": "feature/issue-42"}'
+./log-event.sh error "poll-issues.sh failed" '{"exit_code": 1}'
+```
+
+**Event types:** `detection` (new issue/PR/comment, PR health problem), `action` (spawn, merge, cleanup, escalate, production change), `error` (poll failures, script/subagent failures, escalations).
+
+**Event log format:** one JSON object per line — `{"timestamp":"<ISO8601 UTC>","type":"<type>","message":"<description>","details":{...}}` — appended to `.orchestrator-events.log` in the working directory. The log is append-only: never rewrite or truncate it.
+
+**Requirements:**
+- `jq` installed
+
+**Notes:**
+- Override the log file location with the `ORCHESTRATOR_EVENTS_LOG` environment variable
+- See the "Event Log" section in `Skill.md` for the full convention
+
 ### long-running-orchestrator.sh
 Long-running orchestrator that polls for new GitHub issues and PR health issues (merge conflicts, failing checks, failed deployments) at configurable intervals.
 
@@ -91,17 +123,49 @@ Long-running orchestrator that polls for new GitHub issues and PR health issues 
 ```
 
 **Requirements:**
-- GitHub CLI (`gh`) installed and authenticated
+- GitHub CLI (`gh`) installed and authenticated (`gh auth login` or `GH_TOKEN` env var)
 - `jq` installed
-- State files will be created: `.orchestrator-state.json`, `.processed-issues.txt`, and `.pr-health.json`
+- State files will be created: `.orchestrator-state.json`, `.processed-issues.txt`, `.issue-snapshot.json`, and `.pr-health.json`
 
 **Features:**
-- Polls for new issues at configurable intervals (default: 5 minutes)
+- Polls for issue deltas at configurable intervals (default: 5 minutes), diffing the live issue set against `.issue-snapshot.json` rather than an ever-growing processed list
+- Re-baselines the issue snapshot from the live API on startup, so restarts, network outages, or machine sleep cannot silently skip or misreport deltas
+- Reports new, changed (updatedAt differs: re-triage on new comments/labels), and closed issues each cycle
+- Failed issue or PR-health API calls are logged and skipped; they never overwrite the snapshot or `.pr-health.json`, so errors are never indistinguishable from "no issues"
+- Prints a `[heartbeat]` line every poll cycle for transparency
 - Polls PR health (conflicts, failing checks, failed deployments) on a separate interval (default: 5 minutes)
-- Tracks processed issues to avoid duplicates
+- Tracks processed issues to avoid duplicate subagent spawns
 - Maintains state file for active subagents and the PR-maintenance agent
-- Detects new issues and PR health problems and prepares for subagent spawning
 - Graceful shutdown on Ctrl+C
+
+### sync-main-checkout.sh
+Fast-forward the primary (main) checkout to its upstream after a merge, so running dev servers pick up the newly merged code. Run this from Phase 4 of the orchestrator skill after a PR is merged.
+
+**Usage:**
+```bash
+./sync-main-checkout.sh [--path <dir>] [--remote <name>] [--allow-diverged]
+```
+
+**Example:**
+```bash
+./sync-main-checkout.sh
+```
+
+**Defaults:**
+- `--path`: primary checkout directory (defaults to the main worktree of the repository containing the current directory)
+- `--remote`: remote name (defaults to the branch's configured remote, falling back to `origin`)
+
+**Behavior:**
+- Fetches the remote, reports ahead/behind counts, then runs `git pull --ff-only --autostash` so uncommitted work is stashed and restored automatically
+- Verifies the resulting HEAD equals upstream before reporting success
+- Aborts safely (never discards work or rewrites history) on:
+  - Detached HEAD — check out a branch and re-run
+  - Diverged local commits — re-run with `--allow-diverged` to merge upstream with `--no-rebase`, or resolve manually
+  - Missing upstream — configure `branch.<name>.remote`/`merge` first
+
+**Requirements:**
+- Run inside (or pointed at) a git repository
+- Git >= 2.6 for `--autostash` support
 
 ## Templates and Examples
 
@@ -131,6 +195,7 @@ Slack notification templates for:
 - Production change notifications
 - PR health issues detected/resolved/needs-human-decision
 - Human-to-subagent question relay
+- GitHub issue comment templates: PR-open status comment and merge closing summary (branch, files changed, verification results, deviations)
 
 ### example-session.md
 Complete example of an orchestrator session showing:
@@ -141,19 +206,27 @@ Complete example of an orchestrator session showing:
 - Subagent spawning and monitoring
 
 ### state-file-example.json
-Example state file format for tracking active subagents:
-- Issue number, branch name, worktree path
-- Start time, status, last check timestamp
+Example state file format for reconstructing full orchestration context on session start/restart:
+- Active subagents: issue number, branch name, worktree path, start time, status, last check timestamp
 - PR-maintenance agent items and blocked items
+- Open-issue snapshot: number, title, labels, status, assigned-subagent flag, blockers
+- In-flight PRs: PR/issue numbers, branch, worktree, URL, status, head SHA, last check
+- Merge→cleanup action map: pending actions (delete-branch, remove-worktree, remove-from-state) per merged PR
+- Resolved items: recently merged/closed/fixed work with resolution and timestamp
+- Worktree inventory: path, branch, linked issue, purpose, last-seen timestamp
+- Disk headroom: available GB, warn-below threshold, last check
+- Human-blocked items: type, PR/issue number, reason, detail, since, escalation channel
 - Last poll and last PR-health-poll timestamps
+
+The file is updated on every orchestration event; see "State Management" in `../Skill.md` for semantics.
 
 ## State File Format
 
-The orchestrator should maintain a state file (default: `.orchestrator-state.json`) to track active subagents. See `state-file-example.json` for the format.
+The orchestrator should maintain a single state file (default: `.orchestrator-state.json`) as the source of truth for all orchestration context. See `state-file-example.json` for the full schema. Update it immediately on every event (issue discovered, subagent spawned/completed, PR opened/merged, cleanup queued/done, worktree created/removed, disk check, human escalation) and reconcile it against live GitHub/worktree state on session start.
 
 ## Polling Strategy
 
-- **GitHub issues**: Poll every 60 seconds using `poll-issues.sh`
+- **GitHub issues**: Poll every 60 seconds using `poll-issues.sh` (reports new/changed/closed deltas against a persisted baseline snapshot)
 - **PR health**: Poll every 5 minutes using `check-pr-health.sh` (merge conflicts, failing checks, failed deployments)
 - **Subagent status**: Check every 60 seconds using `check-subagent-status.sh`
 - **Worktree cleanup**: Run `cleanup-worktrees.sh` periodically (e.g., daily) to free disk space
