@@ -241,6 +241,7 @@ For each task:
    - If human answers via Slack, relay to subagent
    - Track progress and detect blocking issues
    - Check subagent status periodically (use `resources/check-subagent-status.sh`)
+8. **Comment on issue at PR open**: When the subagent reports its pull request is open, post a status comment on the GitHub issue with the PR link and current status (use the PR-open template in `resources/slack-templates.md`)
 
 **Output**: Subagent running in isolated environment, with communication bridge to human and state tracking
 
@@ -264,6 +265,7 @@ When subagent completes work:
    - If changes requested, loop back to subagent with feedback
 5. **Merge** after approval:
    - Merge PR via GitHub UI or command
+   - Post a closing summary comment on the GitHub issue (use the merge template in `resources/slack-templates.md`; include branch, files changed, verification results, and deviations from the uniform report)
    - Delete branch/worktree after merge
    - Notify via Slack: "Merged PR #456 for issue #123"
 6. **Cleanup**: Remove subagent from active list to free resources
@@ -350,7 +352,7 @@ When delegating to a subagent, use the template in `resources/subagent-prompt-te
 
 ## Slack Communication Patterns
 
-Use the templates in `resources/slack-templates.md` for all Slack notifications.
+Use the templates in `resources/slack-templates.md` for all Slack notifications and GitHub issue lifecycle comments (PR-open status and merge closing summary).
 
 ---
 
