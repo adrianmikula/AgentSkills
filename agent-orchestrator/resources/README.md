@@ -103,6 +103,35 @@ Long-running orchestrator that polls for new GitHub issues and PR health issues 
 - Detects new issues and PR health problems and prepares for subagent spawning
 - Graceful shutdown on Ctrl+C
 
+### sync-main-checkout.sh
+Fast-forward the primary (main) checkout to its upstream after a merge, so running dev servers pick up the newly merged code. Run this from Phase 4 of the orchestrator skill after a PR is merged.
+
+**Usage:**
+```bash
+./sync-main-checkout.sh [--path <dir>] [--remote <name>] [--allow-diverged]
+```
+
+**Example:**
+```bash
+./sync-main-checkout.sh
+```
+
+**Defaults:**
+- `--path`: primary checkout directory (defaults to the main worktree of the repository containing the current directory)
+- `--remote`: remote name (defaults to the branch's configured remote, falling back to `origin`)
+
+**Behavior:**
+- Fetches the remote, reports ahead/behind counts, then runs `git pull --ff-only --autostash` so uncommitted work is stashed and restored automatically
+- Verifies the resulting HEAD equals upstream before reporting success
+- Aborts safely (never discards work or rewrites history) on:
+  - Detached HEAD — check out a branch and re-run
+  - Diverged local commits — re-run with `--allow-diverged` to merge upstream with `--no-rebase`, or resolve manually
+  - Missing upstream — configure `branch.<name>.remote`/`merge` first
+
+**Requirements:**
+- Run inside (or pointed at) a git repository
+- Git >= 2.6 for `--autostash` support
+
 ## Templates and Examples
 
 ### subagent-prompt-template.md
