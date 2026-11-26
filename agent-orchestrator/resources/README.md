@@ -141,15 +141,23 @@ Complete example of an orchestrator session showing:
 - Subagent spawning and monitoring
 
 ### state-file-example.json
-Example state file format for tracking active subagents:
-- Issue number, branch name, worktree path
-- Start time, status, last check timestamp
+Example state file format for reconstructing full orchestration context on session start/restart:
+- Active subagents: issue number, branch name, worktree path, start time, status, last check timestamp
 - PR-maintenance agent items and blocked items
+- Open-issue snapshot: number, title, labels, status, assigned-subagent flag, blockers
+- In-flight PRs: PR/issue numbers, branch, worktree, URL, status, head SHA, last check
+- Merge→cleanup action map: pending actions (delete-branch, remove-worktree, remove-from-state) per merged PR
+- Resolved items: recently merged/closed/fixed work with resolution and timestamp
+- Worktree inventory: path, branch, linked issue, purpose, last-seen timestamp
+- Disk headroom: available GB, warn-below threshold, last check
+- Human-blocked items: type, PR/issue number, reason, detail, since, escalation channel
 - Last poll and last PR-health-poll timestamps
+
+The file is updated on every orchestration event; see "State Management" in `../Skill.md` for semantics.
 
 ## State File Format
 
-The orchestrator should maintain a state file (default: `.orchestrator-state.json`) to track active subagents. See `state-file-example.json` for the format.
+The orchestrator should maintain a single state file (default: `.orchestrator-state.json`) as the source of truth for all orchestration context. See `state-file-example.json` for the full schema. Update it immediately on every event (issue discovered, subagent spawned/completed, PR opened/merged, cleanup queued/done, worktree created/removed, disk check, human escalation) and reconcile it against live GitHub/worktree state on session start.
 
 ## Polling Strategy
 

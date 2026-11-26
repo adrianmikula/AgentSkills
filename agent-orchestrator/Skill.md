@@ -322,9 +322,28 @@ Workflow:
 
 ## State Management
 
-### Active Subagent Tracking
+### State File Schema
 
-Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active subagents. See `resources/state-file-example.json` for the format.
+Maintain a single persistent state file (e.g., `.orchestrator-state.json`) so a new or restarted session can reconstruct full orchestration context without relying on chat memory. See `resources/state-file-example.json` for the format. The state file is the source of truth; the example file documents every supported section:
+
+- **`active_subagents`**: Running issue subagents — issue number, branch, worktree path, start time, status, last check
+- **`pr_maintenance_agent`**: The single PR-maintenance subagent — assigned items, blocked items, status, last check
+- **`open_issues`**: Snapshot of open issues from the last issue poll — number, title, labels, status (`open`/`dispatched`/`deferred`/`blocked`), assigned-subagent flag, dependency blockers
+- **`in_flight_prs`**: Open PRs under orchestration — PR/issue numbers, branch, worktree path, URL, status (`open`/`checks-failing`/`conflict`/`needs-review`), head SHA, last check
+- **`merge_cleanup_actions`**: Merge→cleanup action map — for each recently merged PR, the pending actions (`delete-branch`, `remove-worktree`, `remove-from-state`) and their status
+- **`resolved_items`**: Recently resolved work (merged PRs, closed issues, fixed PR-health items) with resolution type, timestamp, and notes — retained briefly for auditability, then pruned
+- **`worktree_inventory`**: All known worktrees — path, branch, linked issue, purpose (`subagent`/`pr-maintenance`/`post-merge-cleanup`), last-seen timestamp
+- **`disk_headroom`**: Latest disk check — available GB, warn-below threshold, timestamp
+- **`human_blocked`**: Items blocked on human action — type, PR/issue number, reason, detail, since-timestamp, escalation channel
+- **`last_poll` / `last_pr_health_poll`**: Timestamps of the last issue and PR-health polls
+
+### Update-on-Every-Event Semantics
+
+- Update the state file **immediately on every orchestration event**: issue discovered, subagent spawned/completed/failed, PR opened/updated/merged, cleanup action queued or completed, worktree created/removed, disk check run, item escalated to human
+- Never batch state changes across events; a crash between events must not lose context
+- On session start, **load the state file first** and reconcile it against live GitHub state (open issues, open PRs, `git worktree list`) before spawning anything new
+- On restart, treat `active_subagents`/`in_flight_prs` entries as possibly stale: verify status via `resources/check-subagent-status.sh` and PR health before acting
+- Prune `resolved_items` once cleanup actions complete; keep `human_blocked` until the human resolves the item
 
 ### Deduplication Rules
 
