@@ -242,6 +242,7 @@ For each task:
    - If human answers via Slack, relay to subagent
    - Track progress and detect blocking issues
    - Check subagent status periodically (use `resources/check-subagent-status.sh`)
+8. **Comment on issue at PR open**: When the subagent reports its pull request is open, post a status comment on the GitHub issue with the PR link and current status (use the PR-open template in `resources/slack-templates.md`)
 
 **Output**: Subagent running in isolated environment, with communication bridge to human and state tracking
 
@@ -265,8 +266,14 @@ When subagent completes work:
    - If changes requested, loop back to subagent with feedback
 5. **Merge** after approval:
    - Merge PR via GitHub UI or command
+   - Post a closing summary comment on the GitHub issue (use the merge template in `resources/slack-templates.md`; include branch, files changed, verification results, and deviations from the uniform report)
    - Delete branch/worktree after merge
-   - Notify via Slack: "Merged PR #456 for issue #123"
+   - **Sync the primary checkout** so running dev servers pick up the merged code:
+     - Run `agent-orchestrator/resources/sync-main-checkout.sh` from the primary checkout (or `git fetch` + `git pull --ff-only --autostash` manually)
+     - The sync uses autostash so uncommitted work survives, and refuses non-fast-forward updates
+     - Verify the resulting HEAD matches upstream (`git rev-parse HEAD` vs `git rev-parse @{u}`)
+     - Edge cases abort safely: detached HEAD, diverged local commits, or missing upstream — escalate to the human rather than forcing
+   - Notify via Slack: "Merged PR #456 for issue #123; primary checkout synced to <sha>"
 6. **Cleanup**: Remove subagent from active list to free resources
 
 **Output**: Code merged to main, environment cleaned up, subagent removed from active list
@@ -337,9 +344,28 @@ Workflow:
 
 ## State Management
 
-### Active Subagent Tracking
+### State File Schema
 
-Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active subagents. See `resources/state-file-example.json` for the format.
+Maintain a single persistent state file (e.g., `.orchestrator-state.json`) so a new or restarted session can reconstruct full orchestration context without relying on chat memory. See `resources/state-file-example.json` for the format. The state file is the source of truth; the example file documents every supported section:
+
+- **`active_subagents`**: Running issue subagents — issue number, branch, worktree path, start time, status, last check
+- **`pr_maintenance_agent`**: The single PR-maintenance subagent — assigned items, blocked items, status, last check
+- **`open_issues`**: Snapshot of open issues from the last issue poll — number, title, labels, status (`open`/`dispatched`/`deferred`/`blocked`), assigned-subagent flag, dependency blockers
+- **`in_flight_prs`**: Open PRs under orchestration — PR/issue numbers, branch, worktree path, URL, status (`open`/`checks-failing`/`conflict`/`needs-review`), head SHA, last check
+- **`merge_cleanup_actions`**: Merge→cleanup action map — for each recently merged PR, the pending actions (`delete-branch`, `remove-worktree`, `remove-from-state`) and their status
+- **`resolved_items`**: Recently resolved work (merged PRs, closed issues, fixed PR-health items) with resolution type, timestamp, and notes — retained briefly for auditability, then pruned
+- **`worktree_inventory`**: All known worktrees — path, branch, linked issue, purpose (`subagent`/`pr-maintenance`/`post-merge-cleanup`), last-seen timestamp
+- **`disk_headroom`**: Latest disk check — available GB, warn-below threshold, timestamp
+- **`human_blocked`**: Items blocked on human action — type, PR/issue number, reason, detail, since-timestamp, escalation channel
+- **`last_poll` / `last_pr_health_poll`**: Timestamps of the last issue and PR-health polls
+
+### Update-on-Every-Event Semantics
+
+- Update the state file **immediately on every orchestration event**: issue discovered, subagent spawned/completed/failed, PR opened/updated/merged, cleanup action queued or completed, worktree created/removed, disk check run, item escalated to human
+- Never batch state changes across events; a crash between events must not lose context
+- On session start, **load the state file first** and reconcile it against live GitHub state (open issues, open PRs, `git worktree list`) before spawning anything new
+- On restart, treat `active_subagents`/`in_flight_prs` entries as possibly stale: verify status via `resources/check-subagent-status.sh` and PR health before acting
+- Prune `resolved_items` once cleanup actions complete; keep `human_blocked` until the human resolves the item
 
 ### Deduplication Rules
 
@@ -357,6 +383,25 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
+### Event Log
+
+Maintain an append-only event log to answer "what happened while I wasn't looking" and to debug the orchestrator itself. Slack notifications are ephemeral and the state file only holds current state; the event log is the history.
+
+- **Location**: `.orchestrator-events.log` in the working repository root (one JSON object per line, JSON Lines format)
+- **Format**: `{"timestamp":"<ISO8601 UTC>","type":"<type>","message":"<description>","details":{<context>}}`
+- **Append-only**: never rewrite, truncate, reorder, or rotate the log; it is a plain text file that grows over time
+- **Logging**: use `resources/log-event.sh <type> <message> [details-json]` to append entries; override the location with the `ORCHESTRATOR_EVENTS_LOG` env var
+
+Event types:
+
+| Type | When to log |
+|------|-------------|
+| `detection` | New issue/PR/comment detected by polling; new PR health problem (conflict, failing check, failed deployment) detected |
+| `action` | Subagent spawned, PR raised, merge performed, worktree/branch cleanup, escalation to human, production change executed |
+| `error` | Poll failures, script errors, subagent failures, permission denials, ambiguous items needing human decision |
+
+Every detection and action the orchestrator performs should produce a log entry with enough detail (issue/PR numbers, branch names, outcomes) to reconstruct what happened without Slack or the state file.
+
 ---
 
 ## Subagent Prompt Template
@@ -367,7 +412,7 @@ When delegating to a subagent, use the template in `resources/subagent-prompt-te
 
 ## Slack Communication Patterns
 
-Use the templates in `resources/slack-templates.md` for all Slack notifications.
+Use the templates in `resources/slack-templates.md` for all Slack notifications and GitHub issue lifecycle comments (PR-open status and merge closing summary).
 
 ---
 

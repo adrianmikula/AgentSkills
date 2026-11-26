@@ -107,3 +107,33 @@ When human answers a question via Slack:
 2. Subagent continues work
 3. Subagent may ask follow-up questions
 4. Loop until subagent completes
+
+## GitHub Issue Comment Templates
+
+Post these comments on the GitHub issue itself (not Slack) so the issue thread reflects lifecycle state. If `resources/github-templates.md` exists, prefer it and keep these templates there.
+
+### PR Opened — Status Comment
+
+Post on the issue when the subagent reports its pull request is open.
+
+```
+🔧 **Status: PR opened — ready for review**
+
+**PR:** <pr-url>
+**Branch:** <branch-name>
+**Status:** Work complete; awaiting human review and merge.
+```
+
+### Merged — Closing Summary
+
+Post on the issue after the PR is merged. Populate from the subagent's uniform report.
+
+```
+✅ **Merged: <pr-title>**
+
+**PR:** <pr-url> (merged <merge-date>)
+**Branch:** <branch-name>
+**Files changed:** <count> — <summary of key files>
+**Verification:** <tests/build/lint results from the uniform report>
+**Deviations:** <any deviations from issue scope, or "none">
+```
