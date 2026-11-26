@@ -340,6 +340,25 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
+### Event Log
+
+Maintain an append-only event log to answer "what happened while I wasn't looking" and to debug the orchestrator itself. Slack notifications are ephemeral and the state file only holds current state; the event log is the history.
+
+- **Location**: `.orchestrator-events.log` in the working repository root (one JSON object per line, JSON Lines format)
+- **Format**: `{"timestamp":"<ISO8601 UTC>","type":"<type>","message":"<description>","details":{<context>}}`
+- **Append-only**: never rewrite, truncate, reorder, or rotate the log; it is a plain text file that grows over time
+- **Logging**: use `resources/log-event.sh <type> <message> [details-json]` to append entries; override the location with the `ORCHESTRATOR_EVENTS_LOG` env var
+
+Event types:
+
+| Type | When to log |
+|------|-------------|
+| `detection` | New issue/PR/comment detected by polling; new PR health problem (conflict, failing check, failed deployment) detected |
+| `action` | Subagent spawned, PR raised, merge performed, worktree/branch cleanup, escalation to human, production change executed |
+| `error` | Poll failures, script errors, subagent failures, permission denials, ambiguous items needing human decision |
+
+Every detection and action the orchestrator performs should produce a log entry with enough detail (issue/PR numbers, branch names, outcomes) to reconstruct what happened without Slack or the state file.
+
 ---
 
 ## Subagent Prompt Template

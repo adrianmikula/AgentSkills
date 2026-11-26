@@ -77,6 +77,32 @@ Clean up old git worktrees to free disk space.
 **Requirements:**
 - Run from within a git repository or specify the repo path
 
+### log-event.sh
+Append a timestamped event to the append-only orchestrator event log (JSON Lines).
+
+**Usage:**
+```bash
+./log-event.sh <type> <message> [details-json]
+```
+
+**Example:**
+```bash
+./log-event.sh detection "new issue detected" '{"issue": 42, "title": "Add feature"}'
+./log-event.sh action "subagent spawned" '{"issue": 42, "branch": "feature/issue-42"}'
+./log-event.sh error "poll-issues.sh failed" '{"exit_code": 1}'
+```
+
+**Event types:** `detection` (new issue/PR/comment, PR health problem), `action` (spawn, merge, cleanup, escalate, production change), `error` (poll failures, script/subagent failures, escalations).
+
+**Event log format:** one JSON object per line — `{"timestamp":"<ISO8601 UTC>","type":"<type>","message":"<description>","details":{...}}` — appended to `.orchestrator-events.log` in the working directory. The log is append-only: never rewrite or truncate it.
+
+**Requirements:**
+- `jq` installed
+
+**Notes:**
+- Override the log file location with the `ORCHESTRATOR_EVENTS_LOG` environment variable
+- See the "Event Log" section in `Skill.md` for the full convention
+
 ### long-running-orchestrator.sh
 Long-running orchestrator that polls for new GitHub issues and PR health issues (merge conflicts, failing checks, failed deployments) at configurable intervals.
 
