@@ -22,6 +22,17 @@
     "status": "running",
     "last_check": "2026-11-09T12:15:00Z"
   },
+  "pr_review_agent": {
+    "pr_numbers": [456],
+    "start_time": "2026-11-09T12:20:00Z",
+    "status": "running",
+    "last_check": "2026-11-09T12:25:00Z"
+  },
+  "reviewed_prs": [
+    {"pr_number": 123, "reviewed_at": "2026-11-09T12:00:00Z", "result": "commented"},
+    {"pr_number": 456, "reviewed_at": "2026-11-09T12:05:00Z", "result": "clean"}
+  ],
   "last_poll": "2026-11-09T12:00:00Z",
-  "last_pr_health_poll": "2026-11-09T12:10:00Z"
+  "last_pr_health_poll": "2026-11-09T12:10:00Z",
+  "last_unreviewed_prs_poll": "2026-11-09T12:10:00Z"
 }

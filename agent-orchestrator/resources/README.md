@@ -44,6 +44,25 @@ Check open pull requests for health issues: merge conflicts, failing checks/CI, 
 - In-progress/pending checks are not reported as failures
 - Failed deployments are matched back to open PRs by head branch or head SHA where possible
 
+### check-unreviewed-prs.sh
+List open pull requests that have not yet been reviewed by the PR-review subagent (description reasoning check + serious-issues-only code review). Read-only; never posts comments or mutates state. If the state file is missing or has no `reviewed_prs` key, ALL open PRs are reported - this is the backfill path for PRs opened while the orchestrator was down.
+
+**Usage:**
+```bash
+./check-unreviewed-prs.sh <owner> <repo> [state-file]
+```
+
+**Example:**
+```bash
+./check-unreviewed-prs.sh adrianmikula AgentSkills .orchestrator-state.json
+```
+
+**Output:** JSON object with one array: `unreviewed_prs` (empty when every open PR has been reviewed). A PR counts as reviewed when its number appears in the state file's `reviewed_prs` array.
+
+**Requirements:**
+- GitHub CLI (`gh`) installed and authenticated
+- `jq` installed
+
 ### check-subagent-status.sh
 Check the status of active subagents and detect stale ones.
 
@@ -124,12 +143,20 @@ Template for the single PR-maintenance subagent that handles merge conflicts, fa
 - Command restrictions and failure conditions
 - Uniform per-item report format (resolved / needs-human / failed / skipped)
 
+### pr-review-prompt-template.md
+Template for the dedicated PR-review subagent spawned for each newly opened pull request:
+- Task 1: checks the PR body for a reasoning section (why this approach, trade-offs, risks, follow-ups) and comments if missing or inadequate
+- Task 2: serious-issues-only code review (logic, security, stability - explicitly not style), one comment per finding
+- Hard rules: NEVER approve, merge, close, or modify the PR; comments only; no style nitpicks
+- Approved commands (read-only gh/git plus PR-comment writes only), authentication recipe, uniform report format
+
 ### slack-templates.md
 Slack notification templates for:
 - Work started/completed/blocked/failed
 - Permission requests
 - Production change notifications
 - PR health issues detected/resolved/needs-human-decision
+- PR review started/complete
 - Human-to-subagent question relay
 
 ### example-session.md
@@ -145,7 +172,8 @@ Example state file format for tracking active subagents:
 - Issue number, branch name, worktree path
 - Start time, status, last check timestamp
 - PR-maintenance agent items and blocked items
-- Last poll and last PR-health-poll timestamps
+- PR-review agent PR numbers and the `reviewed_prs` list (prevents duplicate reviews across restarts)
+- Last poll, last PR-health-poll, and last unreviewed-PRs-poll timestamps
 
 ## State File Format
 
@@ -155,6 +183,7 @@ The orchestrator should maintain a state file (default: `.orchestrator-state.jso
 
 - **GitHub issues**: Poll every 60 seconds using `poll-issues.sh`
 - **PR health**: Poll every 5 minutes using `check-pr-health.sh` (merge conflicts, failing checks, failed deployments)
+- **Unreviewed PRs**: Poll every 5 minutes using `check-unreviewed-prs.sh`; spawn PR-review subagents per `pr-review-prompt-template.md` (Phase 7 in Skill.md)
 - **Subagent status**: Check every 60 seconds using `check-subagent-status.sh`
 - **Worktree cleanup**: Run `cleanup-worktrees.sh` periodically (e.g., daily) to free disk space
 - **Long-running orchestration**: Use `long-running-orchestrator.sh` for continuous polling (issues and PR health on separate intervals, both defaulting to 5 minutes)

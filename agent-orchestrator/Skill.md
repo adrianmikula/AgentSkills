@@ -12,6 +12,7 @@ This skill defines the standard process for orchestrator agents to manage softwa
 - Running subagents asynchronously in the background by default
 - Raising pull requests for human review before merging
 - Polling open pull requests for merge conflicts and CI/deployment failures and fixing or escalating them via a dedicated subagent
+- Reviewing every newly opened pull request with a dedicated review subagent (description reasoning check + serious-issues-only code review, comments only - never approve or merge)
 - Using Slack for 2-way communication (status updates and clarifying questions)
 - Managing resource constraints (disk space, RAM, cloud credits)
 - Optimizing for cost over speed (free Devin models by default)
@@ -318,6 +319,20 @@ Workflow:
 
 **Output**: PR health issues either fixed with verified commits or escalated to the human with enough context (diagnosis + logs) to decide
 
+### Phase 7: Review New PRs (Dedicated Review Subagent)
+
+Every newly opened pull request gets a dedicated review subagent. This is separate from Phase 6 PR health: the review agent checks description quality and serious code issues, and it must NEVER approve, merge, close, or modify the PR - review and comments only.
+
+Workflow:
+
+1. **Detect**: On the PR-health cadence (every 5 minutes by default), run `resources/check-unreviewed-prs.sh <owner> <repo> [state-file]`. It lists open PRs whose numbers are not in the state file's `reviewed_prs` array. PRs opened while the orchestrator was down appear here automatically (backfill path).
+2. **Deduplicate**: Skip PRs already recorded in `reviewed_prs`, PRs currently assigned to an active PR-review subagent (see `pr_review_agent` in the state file), and drafts if repository policy excludes them.
+3. **Spawn review subagent(s)** using the template in `resources/pr-review-prompt-template.md`. The subagent (a) checks the PR body for a reasoning section (why this approach, trade-offs, risks, follow-ups) and comments if missing or inadequate, and (b) performs a serious-issues-only code review (logic, security, stability - explicitly not style), posting one comment per finding.
+4. **Track in state file**: When a review completes, append the PR to `reviewed_prs` (`pr_number`, `reviewed_at`, `result`) so restarts don't cause duplicate reviews.
+5. **Notify via Slack**: Announce when the review subagent is spawned ("PR review started for PR #<n>") and again when it finishes ("PR review complete for PR #<n>: <summary of comments posted>").
+
+**Output**: Every open PR has either been reviewed (recorded in `reviewed_prs`) or is queued/active for review; description gaps and serious issues surfaced as PR comments
+
 ---
 
 ## State Management
@@ -332,11 +347,13 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 - If an issue number already exists in the active list, skip creating a new subagent
 - If a subagent fails and is retried, reuse the same branch/worktree
 - Clean up completed subagents from the active list immediately after merge
+- If a PR number already appears in the state file's `reviewed_prs` array, do not spawn another PR-review subagent for it
 
 ### Polling Strategy
 
 - Poll GitHub issues every 60 seconds using `resources/poll-issues.sh`
 - Poll open PRs for merge conflicts and CI/deployment failures every 5 minutes using `resources/check-pr-health.sh` (less frequent than issue polling)
+- Poll for unreviewed open PRs every 5 minutes using `resources/check-unreviewed-prs.sh` and spawn review subagents per `resources/pr-review-prompt-template.md`
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
@@ -497,6 +514,7 @@ When orchestrator completes a session:
 - [ ] Each issue has a subagent working on it (or completed)
 - [ ] Pull requests are raised for completed work
 - [ ] Open PRs were checked for merge conflicts and CI/deployment failures (every 5 minutes)
+- [ ] Every open PR was reviewed by a dedicated review subagent and recorded in `reviewed_prs`
 - [ ] Human has been notified via Slack at key milestones
 - [ ] Production impact tasks have outage window approval
 - [ ] Resources (disk, RAM, credits) were not exhausted
