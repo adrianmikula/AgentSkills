@@ -18,6 +18,14 @@ PR: <pr-url>
 Ready for review
 ```
 
+### Issue Triaged as Blocked
+```
+🚫 Issue #<number> triaged as human-blocked: <title>
+Dependency: <blocking category and detail>
+Unblocks when: <concrete action needed from human>
+Triage comment posted on the issue; no agent spawned.
+```
+
 ### Work Blocked
 ```
 ⚠️ Blocked on issue #<number>: <title>

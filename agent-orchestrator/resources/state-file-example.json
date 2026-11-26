@@ -116,6 +116,14 @@
       "detail": "Merge conflict in src/example.ts; correct resolution unclear",
       "since": "2026-11-09T12:15:00Z",
       "escalated_via": "slack"
+    },
+    {
+      "issue_number": 789,
+      "reason": "requires-credentials",
+      "dependency": "AWS console access for account X",
+      "unblocks_when": "human provides credentials or performs the step manually",
+      "triaged_at": "2026-11-09T12:20:00Z",
+      "last_recheck": "2026-11-09T12:20:00Z"
     }
   ],
   "last_poll": "2026-11-09T12:00:00Z",
