@@ -62,7 +62,7 @@ Check the status of active subagents and detect stale ones.
 - State file exists (default: `.orchestrator-state.json`)
 
 ### cleanup-worktrees.sh
-Clean up old git worktrees to free disk space.
+Clean up old git worktrees to free disk space. Before removing an old worktree it verifies that the worktree's checked-out branch has zero unpushed commits (`git log origin/<branch>..<branch>`); worktrees with unpushed work, no upstream, or detached HEAD are kept (fail-safe). Branches are left intact for the human/orchestrator to delete after merge.
 
 **Usage:**
 ```bash
