@@ -18,6 +18,14 @@ PR: <pr-url>
 Ready for review
 ```
 
+### Issue Triaged as Blocked
+```
+🚫 Issue #<number> triaged as human-blocked: <title>
+Dependency: <blocking category and detail>
+Unblocks when: <concrete action needed from human>
+Triage comment posted on the issue; no agent spawned.
+```
+
 ### Work Blocked
 ```
 ⚠️ Blocked on issue #<number>: <title>
@@ -82,6 +90,21 @@ Item: <merge conflict / failing check "<name>" / failed deployment "<env>">
 Diagnosis: <what the subagent found - conflicted files, check logs, deployment logs>
 Subagent analysis: <why the fix is ambiguous>
 Please resolve manually or reply with guidance.
+```
+
+### PR Review Started
+```
+🔍 PR review started
+PR: #<number> <title> (<branch> -> <base>, author <author>)
+Review subagent checking description reasoning section and serious code issues (comments only).
+```
+
+### PR Review Complete
+```
+📝 PR review complete
+PR: #<number> <title>
+Reasoning section: <present / missing - comment posted>
+Findings: <count> comment(s) posted <or "no serious issues found">
 ```
 
 ## Human → Subagent Questions

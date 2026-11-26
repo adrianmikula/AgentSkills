@@ -22,6 +22,16 @@
     "status": "running",
     "last_check": "2026-11-09T12:15:00Z"
   },
+  "pr_review_agent": {
+    "pr_numbers": [456],
+    "start_time": "2026-11-09T12:20:00Z",
+    "status": "running",
+    "last_check": "2026-11-09T12:25:00Z"
+  },
+  "reviewed_prs": [
+    {"pr_number": 123, "reviewed_at": "2026-11-09T12:00:00Z", "result": "commented"},
+    {"pr_number": 456, "reviewed_at": "2026-11-09T12:05:00Z", "result": "clean"}
+  ],
   "open_issues": {
     "last_snapshot": "2026-11-09T12:00:00Z",
     "items": [
@@ -116,6 +126,14 @@
       "detail": "Merge conflict in src/example.ts; correct resolution unclear",
       "since": "2026-11-09T12:15:00Z",
       "escalated_via": "slack"
+    },
+    {
+      "issue_number": 789,
+      "reason": "requires-credentials",
+      "dependency": "AWS console access for account X",
+      "unblocks_when": "human provides credentials or performs the step manually",
+      "triaged_at": "2026-11-09T12:20:00Z",
+      "last_recheck": "2026-11-09T12:20:00Z"
     }
   ],
   "last_poll": "2026-11-09T12:00:00Z",
@@ -124,5 +142,6 @@
     "456": "2026-11-09T12:12:00Z",
     "789": "2026-11-09T12:05:00Z"
   },
-  "last_pr_feedback_poll": "2026-11-09T12:12:00Z"
+  "last_pr_feedback_poll": "2026-11-09T12:12:00Z",
+  "last_unreviewed_prs_poll": "2026-11-09T12:10:00Z"
 }

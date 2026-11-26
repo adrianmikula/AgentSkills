@@ -12,6 +12,7 @@ This skill defines the standard process for orchestrator agents to manage softwa
 - Running subagents asynchronously in the background by default
 - Raising pull requests for human review before merging
 - Polling open pull requests for merge conflicts and CI/deployment failures and fixing or escalating them via a dedicated subagent
+- Reviewing every newly opened pull request with a dedicated review subagent (description reasoning check + serious-issues-only code review, comments only - never approve or merge)
 - Using Slack for 2-way communication (status updates and clarifying questions)
 - Managing resource constraints (disk space, RAM, cloud credits)
 - Optimizing for cost over speed (free Devin models by default)
@@ -139,9 +140,14 @@ Based on proven orchestration runs, follow these patterns:
 - **Save install time**: This avoids repeated `npm ci`/`yarn install` runs
 
 #### Concurrency and Resource Management
+- **Scale isolation to disk, not compute**: When disk gets tight, shrink per-workspace footprint before reducing agent count
 - **Cap by disk, not compute**: Each worktree needs its own `node_modules` (hundreds of MB)
+- **Shrink footprint first**: Before reducing concurrency, apply dependency-sharing strategies:
+  - **Shared install cache**: Use `npm ci --prefer-offline`, `yarn install --prefer-offline`, or `pnpm install --prefer-offline` so installs reuse the global/package-manager cache instead of downloading again
+  - **Symlinked `node_modules`**: Point a worktree's `node_modules` at a canonical install (e.g., `ln -s ../canonical/node_modules node_modules`) when the dependency tree is identical, or use pnpm's content-addressable store (`pnpm install` shares packages across projects by default via hard links)
+  - **Lockfile-driven reuse**: Prefer package managers that deduplicate on disk (pnpm store, npm cache) over duplicating full `node_modules` trees per worktree
 - **Safe default**: 2 concurrent agents is proven safe on consumer hardware
-- **Optimize installs**: Use `npm ci --prefer-offline` to share the npm cache
+- **Optimize installs**: Use `npm ci --prefer-offline` (or the equivalent flag for yarn/pnpm) to share the package-manager cache
 - **Monitor disk**: Check available disk space before spawning new agents
 
 #### Authentication Pattern
@@ -185,14 +191,43 @@ Based on proven orchestration runs, follow these patterns:
    - Labels (if applicable: priority, type, component)
    - Assignee (if any)
 3. **Check for duplicates**: Verify that no active subagent is already working on the issue
-4. **Prioritize** using:
+4. **Triage** each issue before scheduling it (see Triage Classification below):
+   - **Code-actionable**: An agent can make progress with only repo access and approved commands — proceed to prioritization
+   - **Human-blocked**: Requires something only a human can provide (credentials, dashboard/external-service access, a business/product decision, an ordering constraint on other work, or production-impact approval) — do NOT spawn a subagent; follow the blocked-issue handling below
+5. **Handle human-blocked issues**:
+   - Post a triage comment on the issue stating the dependency and what unblocks it (use the template in `resources/github-templates.md`)
+   - Record the blocked classification and reason in the state file's `human_blocked` section (see `resources/state-file-example.json`)
+   - Notify via Slack using the "Issue Triaged as Blocked" template
+   - Exclude the issue from this cycle's queue
+6. **Prioritize** the remaining code-actionable issues using:
    - Dependencies (what blocks what)
    - Production impact (require outage window?)
    - Priority labels
    - Resource requirements
-5. **Group** into independent batches that can run in parallel
+7. **Group** into independent batches that can run in parallel
 
-**Output**: A prioritized task queue with dependency graph and deduplication check
+**Output**: A prioritized task queue with dependency graph and deduplication check, plus a list of human-blocked issues with triage comments posted
+
+### Triage Classification
+
+Before any issue is scheduled, classify it as **code-actionable** or **human-blocked**. An issue is human-blocked when progress requires a human-only input that no agent can supply:
+
+| Blocking Category | Examples |
+|-------------------|----------|
+| Credentials/secrets | API keys, tokens, SSH access, cloud account credentials |
+| External access | Dashboard or SaaS admin access, production consoles, third-party accounts |
+| Business decision | Product direction, pricing, scope trade-offs only the human can make |
+| Ordering constraint | Must wait for another issue/PR to merge or a specific sequence of work |
+| Production approval | Outage window sign-off, manual prod verification, rollback authority |
+
+For human-blocked issues:
+
+1. **Post a triage comment** on the GitHub issue explaining the blocking dependency and the concrete action that unblocks it (template in `resources/github-templates.md`)
+2. **Record it in the state file** under `human_blocked` with: issue number, blocking category/reason, what unblocks it, triage timestamp, and last re-check timestamp
+3. **Notify via Slack** so the human knows action is needed
+4. **Do not burn agent resources**: never spawn a subagent for a human-blocked issue
+
+**Re-check behavior**: On each polling cycle, re-evaluate `human_blocked` issues when blocking conditions may have changed — e.g., a human replies on the issue or via Slack, a prerequisite issue/PR is merged or closed, or credentials/access are confirmed available. When the block clears, remove the entry from `human_blocked` and return the issue to the normal Phase 1 queue.
 
 ### Phase 2: Allocate Resources
 
@@ -265,6 +300,7 @@ When subagent completes work:
    - If changes requested, loop back to subagent with feedback
 5. **Merge** after approval:
    - Merge PR via GitHub UI or command
+   - Verify zero unpushed commits on the branch (`git log origin/<branch>..<branch>` is empty)
    - Post a closing summary comment on the GitHub issue (use the merge template in `resources/slack-templates.md`; include branch, files changed, verification results, and deviations from the uniform report)
    - Delete branch/worktree after merge
    - **Sync the primary checkout** so running dev servers pick up the merged code:
@@ -331,6 +367,20 @@ Workflow:
 
 **Output**: PR health issues either fixed with verified commits or escalated to the human with enough context (diagnosis + logs) to decide; PR feedback addressed on the existing PR branch or escalated when it requires a human decision
 
+### Phase 7: Review New PRs (Dedicated Review Subagent)
+
+Every newly opened pull request gets a dedicated review subagent. This is separate from Phase 6 PR health: the review agent checks description quality and serious code issues, and it must NEVER approve, merge, close, or modify the PR - review and comments only.
+
+Workflow:
+
+1. **Detect**: On the PR-health cadence (every 5 minutes by default), run `resources/check-unreviewed-prs.sh <owner> <repo> [state-file]`. It lists open PRs whose numbers are not in the state file's `reviewed_prs` array. PRs opened while the orchestrator was down appear here automatically (backfill path).
+2. **Deduplicate**: Skip PRs already recorded in `reviewed_prs`, PRs currently assigned to an active PR-review subagent (see `pr_review_agent` in the state file), and drafts if repository policy excludes them.
+3. **Spawn review subagent(s)** using the template in `resources/pr-review-prompt-template.md`. The subagent (a) checks the PR body for a reasoning section (why this approach, trade-offs, risks, follow-ups) and comments if missing or inadequate, and (b) performs a serious-issues-only code review (logic, security, stability - explicitly not style), posting one comment per finding.
+4. **Track in state file**: When a review completes, append the PR to `reviewed_prs` (`pr_number`, `reviewed_at`, `result`) so restarts don't cause duplicate reviews.
+5. **Notify via Slack**: Announce when the review subagent is spawned ("PR review started for PR #<n>") and again when it finishes ("PR review complete for PR #<n>: <summary of comments posted>").
+
+**Output**: Every open PR has either been reviewed (recorded in `reviewed_prs`) or is queued/active for review; description gaps and serious issues surfaced as PR comments
+
 ---
 
 ## State Management
@@ -364,12 +414,14 @@ Maintain a single persistent state file (e.g., `.orchestrator-state.json`) so a 
 - If an issue number already exists in the active list, skip creating a new subagent
 - If a subagent fails and is retried, reuse the same branch/worktree
 - Clean up completed subagents from the active list immediately after merge
+- If a PR number already appears in the state file's `reviewed_prs` array, do not spawn another PR-review subagent for it
 
 ### Polling Strategy
 
 - Poll GitHub issues every 60 seconds using `resources/poll-issues.sh`
 - Poll open PRs for merge conflicts and CI/deployment failures every 5 minutes using `resources/check-pr-health.sh` (less frequent than issue polling)
 - Poll open PRs for new human feedback (issue comments and reviews) every 5 minutes using `resources/check-pr-feedback.sh`
+- Poll for unreviewed open PRs every 5 minutes using `resources/check-unreviewed-prs.sh` and spawn review subagents per `resources/pr-review-prompt-template.md`
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
@@ -419,8 +471,9 @@ See `resources/example-session.md` for a complete example of an orchestrator ses
 - Before creating worktrees, check available disk space: `df -h`
 - Clean up old worktrees regularly: `git worktree prune`
 - Prefer branch switching over worktrees if disk space is tight
+- **Shrink per-workspace footprint before reducing agent count**: shared install cache, symlinked `node_modules` to a canonical install, or `--prefer-offline` variants per package manager (see Concurrency and Resource Management above)
 - Monitor worktree size during subagent execution
-- Delete worktrees immediately after merge
+- Delete worktrees immediately after merge, but **only after verifying zero unpushed commits** on the worktree's branch (`git log origin/<branch>..<branch>`); never delete a worktree or branch whose work has not been confirmed merged or pushed
 
 ### RAM Memory
 
@@ -549,6 +602,7 @@ When orchestrator completes a session:
 - [ ] Each issue has a subagent working on it (or completed)
 - [ ] Pull requests are raised for completed work
 - [ ] Open PRs were checked for merge conflicts and CI/deployment failures (every 5 minutes)
+- [ ] Every open PR was reviewed by a dedicated review subagent and recorded in `reviewed_prs`
 - [ ] Human has been notified via Slack at key milestones
 - [ ] Production impact tasks have outage window approval
 - [ ] Resources (disk, RAM, credits) were not exhausted
