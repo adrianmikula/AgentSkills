@@ -139,9 +139,14 @@ Based on proven orchestration runs, follow these patterns:
 - **Save install time**: This avoids repeated `npm ci`/`yarn install` runs
 
 #### Concurrency and Resource Management
+- **Scale isolation to disk, not compute**: When disk gets tight, shrink per-workspace footprint before reducing agent count
 - **Cap by disk, not compute**: Each worktree needs its own `node_modules` (hundreds of MB)
+- **Shrink footprint first**: Before reducing concurrency, apply dependency-sharing strategies:
+  - **Shared install cache**: Use `npm ci --prefer-offline`, `yarn install --prefer-offline`, or `pnpm install --prefer-offline` so installs reuse the global/package-manager cache instead of downloading again
+  - **Symlinked `node_modules`**: Point a worktree's `node_modules` at a canonical install (e.g., `ln -s ../canonical/node_modules node_modules`) when the dependency tree is identical, or use pnpm's content-addressable store (`pnpm install` shares packages across projects by default via hard links)
+  - **Lockfile-driven reuse**: Prefer package managers that deduplicate on disk (pnpm store, npm cache) over duplicating full `node_modules` trees per worktree
 - **Safe default**: 2 concurrent agents is proven safe on consumer hardware
-- **Optimize installs**: Use `npm ci --prefer-offline` to share the npm cache
+- **Optimize installs**: Use `npm ci --prefer-offline` (or the equivalent flag for yarn/pnpm) to share the package-manager cache
 - **Monitor disk**: Check available disk space before spawning new agents
 
 #### Authentication Pattern
@@ -294,6 +299,7 @@ When subagent completes work:
    - If changes requested, loop back to subagent with feedback
 5. **Merge** after approval:
    - Merge PR via GitHub UI or command
+   - Verify zero unpushed commits on the branch (`git log origin/<branch>..<branch>` is empty)
    - Post a closing summary comment on the GitHub issue (use the merge template in `resources/slack-templates.md`; include branch, files changed, verification results, and deviations from the uniform report)
    - Delete branch/worktree after merge
    - **Sync the primary checkout** so running dev servers pick up the merged code:
@@ -441,8 +447,9 @@ See `resources/example-session.md` for a complete example of an orchestrator ses
 - Before creating worktrees, check available disk space: `df -h`
 - Clean up old worktrees regularly: `git worktree prune`
 - Prefer branch switching over worktrees if disk space is tight
+- **Shrink per-workspace footprint before reducing agent count**: shared install cache, symlinked `node_modules` to a canonical install, or `--prefer-offline` variants per package manager (see Concurrency and Resource Management above)
 - Monitor worktree size during subagent execution
-- Delete worktrees immediately after merge
+- Delete worktrees immediately after merge, but **only after verifying zero unpushed commits** on the worktree's branch (`git log origin/<branch>..<branch>`); never delete a worktree or branch whose work has not been confirmed merged or pushed
 
 ### RAM Memory
 
