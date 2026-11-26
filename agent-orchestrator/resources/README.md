@@ -5,20 +5,26 @@ This folder contains reusable helper scripts, templates, and examples for the ag
 ## Scripts
 
 ### poll-issues.sh
-Poll GitHub issues for a repository every 60 seconds.
+Poll GitHub issues for a repository on an interval and report deltas (new / changed / closed) against a persisted baseline snapshot. Prints a `[heartbeat]` line every cycle.
 
 **Usage:**
 ```bash
-./poll-issues.sh <owner> <repo> [state]
+./poll-issues.sh <owner> <repo> [state] [interval-seconds]
 ```
 
 **Example:**
 ```bash
-./poll-issues.sh adrianmikula AgentSkills open
+./poll-issues.sh adrianmikula AgentSkills open 60
 ```
 
+**Delta tracking:**
+- The first run establishes a baseline snapshot in `.poll-issues-state.json` (override with `POLL_STATE_FILE`) and reports no deltas.
+- Each later poll diffs the live API response against the snapshot and prints `delta:` lines for new issues, updated issues (`updatedAt` changed: new comments, labels, edits), and closed/disappeared issues.
+- Failed API calls or non-JSON responses are logged as warnings and skipped; they never overwrite the snapshot, so outages or machine sleep cannot be mistaken for "no issues".
+
 **Requirements:**
-- GitHub CLI (`gh`) installed and authenticated
+- GitHub CLI (`gh`) installed and authenticated (`gh auth login` or `GH_TOKEN` env var)
+- `jq` installed
 
 ### check-pr-health.sh
 Check open pull requests for health issues: merge conflicts, failing checks/CI, and failed deployments. Poll on a slower cadence than issues (every 5 minutes by default).
@@ -91,16 +97,19 @@ Long-running orchestrator that polls for new GitHub issues and PR health issues 
 ```
 
 **Requirements:**
-- GitHub CLI (`gh`) installed and authenticated
+- GitHub CLI (`gh`) installed and authenticated (`gh auth login` or `GH_TOKEN` env var)
 - `jq` installed
-- State files will be created: `.orchestrator-state.json`, `.processed-issues.txt`, and `.pr-health.json`
+- State files will be created: `.orchestrator-state.json`, `.processed-issues.txt`, `.issue-snapshot.json`, and `.pr-health.json`
 
 **Features:**
-- Polls for new issues at configurable intervals (default: 5 minutes)
+- Polls for issue deltas at configurable intervals (default: 5 minutes), diffing the live issue set against `.issue-snapshot.json` rather than an ever-growing processed list
+- Re-baselines the issue snapshot from the live API on startup, so restarts, network outages, or machine sleep cannot silently skip or misreport deltas
+- Reports new, changed (updatedAt differs: re-triage on new comments/labels), and closed issues each cycle
+- Failed issue or PR-health API calls are logged and skipped; they never overwrite the snapshot or `.pr-health.json`, so errors are never indistinguishable from "no issues"
+- Prints a `[heartbeat]` line every poll cycle for transparency
 - Polls PR health (conflicts, failing checks, failed deployments) on a separate interval (default: 5 minutes)
-- Tracks processed issues to avoid duplicates
+- Tracks processed issues to avoid duplicate subagent spawns
 - Maintains state file for active subagents and the PR-maintenance agent
-- Detects new issues and PR health problems and prepares for subagent spawning
 - Graceful shutdown on Ctrl+C
 
 ## Templates and Examples
@@ -153,7 +162,7 @@ The orchestrator should maintain a state file (default: `.orchestrator-state.jso
 
 ## Polling Strategy
 
-- **GitHub issues**: Poll every 60 seconds using `poll-issues.sh`
+- **GitHub issues**: Poll every 60 seconds using `poll-issues.sh` (reports new/changed/closed deltas against a persisted baseline snapshot)
 - **PR health**: Poll every 5 minutes using `check-pr-health.sh` (merge conflicts, failing checks, failed deployments)
 - **Subagent status**: Check every 60 seconds using `check-subagent-status.sh`
 - **Worktree cleanup**: Run `cleanup-worktrees.sh` periodically (e.g., daily) to free disk space
