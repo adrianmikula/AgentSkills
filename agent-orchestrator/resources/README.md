@@ -126,11 +126,16 @@ Template for the single PR-maintenance subagent that handles merge conflicts, fa
 
 ### slack-templates.md
 Slack notification templates for:
+- Issue triaged as human-blocked
 - Work started/completed/blocked/failed
 - Permission requests
 - Production change notifications
 - PR health issues detected/resolved/needs-human-decision
 - Human-to-subagent question relay
+
+### github-templates.md
+GitHub issue/PR templates for:
+- Triage comment posted on human-blocked issues (blocking dependency + unblock path)
 
 ### example-session.md
 Complete example of an orchestrator session showing:
@@ -144,6 +149,7 @@ Complete example of an orchestrator session showing:
 Example state file format for tracking active subagents:
 - Issue number, branch name, worktree path
 - Start time, status, last check timestamp
+- `human_blocked` issues: issue number, blocking reason, what unblocks it, triage and last re-check timestamps
 - PR-maintenance agent items and blocked items
 - Last poll and last PR-health-poll timestamps
 

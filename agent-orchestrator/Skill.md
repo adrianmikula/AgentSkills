@@ -185,14 +185,43 @@ Based on proven orchestration runs, follow these patterns:
    - Labels (if applicable: priority, type, component)
    - Assignee (if any)
 3. **Check for duplicates**: Verify that no active subagent is already working on the issue
-4. **Prioritize** using:
+4. **Triage** each issue before scheduling it (see Triage Classification below):
+   - **Code-actionable**: An agent can make progress with only repo access and approved commands — proceed to prioritization
+   - **Human-blocked**: Requires something only a human can provide (credentials, dashboard/external-service access, a business/product decision, an ordering constraint on other work, or production-impact approval) — do NOT spawn a subagent; follow the blocked-issue handling below
+5. **Handle human-blocked issues**:
+   - Post a triage comment on the issue stating the dependency and what unblocks it (use the template in `resources/github-templates.md`)
+   - Record the blocked classification and reason in the state file's `human_blocked` section (see `resources/state-file-example.json`)
+   - Notify via Slack using the "Issue Triaged as Blocked" template
+   - Exclude the issue from this cycle's queue
+6. **Prioritize** the remaining code-actionable issues using:
    - Dependencies (what blocks what)
    - Production impact (require outage window?)
    - Priority labels
    - Resource requirements
-5. **Group** into independent batches that can run in parallel
+7. **Group** into independent batches that can run in parallel
 
-**Output**: A prioritized task queue with dependency graph and deduplication check
+**Output**: A prioritized task queue with dependency graph and deduplication check, plus a list of human-blocked issues with triage comments posted
+
+### Triage Classification
+
+Before any issue is scheduled, classify it as **code-actionable** or **human-blocked**. An issue is human-blocked when progress requires a human-only input that no agent can supply:
+
+| Blocking Category | Examples |
+|-------------------|----------|
+| Credentials/secrets | API keys, tokens, SSH access, cloud account credentials |
+| External access | Dashboard or SaaS admin access, production consoles, third-party accounts |
+| Business decision | Product direction, pricing, scope trade-offs only the human can make |
+| Ordering constraint | Must wait for another issue/PR to merge or a specific sequence of work |
+| Production approval | Outage window sign-off, manual prod verification, rollback authority |
+
+For human-blocked issues:
+
+1. **Post a triage comment** on the GitHub issue explaining the blocking dependency and the concrete action that unblocks it (template in `resources/github-templates.md`)
+2. **Record it in the state file** under `human_blocked` with: issue number, blocking category/reason, what unblocks it, triage timestamp, and last re-check timestamp
+3. **Notify via Slack** so the human knows action is needed
+4. **Do not burn agent resources**: never spawn a subagent for a human-blocked issue
+
+**Re-check behavior**: On each polling cycle, re-evaluate `human_blocked` issues when blocking conditions may have changed — e.g., a human replies on the issue or via Slack, a prerequisite issue/PR is merged or closed, or credentials/access are confirmed available. When the block clears, remove the entry from `human_blocked` and return the issue to the normal Phase 1 queue.
 
 ### Phase 2: Allocate Resources
 
