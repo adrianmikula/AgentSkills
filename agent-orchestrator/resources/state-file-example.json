@@ -22,6 +22,102 @@
     "status": "running",
     "last_check": "2026-11-09T12:15:00Z"
   },
+  "open_issues": {
+    "last_snapshot": "2026-11-09T12:00:00Z",
+    "items": [
+      {
+        "number": 123,
+        "title": "Example issue being worked",
+        "labels": ["bug"],
+        "status": "dispatched",
+        "assigned_subagent": true,
+        "blocked_by": []
+      },
+      {
+        "number": 124,
+        "title": "Deferred issue waiting on dependency",
+        "labels": ["enhancement"],
+        "status": "deferred",
+        "assigned_subagent": false,
+        "blocked_by": [123]
+      }
+    ]
+  },
+  "in_flight_prs": [
+    {
+      "pr_number": 456,
+      "issue_number": 123,
+      "branch": "feature/issue-123-description",
+      "worktree_path": "/path/to/worktree",
+      "url": "https://github.com/adrianmikula/AgentSkills/pull/456",
+      "status": "open",
+      "head_sha": "abc1234",
+      "last_check": "2026-11-09T12:15:00Z"
+    },
+    {
+      "pr_number": 789,
+      "issue_number": 130,
+      "branch": "feature/issue-130-other-work",
+      "worktree_path": "/path/to/other-worktree",
+      "url": "https://github.com/adrianmikula/AgentSkills/pull/789",
+      "status": "conflict",
+      "head_sha": "def5678",
+      "last_check": "2026-11-09T12:15:00Z"
+    }
+  ],
+  "merge_cleanup_actions": [
+    {
+      "pr_number": 790,
+      "issue_number": 129,
+      "branch": "feature/issue-129-old-work",
+      "worktree_path": "/path/to/merged-worktree",
+      "actions": ["delete-branch", "remove-worktree", "remove-from-state"],
+      "status": "pending",
+      "queued_at": "2026-11-09T11:55:00Z",
+      "completed_at": null
+    }
+  ],
+  "resolved_items": [
+    {
+      "type": "pr",
+      "number": 455,
+      "issue_number": 128,
+      "resolution": "merged",
+      "resolved_at": "2026-11-09T11:40:00Z",
+      "notes": "Cleanup actions pending in merge_cleanup_actions"
+    }
+  ],
+  "worktree_inventory": [
+    {
+      "path": "/path/to/worktree",
+      "branch": "feature/issue-123-description",
+      "issue_number": 123,
+      "purpose": "subagent",
+      "last_seen": "2026-11-09T12:05:00Z"
+    },
+    {
+      "path": "/path/to/merged-worktree",
+      "branch": "feature/issue-129-old-work",
+      "issue_number": 129,
+      "purpose": "post-merge-cleanup",
+      "last_seen": "2026-11-09T11:55:00Z"
+    }
+  ],
+  "disk_headroom": {
+    "last_check": "2026-11-09T12:00:00Z",
+    "available_gb": 42.5,
+    "warn_below_gb": 10
+  },
+  "human_blocked": [
+    {
+      "type": "pr-health-item",
+      "pr_number": 789,
+      "reason": "awaiting-manual-fix",
+      "detail": "Merge conflict in src/example.ts; correct resolution unclear",
+      "since": "2026-11-09T12:15:00Z",
+      "escalated_via": "slack"
+    }
+  ],
   "last_poll": "2026-11-09T12:00:00Z",
   "last_pr_health_poll": "2026-11-09T12:10:00Z",
   "pr_feedback_seen": {
