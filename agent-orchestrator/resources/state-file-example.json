@@ -138,5 +138,10 @@
   ],
   "last_poll": "2026-11-09T12:00:00Z",
   "last_pr_health_poll": "2026-11-09T12:10:00Z",
+  "pr_feedback_seen": {
+    "456": "2026-11-09T12:12:00Z",
+    "789": "2026-11-09T12:05:00Z"
+  },
+  "last_pr_feedback_poll": "2026-11-09T12:12:00Z",
   "last_unreviewed_prs_poll": "2026-11-09T12:10:00Z"
 }
