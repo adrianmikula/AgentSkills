@@ -267,7 +267,12 @@ When subagent completes work:
    - Merge PR via GitHub UI or command
    - Post a closing summary comment on the GitHub issue (use the merge template in `resources/slack-templates.md`; include branch, files changed, verification results, and deviations from the uniform report)
    - Delete branch/worktree after merge
-   - Notify via Slack: "Merged PR #456 for issue #123"
+   - **Sync the primary checkout** so running dev servers pick up the merged code:
+     - Run `agent-orchestrator/resources/sync-main-checkout.sh` from the primary checkout (or `git fetch` + `git pull --ff-only --autostash` manually)
+     - The sync uses autostash so uncommitted work survives, and refuses non-fast-forward updates
+     - Verify the resulting HEAD matches upstream (`git rev-parse HEAD` vs `git rev-parse @{u}`)
+     - Edge cases abort safely: detached HEAD, diverged local commits, or missing upstream — escalate to the human rather than forcing
+   - Notify via Slack: "Merged PR #456 for issue #123; primary checkout synced to <sha>"
 6. **Cleanup**: Remove subagent from active list to free resources
 
 **Output**: Code merged to main, environment cleaned up, subagent removed from active list
