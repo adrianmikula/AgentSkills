@@ -166,6 +166,7 @@ Slack notification templates for:
 - Production change notifications
 - PR health issues detected/resolved/needs-human-decision
 - Human-to-subagent question relay
+- GitHub issue comment templates: PR-open status comment and merge closing summary (branch, files changed, verification results, deviations)
 
 ### example-session.md
 Complete example of an orchestrator session showing:
