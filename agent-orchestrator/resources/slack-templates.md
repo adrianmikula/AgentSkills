@@ -92,6 +92,21 @@ Subagent analysis: <why the fix is ambiguous>
 Please resolve manually or reply with guidance.
 ```
 
+### PR Review Started
+```
+🔍 PR review started
+PR: #<number> <title> (<branch> -> <base>, author <author>)
+Review subagent checking description reasoning section and serious code issues (comments only).
+```
+
+### PR Review Complete
+```
+📝 PR review complete
+PR: #<number> <title>
+Reasoning section: <present / missing - comment posted>
+Findings: <count> comment(s) posted <or "no serious issues found">
+```
+
 ## Human → Subagent Questions
 
 When human answers a question via Slack:
