@@ -44,6 +44,32 @@ Check open pull requests for health issues: merge conflicts, failing checks/CI, 
 - In-progress/pending checks are not reported as failures
 - Failed deployments are matched back to open PRs by head branch or head SHA where possible
 
+### check-pr-feedback.sh
+Check open pull requests for new human feedback: issue comments and PR reviews submitted since the last poll. Read-only (GitHub API GETs only). Poll on the same cadence as PR health (every 5 minutes by default).
+
+**Usage:**
+```bash
+./check-pr-feedback.sh <owner> <repo> [state-file]
+```
+
+**Example:**
+```bash
+./check-pr-feedback.sh adrianmikula AgentSkills .orchestrator-state.json
+```
+
+**Output:** JSON object with two arrays: `issue_comments` and `reviews` (both empty when there is no new feedback). Each entry includes `pr_number`, `pr_title`, `headRefName`, author, timestamp, URL, and a short `body_preview`.
+
+**Requirements:**
+- GitHub CLI (`gh`) installed and authenticated
+- `jq` installed
+
+**Notes:**
+- Bot authors are excluded (`user.type == "Bot"` or login ending in `[bot]`); PENDING reviews and empty APPROVED/COMMENTED reviews are ignored
+- Last-seen markers are stored per PR in the state file under `pr_feedback_seen` (`"<pr_number>": "<iso8601>"`), plus `last_pr_feedback_poll`; the state file is created if missing and existing keys are preserved
+- Markers advance only to timestamps actually observed, so mid-poll feedback is caught on the next run; filtering is by `created_at`/`submitted_at` so editing an old comment does not re-report it
+- The reviews endpoint has no `since` param, so reviews are re-scanned each poll and filtered client-side
+- Routing: detected feedback is a work item for a follow-up agent on the SAME PR branch (never a new PR, never a force-push). Deduplicate with the PR-maintenance agent rules: at most one maintenance/follow-up agent at a time, and never re-assign feedback for a PR that already has an active follow-up agent
+
 ### check-subagent-status.sh
 Check the status of active subagents and detect stale ones.
 
@@ -145,6 +171,7 @@ Example state file format for tracking active subagents:
 - Issue number, branch name, worktree path
 - Start time, status, last check timestamp
 - PR-maintenance agent items and blocked items
+- PR feedback last-seen markers (`pr_feedback_seen` per PR) and `last_pr_feedback_poll`
 - Last poll and last PR-health-poll timestamps
 
 ## State File Format
@@ -155,6 +182,7 @@ The orchestrator should maintain a state file (default: `.orchestrator-state.jso
 
 - **GitHub issues**: Poll every 60 seconds using `poll-issues.sh`
 - **PR health**: Poll every 5 minutes using `check-pr-health.sh` (merge conflicts, failing checks, failed deployments)
+- **PR feedback**: Poll every 5 minutes using `check-pr-feedback.sh` (new human issue comments and reviews on open PRs)
 - **Subagent status**: Check every 60 seconds using `check-subagent-status.sh`
 - **Worktree cleanup**: Run `cleanup-worktrees.sh` periodically (e.g., daily) to free disk space
 - **Long-running orchestration**: Use `long-running-orchestrator.sh` for continuous polling (issues and PR health on separate intervals, both defaulting to 5 minutes)

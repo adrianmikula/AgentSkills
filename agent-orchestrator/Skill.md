@@ -316,7 +316,13 @@ Workflow:
 5. **Push and report**: Push fixes with a regular `git push` (no force) and report per-item results: resolved, escalated, failed, or skipped.
 6. **Notify via Slack**: Announce when PR health issues are detected and the subagent starts; report each item outcome; escalate ambiguous items immediately rather than batching them silently.
 
-**Output**: PR health issues either fixed with verified commits or escalated to the human with enough context (diagnosis + logs) to decide
+**PR feedback (human comments and reviews)**: Human feedback on open PRs - scope corrections, review requests, change requests - is also work. Poll for it with `resources/check-pr-feedback.sh` on the same cadence as PR health (every 5 minutes by default). The script detects new human issue comments and submitted PR reviews since the last poll (bots excluded), tracks last-seen timestamps per PR in the state file (`pr_feedback_seen`), and outputs JSON work items.
+
+- Route each detected feedback item to a follow-up agent on the **same PR branch** - never open a new PR for PR feedback, and never force-push or rewrite the branch
+- Deduplicate with the PR-maintenance rules: at most one maintenance/follow-up agent at a time, and never assign feedback for a PR that already has an active follow-up agent
+- Feedback items can be handled by the same PR-maintenance subagent prompt (`resources/pr-maintenance-prompt-template.md`) as additional work items, or by a dedicated follow-up agent using the same branch/worktree rules
+
+**Output**: PR health issues either fixed with verified commits or escalated to the human with enough context (diagnosis + logs) to decide; PR feedback addressed on the existing PR branch or escalated when it requires a human decision
 
 ---
 
@@ -337,6 +343,7 @@ Maintain a simple state file (e.g., `.orchestrator-state.json`) to track active 
 
 - Poll GitHub issues every 60 seconds using `resources/poll-issues.sh`
 - Poll open PRs for merge conflicts and CI/deployment failures every 5 minutes using `resources/check-pr-health.sh` (less frequent than issue polling)
+- Poll open PRs for new human feedback (issue comments and reviews) every 5 minutes using `resources/check-pr-feedback.sh`
 - Check subagent status every 60 seconds using `resources/check-subagent-status.sh`
 - Use `resources/cleanup-worktrees.sh` to clean up old worktrees periodically
 
